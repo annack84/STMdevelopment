@@ -1,16 +1,27 @@
 Package: STMdevelopment
-Title: What the Package Does (One Line, Title Case)
+Title: Develop State-and-Transition Models for the Upper Colorado River Basin
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    c(person(given = "Anna",
+           family = "Knight",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "aknight@usgs.gov"),
+    person(given = "Travis",
+           family = "Nauman",
+           role = c("aut"),
+           email = "tnauman@usgs.gov"))
+Author: Anna Knight [aut, cre],
+  Travis Nauman [aut]
+Maintainer: Anna Knight <aknight@usgs.gov>
+Depends: R (>= 3.1.0)
+Description: Develops STMs for new Ecological Site Groupings in the Upper Colorado River Basin. Inputs include plot data from AIM, NRI, and other projects; soil characteristics; and climate data. Outputs are RMarkdown files formatted like the Ecological Site Description pages in EDIT.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+Imports: 
+    sf,
+    raster,
+    dplyr
