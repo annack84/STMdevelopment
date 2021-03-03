@@ -51,7 +51,7 @@ plot_data_pull <- function(file_paths_user = "Anna",
                              "AH_NativeAnnForbCover", # Native annual forbs
                              "AH_IntroducedAnnForbCover", # Non-native annual forbs
                              "BareSoilCover", # Bare soil
-                             "CP_percent_100to200", # Canopy gaps > 100 cm
+                             "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
                              "CP_percent_200plus",
                              "FH_LichenCover", # Lichen + moss combined cover
                              "FH_MossCover"),
@@ -61,7 +61,7 @@ plot_data_pull <- function(file_paths_user = "Anna",
                            opuntia_combined = T # Opuntia spp. (depending on prevalence)) # vector of indicator names
 ){
   file_paths <- data_file_paths(file_paths_user)
-  # 1. extract ESG for each plot location
+  # extract ESG for each plot location
   plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
                                 layer = "all_plot-years_2021-03-02") # TODO write code to pull the
                                  # most recent version so we don't have to change this file name
@@ -114,14 +114,14 @@ plot_data_pull <- function(file_paths_user = "Anna",
 
   plot_ESGs_join <- dplyr::left_join(plot_ESGs, lookup_table)
 
-  # 2. filter plots to those on target ESG from desired projects
+  # filter plots to those on target ESG from desired projects
   plot_target_ESG <- dplyr::filter(plot_ESGs_join,
                                    ESGs_text==target_ESG &
                                      grepl(x=PlotCode,
                                            pattern = paste(data_sources, collapse = "|")))
 
 
-  # 3. pull desired indicators from all plots on target ESG
+  # pull desired indicators from all plots on target ESG
   # list the indicator files
   plot_files <- list.files(file_paths$plotnet_processed,
                            full.names = T)
@@ -132,18 +132,7 @@ plot_data_pull <- function(file_paths_user = "Anna",
   species_files <- grep(x=plot_files, pattern = "_species_", value = T)
   indicator_files <- plot_files[-which(plot_files %in% species_files)]
 
-  # get species lists
-  # TODO update this list's C3/C4 designations based on Travis's lit review list
-  species_list <- read.csv("data/SpeciesList_WesternUS_AcceptedSymbols_2020-01-06.csv",
-                           stringsAsFactors = F,
-                           na.strings = c("NA", "", " "))
-
-  shrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="Shrub")
-  subshrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="SubShrub")
-  tree_spp <- dplyr::filter(species_list, GrowthHabitSub=="Tree")
-  Opunt_spp <- species_list[grep(pattern = "^Opuntia", x=species_list$ScientificName), "SpeciesCode"]
-
-  # compile data and filter to just desired indicators and plots
+  # compile indicator data
   indicator_data_all <- read.csv(indicator_files[1])
   indicator_data_all$PlotID <- as.character(indicator_data_all$PlotID)
   indicator_data_all$PlotName <- as.character(indicator_data_all$PlotName)
@@ -155,14 +144,115 @@ plot_data_pull <- function(file_paths_user = "Anna",
     indicator_data_all <- dplyr::bind_rows(indicator_data_all, indicator_data_temp)
   }
 
+  # filter to just desired indicators
   indicator_data <- dplyr::filter(indicator_data_all, variable %in% indicators)
   indicator_data$PlotCode <- paste(indicator_data$SourceKey,
                                    indicator_data$SiteName,
                                    indicator_data$PlotName,
                                    sep = "_")
-  # NEXT: reduce indicator_data to just the plots in our target ESG,
-  # do the requisit minor math canopy gaps and lichen+mosses,
-  # then similar data pulls for the species-level data
+
+  # filter indicators to just target ESG plots
+  indicator_data_target <- dplyr::filter(indicator_data, PlotCode %in% plot_target_ESG$PlotCode) %>%
+    dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83)
+
+  # calculate canopy gap >100
+  canopy_gaps_100 <- indicator_data_target %>%
+    dplyr::filter(variable %in% c("CP_percent_100to200", "CP_percent_200plus")) %>%
+    dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Year) %>%
+    dplyr::summarize(variable = "CP_percent_100plus", value = sum(value, na.rm = T),
+                     .groups = "drop")
+
+  # calculate lichen+moss
+  lichenmoss <- indicator_data_target %>%
+    dplyr::filter(variable %in% c("FH_LichenCover", "FH_MossCover")) %>%
+    dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Year) %>%
+    dplyr::summarize(variable = "FH_LichenMossCover", value = sum(value, na.rm = T),
+                     .groups = "drop")
+
+  # insert the new variables and remove those used to calculate them
+  indicator_data_target2 <- dplyr::bind_rows(indicator_data_target, canopy_gaps_100, lichenmoss) %>%
+    dplyr::filter(!grepl(pattern = "CP_percent_100to200|CP_percent_200plus|FH_LichenCover|FH_MossCover",
+                         x = variable))
+
+  # make wide
+  indicator_data_target_wide <- indicator_data_target2 %>%
+    #dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83) %>%
+    tidyr::pivot_wider(data = ., names_from = variable, values_from = value,
+                       values_fill = NA) #%>%
+    dplyr::filter(!is.na(CP_percent_100plus)) # TODO WTF IS GOING ON HERE??
+
+  # pull species-level cover data for target ESG plots
+  # get species lists TODO update this list's C3/C4 designations based on Travis's lit review list
+  if(shrub_by_spp|subshrub_by_spp|tree_by_spp|opuntia_combined){
+    species_list <- read.csv("data/SpeciesList_WesternUS_AcceptedSymbols_2020-01-06.csv",
+                             stringsAsFactors = F,
+                             na.strings = c("NA", "", " "))
+
+    shrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="Shrub")
+    subshrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="SubShrub")
+    tree_spp <- dplyr::filter(species_list, GrowthHabitSub=="Tree")
+    Opunt_spp <- species_list[grep(pattern = "^Opuntia", x=species_list$ScientificName), ]
+
+    # compile species data
+    species_data_all <- read.csv(species_files[1])
+    species_data_all$PlotID <- as.character(species_data_all$PlotID)
+    species_data_all$PlotName <- as.character(species_data_all$PlotName)
+
+    for(file in species_files[-1]){
+      species_data_temp <- read.csv(file)
+      species_data_temp$PlotID <- as.character(species_data_temp$PlotID)
+      species_data_temp$PlotName <- as.character(species_data_temp$PlotName)
+      species_data_all <- dplyr::bind_rows(species_data_all, species_data_temp)
+    }
+
+    # filter species to just target ESG plots
+    species_data_all$PlotCode <- paste(species_data_all$SourceKey,
+                                     species_data_all$SiteName,
+                                     species_data_all$PlotName,
+                                     sep = "_")
+
+    species_data_all_target <- dplyr::filter(species_data_all, PlotCode %in% plot_target_ESG$PlotCode)
+
+    # filter to just desired species
+    species_data <- data.frame(SourceKey = character(),
+                               PlotID = character(),
+                               SiteName = character(),
+                               PlotName = character(),
+                               Longitude_NAD83 = double(),
+                               Latitude_NAD83 = double(),
+                               Year = integer(),
+                               Month = integer(),
+                               Day = integer(),
+                               SpeciesCode = character(),
+                               percent = double(),
+                               PlotCode = character()
+                               )
+    if(shrub_by_spp){
+      species_data_shrub <- dplyr::filter(species_data_all_target, SpeciesCode %in% shrub_spp$SpeciesCode)
+      species_data <- dplyr::bind_rows(species_data, species_data_shrub)
+    }
+    if(subshrub_by_spp){
+      species_data_subshrub <- dplyr::filter(species_data_all_target, SpeciesCode %in% subshrub_spp$SpeciesCode)
+      species_data <- dplyr::bind_rows(species_data, species_data_subshrub)
+    }
+    if(tree_by_spp){
+      species_data_tree <- dplyr::filter(species_data_all_target, SpeciesCode %in% tree_spp$SpeciesCode)
+      species_data <- dplyr::bind_rows(species_data, species_data_tree)
+    }
+    if(opuntia_combined){
+      species_data_opunt <- dplyr::filter(species_data_all_target, SpeciesCode %in% Opunt_spp$SpeciesCode) %>%
+        dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Longitude_NAD83,
+                        Latitude_NAD83, Year, Month, Day) %>%
+        dplyr::summarize(SpeciesCode = "AH_OpuntiaCover",
+                         percent = sum(percent))
+
+      species_data <- dplyr::bind_rows(species_data, species_data_opunt)
+    }
+    # make wide
+    species_data_wide <- tidyr::pivot_wider(data = species_data, names_from = SpeciesCode,
+                                            values_from = percent, values_fill = 0)
+  }
+
 
 }
 
