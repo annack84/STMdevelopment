@@ -10,6 +10,10 @@
 #'  "IM_NCPN", "LMF", "NRI", "Parashant", "TerrADat", "VanScoyocThesis"
 #' @param indicators Character vector of indicators to return data from. Can
 #'   include anything calculated in PlotNet.
+#' @param shrub_by_spp Logical. Include all shrubs by species?
+#' @param subshrub_by_spp Logical. Include all sub-shrubs by species?
+#' @param tree_by_spp Logical. Include all trees by species?
+#' @param opuntia_combined Logical. Include combined cover of genus Opuntia?
 #'
 #' @return
 #' @export
@@ -36,7 +40,25 @@ plot_data_pull <- function(file_paths_user = "Anna",
                              "TerrADat", # aka AIM
                              "VanScoyocThesis"
                            ),
-                           indicators = c() # vector of indicator names
+                           indicators = c(# Cover types to pull:
+                             "AH_C3PerenGrassCover", # C3 native perennial grasses TODO calculate C3 NATIVE
+                             "AH_C4PerenGrassCover", # C4 native perennial grasses TODO calculate C4 NATIVE
+                             "AH_IntroducedPerenGrassCover", # Non-native perennial grasses
+                             "AH_NativePerenForbCover", # Native perennial forbs
+                             "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+                             "AH_NativeAnnGrassCover", # Native annual grasses
+                             "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+                             "AH_NativeAnnForbCover", # Native annual forbs
+                             "AH_IntroducedAnnForbCover", # Non-native annual forbs
+                             "BareSoilCover", # Bare soil
+                             "CP_percent_100to200", # Canopy gaps > 100 cm
+                             "CP_percent_200plus",
+                             "FH_LichenCover", # Lichen + moss combined cover
+                             "FH_MossCover"),
+                           shrub_by_spp = T, # All shrubs and sub-shrubs by species
+                           subshrub_by_spp = T,
+                           tree_by_spp = T, # All trees by species
+                           opuntia_combined = T # Opuntia spp. (depending on prevalence)) # vector of indicator names
 ){
   file_paths <- data_file_paths(file_paths_user)
   # 1. extract ESG for each plot location
@@ -100,6 +122,7 @@ plot_data_pull <- function(file_paths_user = "Anna",
 
 
   # 3. pull desired indicators from all plots on target ESG
+  # list the indicator files
   plot_files <- list.files(file_paths$plotnet_processed,
                            full.names = T)
   plot_files <- grep(pattern = paste(data_sources, collapse = "|"),
@@ -108,23 +131,40 @@ plot_data_pull <- function(file_paths_user = "Anna",
 
   species_files <- grep(x=plot_files, pattern = "_species_", value = T)
   indicator_files <- plot_files[-which(plot_files %in% species_files)]
+
+  # get species lists
+  # TODO update this list's C3/C4 designations based on Travis's lit review list
+  species_list <- read.csv("data/SpeciesList_WesternUS_AcceptedSymbols_2020-01-06.csv",
+                           stringsAsFactors = F,
+                           na.strings = c("NA", "", " "))
+
+  shrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="Shrub")
+  subshrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="SubShrub")
+  tree_spp <- dplyr::filter(species_list, GrowthHabitSub=="Tree")
+  Opunt_spp <- species_list[grep(pattern = "^Opuntia", x=species_list$ScientificName), "SpeciesCode"]
+
+  # compile data and filter to just desired indicators and plots
+  indicator_data_all <- read.csv(indicator_files[1])
+  indicator_data_all$PlotID <- as.character(indicator_data_all$PlotID)
+  indicator_data_all$PlotName <- as.character(indicator_data_all$PlotName)
+
+  for(file in indicator_files[-1]){
+    indicator_data_temp <- read.csv(file)
+    indicator_data_temp$PlotID <- as.character(indicator_data_temp$PlotID)
+    indicator_data_temp$PlotName <- as.character(indicator_data_temp$PlotName)
+    indicator_data_all <- dplyr::bind_rows(indicator_data_all, indicator_data_temp)
+  }
+
+  indicator_data <- dplyr::filter(indicator_data_all, variable %in% indicators)
+  indicator_data$PlotCode <- paste(indicator_data$SourceKey,
+                                   indicator_data$SiteName,
+                                   indicator_data$PlotName,
+                                   sep = "_")
+  # NEXT: reduce indicator_data to just the plots in our target ESG,
+  # do the requisit minor math canopy gaps and lichen+mosses,
+  # then similar data pulls for the species-level data
+
 }
 
-# Cover types to pull:
-AH_C3PerenGrassCover # C3 native perennial grasses TODO calculate C3 NATIVE
-AH_C4PerenGrassCover # C4 native perennial grasses TODO calculate C4 NATIVE
-AH_IntroducedPerenGrassCover # Non-native perennial grasses
-AH_NativePerenForbCover # Native perennial forbs
-AH_IntroducedPerenForbCover # Non-native perennial forbs
-AH_NativeAnnGrassCover # Native annual grasses
-AH_IntroducedAnnGrassCover # Non-native annual grasses
-AH_NativeAnnForbCover # Native annual forbs
-AH_IntroducedAnnForbCover # Non-native annual forbs
-BareSoilCover # Bare soil
-CP_percent_100to200 + CP_percent_200plus # Canopy gaps > 100 cm
-# All shrubs and sub-shrubs by species
-# All trees by species
-FH_LichenCover + FH_MossCover # Lichen + moss combined cover
-# Opuntia spp. (depending on prevalence)
 
 
