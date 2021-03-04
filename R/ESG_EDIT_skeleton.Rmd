@@ -1,0 +1,226 @@
+---
+title: "EDIT format skeleton"
+author: "Anna Knight"
+date: "3/4/2021"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_depth: 1
+    toc_float: true
+    number_sections: false
+---
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 14px;
+  }
+td {  /* Table  */
+  font-size: 14px;
+}
+h1.title {
+  font-size: 30px;
+}
+h1 { /* Header 1 */
+  font-size: 26px;
+}
+h2 { /* Header 2 */
+    font-size: 22px;
+}
+h3 { /* Header 3 */
+  font-size: 18px;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}
+</style>
+
+# General information
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO insert dot graphic and text about the status of the ESD (e.g. "Provisional"). Might help
+# to create a function to automatically insert the description based on the
+# status input
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Mapped extent"}
+# TODO create leaflet map of the ESG extent
+```
+
+Areas shown in blue indicate the maximum mapped extent of this ecological site. Other ecological sites likely occur within the highlighted areas. It is also possible for this ecological site to occur outside of highlighted areas if detailed soil survey has not been completed or recently updated.
+
+## Associated sites
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table of associated sites
+# knitr::kable(x = assoc_sites_tab, caption = NULL)
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table of dominant plant functional groups and species
+
+# knitr::kable(x = dom_plant_spp_tab, caption = "Table 1. Dominant plant species")
+```
+
+
+TODO insert "Download full description" link to a PDF
+
+
+# Physiographic features
+
+TODO write a few sentences on the slopes, elevations, and geomorphic characteristics typical of this ESG
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table of landforms, elevations, slopes, water table depth, flooding duration, flooding frequency, ponding frequency
+# ideally should be able to tab between US and metric system measurements
+
+# knitr::kable(x = dom_plant_spp_tab, caption = "Table 2. Representative physiographic features")
+```
+
+# Climatic features
+
+TODO narrative of general climate patterns and growing season goes here (can probably write a basic narrative for most ESGs and insert specific numbers/dates with R chunks)
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table of frost free period, freeze-free period, and total precip
+
+# knitr::kable(x = dom_plant_spp_tab, caption = "Table 3. Representative climatic features")
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Montly precipitation range"}
+# TODO create line chart and bar charts of monthly high/low precip that you can tab between
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Montly average minimum and maximum temperature"}
+# TODO create line chart and bar charts of monthly high/low temps that you can tab between
+```
+
+# Water features
+
+# Soil features
+
+TODO narrative describing soil features including depth, parent materials, textures, etc.
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table surface texture, drainage class, permeability class, soil depth class, family particle size, surface and subsurface fragments, AWC, calcium carbonate equivalent, EC, sodium adsorption ratio, soil reaction
+
+# knitr::kable(x = dom_plant_spp_tab, caption = "Table 4. Representative soil features")
+```
+
+# Ecological dynamics
+
+TODO narrative about key types of transitions and disturbances
+
+## State and transition model {.tabset}
+
+### CUSTOM DIAGRAM
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 2. STM"}
+# TODO create custom diagram of states
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 3. Legend"}
+# TODO legend for custom diagram if needed
+```
+
+### STANDARD DIAGRAM
+
+Click on state and transition labels to scroll to the respective text.
+
+TODO create boxes for each state that link to the state description below
+
+## State 1
+## Reference State
+
+TODO write state description
+
+## Community 1.1
+## Reference State
+
+TODO write state description
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 4. Annual production by plant type (representative values) or group (midpoint values)"}
+# TODO create pie charts of community composition by functional group. May need to change "production" to "percent cover" to fit with our data
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table of production (or percent cover) by functional type
+
+# knitr::kable(x = dom_plant_spp_tab, caption = "Table 5. Annual production by plant type")
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table of ground cover by type
+
+# knitr::kable(x = dom_plant_spp_tab, caption = "Table 6. Ground cover")
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table of func type percent cover at different heights
+
+# knitr::kable(x = dom_plant_spp_tab, caption = "Table 7. Canopy structure (% cover)")
+```
+
+### Additional community tables
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table of production (or percent cover) by species, with species linking to their USDA Plants profile
+
+# knitr::kable(x = dom_plant_spp_tab, caption = "Table 8. Community 1.1 plant community composition")
+```
+
+# Interpretations
+
+## Animal community
+
+TODO write wildlife narrative
+
+## Hydrological functions
+
+TODO write hydrology narrative
+
+## Recreational uses
+
+TODO write recreation narrative
+
+## Wood products
+
+TODO write wood production narrative (probably "None")
+
+## Other products
+
+TODO grazing narrative could go here
+
+# Supporting information
+
+## Other references
+
+## Contributors
+
++ Travis Nauman
++ Samuel Burch
++ Anna Knight
++ Mike Duniway
+
+# Reference sheet
+
+[Interpreting Indicators of Rangeland Health](https://wiki.landscapetoolbox.org/doku.php/field_methods:rangeland_health_assessment_i.e._indicators_of_rangeland_health) is a qualitative assessment protocol used to determine ecosystem condition based on benchmark characteristics described in the Reference Sheet. A suite of 17 (or more) indicators are typically considered in an assessment. The ecological site(s) representative of an assessment location must be known prior to applying the protocol and must be verified based on soils and climate. Current plant community cannot be used to identify the ecological site.
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO create table with author, author contact info, date, approver, approved date, and "Composition (Indicators 10 and 12) based on" info for the IIRH reference sheet
+
+# knitr::kable(x = dom_plant_spp_tab)
+```
+
+## Indicators
+
+TODO fill in the 17 IIRH indicators for the reference state if available
+
+TODO link to PDF of the reference sheet
+
+# Print options
+
+TODO can we actually include this tab in the RMarkdown HTML format?
+
+
