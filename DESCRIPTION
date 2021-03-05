@@ -28,4 +28,5 @@ Imports:
     sf,
     raster,
     dplyr,
-    magrittr
+    magrittr,
+    aqp
