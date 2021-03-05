@@ -155,31 +155,24 @@ plot_data_pull <- function(file_paths_user = "Anna",
   indicator_data_target <- dplyr::filter(indicator_data, PlotCode %in% plot_target_ESG$PlotCode) %>%
     dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83)
 
-  # calculate canopy gap >100
+  # calculate canopy gap >100 - doing this one separately because we don't want to autofill with 0s
+  # like we do for LPI
   canopy_gaps_100 <- indicator_data_target %>%
     dplyr::filter(variable %in% c("CP_percent_100to200", "CP_percent_200plus")) %>%
     dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Year) %>%
     dplyr::summarize(variable = "CP_percent_100plus", value = sum(value, na.rm = T),
-                     .groups = "drop")
-
-  # calculate lichen+moss
-  lichenmoss <- indicator_data_target %>%
-    dplyr::filter(variable %in% c("FH_LichenCover", "FH_MossCover")) %>%
-    dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Year) %>%
-    dplyr::summarize(variable = "FH_LichenMossCover", value = sum(value, na.rm = T),
-                     .groups = "drop")
-
-  # insert the new variables and remove those used to calculate them
-  indicator_data_target2 <- dplyr::bind_rows(indicator_data_target, canopy_gaps_100, lichenmoss) %>%
-    dplyr::filter(!grepl(pattern = "CP_percent_100to200|CP_percent_200plus|FH_LichenCover|FH_MossCover",
-                         x = variable))
+                     .groups = "drop") %>%
+    tidyr::pivot_wider(data = ., names_from = variable, values_from = value) %>%
+    dplyr::filter(!is.na(CP_percent_100plus))
 
   # make wide
-  indicator_data_target_wide <- indicator_data_target2 %>%
-    #dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83) %>%
+  indicator_data_target_wide <- indicator_data_target %>%
+    dplyr::filter(variable!="CP_percent_100to200" & variable!="CP_percent_200plus") %>%
     tidyr::pivot_wider(data = ., names_from = variable, values_from = value,
-                       values_fill = NA) #%>%
-    dplyr::filter(!is.na(CP_percent_100plus)) # TODO WTF IS GOING ON HERE??
+                       values_fill = 0) %>%
+    dplyr::left_join(., canopy_gaps_100) %>%
+    dplyr::filter(!is.na(CP_percent_100plus))
+
 
   # pull species-level cover data for target ESG plots
   # get species lists TODO update this list's C3/C4 designations based on Travis's lit review list
@@ -251,9 +244,12 @@ plot_data_pull <- function(file_paths_user = "Anna",
     # make wide
     species_data_wide <- tidyr::pivot_wider(data = species_data, names_from = SpeciesCode,
                                             values_from = percent, values_fill = 0)
+
+    # combine with indicator data
+    indicator_data_target_wide <- dplyr::left_join(indicator_data_target_wide, species_data_wide)
   }
 
-
+return(indicator_data_target_wide)
 }
 
 
