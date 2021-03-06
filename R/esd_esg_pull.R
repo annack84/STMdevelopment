@@ -1,13 +1,13 @@
-
-#' Compile soil components for ecological site group of interest
+#'Pull ecological site data for the ecological site group of interest
 #'
 #' @param file_paths_user Character. User name to generate input data file paths.
 #'   Options are "Anna", "Travis", and "VPN".
 #' @param target_ESG The ecological site group to pull data for.
 #'
-#' @return Soil Profile Collection
+#' @return
 #' @export
-
+#'
+#' @examples
 comp_data_pull <- function(
   file_paths_user = "Travis",
   target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands"
@@ -15,13 +15,6 @@ comp_data_pull <- function(
   file_paths <- data_file_paths(file_paths_user)
   ## Pull ESD, component, and horizon data
   esds <- readRDS(paste(file_paths$ssurgo_result_fldr,"/esd_final.rds",sep=""))
-  comps <- readRDS(paste(file_paths$ssurgo_result_fldr,"/compdf_ucrb.rds",sep=""))
-  comps_drainage <- readRDS(paste(file_paths$ssurgo_result_fldr,"/comp_drainage.rds",sep=""))
-  esd_comps <- readRDS(paste(file_paths$ssurgo_result_fldr,"/UCRB_ESDs_SSURGO18.rds",sep=""))
-  comps_surf <- readRDS(paste(file_paths$ssurgo_result_fldr,"/comp_surf.rds",sep=""))
-  comps_sub <- readRDS(paste(file_paths$ssurgo_result_fldr,"/comp_sub.rds",sep=""))
-  depth_comps <- readRDS(paste(file_paths$ssurgo_result_fldr,"/depth_comps.rds",sep=""))
-  horizons <- readRDS(paste(file_paths$ssurgo_result_fldr,"/horizons_ucrb.rds",sep=""))
 
   ## Now Classify ESDs to ESG and query just ESG of interest
   esds$ESG <- NULL
@@ -106,21 +99,8 @@ comp_data_pull <- function(
 
   ## Join ESG names to esds
   esds <- dplyr::left_join(esds,lookup_table,by="ESGid")
+  esds <- esds[esds$ESG==target_ESG,]
 
-  ## Join esds to comp
-  comp_jn <- dplyr::inner_join(esd_comps,esds[,c("ecoclassid","sgu","ESG")],by="ecoclassid")
-  comp_jn <- dplyr::left_join(comp_jn,comps,by="cokey")
-  comp_jn <- dplyr::left_join(comp_jn,depth_comps[,c("cokey","reskind","resdept_l","resdept_r","resdept_h")],by="cokey")
-  comp_jn <- dplyr::left_join(comp_jn,comps_surf,by="cokey")
-  comp_jn <- dplyr::left_join(comp_jn,comps_sub, by="cokey")
-  comp_jn <- dplyr::left_join(comp_jn,comps_drainage,by="cokey")
-
-  ## Create Soil profile collection with selected components
-  comp_jn <- comp_jn[comp_jn$ESG==target_ESG,]
-  spc <- horizons[horizons$cokey %in% comp_jn$cokey,]
-  aqp::depths(spc) <- cokey ~ hzdept_r + hzdepb_r # Create SPC
-  spc@site <- dplyr::left_join(spc@site, comp_jn, by ="cokey") # Add component data
-
-  return(spc)
+  return(esds)
 
 }
