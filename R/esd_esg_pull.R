@@ -8,13 +8,14 @@
 #' @export
 #'
 #' @examples
-comp_data_pull <- function(
+esd_data_pull <- function(
   file_paths_user = "Travis",
   target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands"
 ){
   file_paths <- data_file_paths(file_paths_user)
   ## Pull ESD, component, and horizon data
   esds <- readRDS(paste(file_paths$ssurgo_result_fldr,"/esd_final.rds",sep=""))
+  esd_comps <- readRDS(paste(file_paths$ssurgo_result_fldr,"/UCRB_ESDs_SSURGO18.rds",sep=""))
 
   ## Now Classify ESDs to ESG and query just ESG of interest
   esds$ESG <- NULL
@@ -99,6 +100,8 @@ comp_data_pull <- function(
 
   ## Join ESG names to esds
   esds <- dplyr::left_join(esds,lookup_table,by="ESGid")
+  esd_comps <- esd_comps[!duplicated(esd_comps$ecoclassid),]
+  esds <- dplyr::left_join(esds,esd_comps[,c("ecoclassid","ecoclassname")],by="ecoclassid")
   esds <- esds[esds$ESG==target_ESG,]
 
   return(esds)

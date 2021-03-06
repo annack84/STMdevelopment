@@ -55,7 +55,8 @@ Areas shown in blue indicate the maximum mapped extent of this ecological site. 
 ## Associated sites
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of associated sites
-# knitr::kable(x = assoc_sites_tab, caption = NULL)
+esds <- esd_data_pull("Travis")
+knitr::kable(x = esds[,c("ecoclassid","ecoclassname")], caption = NULL)
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
