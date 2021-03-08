@@ -45,7 +45,7 @@ include anything calculated in PlotNet.}
 \item{opuntia_combined}{Logical. Include combined cover of genus Opuntia?}
 }
 \value{
-
+Wide format data frame containing indicators for the target ESG
 }
 \description{
 Pull indicators from desired data sets for target ESG

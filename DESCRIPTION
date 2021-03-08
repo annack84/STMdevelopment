@@ -28,4 +28,6 @@ Imports:
     sf,
     raster,
     dplyr,
-    magrittr
+    magrittr,
+    rgdal,
+    readxl

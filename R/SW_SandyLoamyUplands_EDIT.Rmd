@@ -39,6 +39,15 @@ pre { /* Code block - determines code spacing between lines */
 </style>
 
 # General information
+```{r setup, include=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
+user <- "Anna"
+
+library(dplyr)
+library(kableExtra)
+library(STMdevelopment)
+```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO insert dot graphic and text about the status of the ESD (e.g. "Provisional"). Might help
@@ -48,6 +57,7 @@ pre { /* Code block - determines code spacing between lines */
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Mapped extent"}
 # TODO create leaflet map of the ESG extent
+# EDIT_map(target_ESG = target_ESG, user = user)
 ```
 
 Areas shown in blue indicate the maximum mapped extent of this ecological site. Other ecological sites likely occur within the highlighted areas. It is also possible for this ecological site to occur outside of highlighted areas if detailed soil survey has not been completed or recently updated.
@@ -114,6 +124,23 @@ TODO narrative describing soil features including depth, parent materials, textu
 TODO narrative about key types of transitions and disturbances
 
 ## State and transition model {.tabset}
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO pull in table of Ecological Site STMs for this ESG
+apriori_stms <- read.csv(data_file_paths(user)$apriori_stms, stringsAsFactors = F,
+                         na.strings = c("NA", "", " "), header = F)
+
+apriori_stms_target <- dplyr::filter(apriori_stms, V1 %in% c(NA, "ESG", target_ESG))
+apriori_stms_target <-  t(apriori_stms_target)[4:41,]
+colnames(apriori_stms_target) <- c("State type", "State", "Prp. of ESDs containing this state")
+# apriori_stms_target <- apriori_stms_target[c(1,2,41,3:40), ] %>%
+#   as.data.frame() %>%
+#   mutate(V3 = stringr::str_replace_all(V3, Climate_group_definitions_replace)) %>%
+#   mutate(V3 = stringr::str_replace_all(V3, SGU_definitions_replace))
+
+kbl(x = apriori_stms_target, format = "html", row.names = F, align = "c") %>%
+  collapse_rows(columns = 1, valign = "top")
+```
 
 ### CUSTOM DIAGRAM
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 2. STM"}

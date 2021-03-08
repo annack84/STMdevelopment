@@ -15,7 +15,8 @@
 data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
   network_files <- list(plotnet_processed = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData",
                         nri = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/NRI",
-                        ESG_map = NA)
+                        ESG_map = NA,
+                        apriori_stms = NA)
 
   if(user=="Anna"){
     file_list <- network_files
@@ -23,6 +24,7 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
     file_list$plotnet_processed <- "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/SWDesertRangelandMonitoring/Data/ProcessedData"
     #file_list$nri <- "C:/Users/aknight/Desktop/Telework_Backups/U_drive/Projects/NRI_US_limitaccess"
     file_list$ESG_map <- "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/Eco_Site_Group_Data/ESGs_final.tif"
+    file_list$apriori_stms <- "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/Eco_Site_Group_Data/S5_ESG_STM_summary_formatted.csv"
   }
 
   if(user=="Travis"){
