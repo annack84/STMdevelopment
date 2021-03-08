@@ -50,6 +50,7 @@ library(STMdevelopment)
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+library(STMdevelopment)
 # TODO insert dot graphic and text about the status of the ESD (e.g. "Provisional"). Might help
 # to create a function to automatically insert the description based on the
 # status input
@@ -62,16 +63,26 @@ library(STMdevelopment)
 
 Areas shown in blue indicate the maximum mapped extent of this ecological site. Other ecological sites likely occur within the highlighted areas. It is also possible for this ecological site to occur outside of highlighted areas if detailed soil survey has not been completed or recently updated.
 
-## Associated sites
+## Associated ecological sites
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO create table of associated sites
 esds <- esd_data_pull("Travis")
-knitr::kable(x = esds[,c("ecoclassid","ecoclassname")], caption = NULL)
+comps <- comp_data_pull("Travis")
+num_esds <- nrow(esds)
+```
+This ecological site group includes `r num_esds` ecological sites. These sites were correlated to the group based on average soil, climate and geomorphic properties of the soil components linked to each site.
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+knitr::kable(x = esds[,c("ecoclassid","ecoclassname")], col.names=c("ESD Code","ESD Name"), caption = NULL,row.names = F)
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of dominant plant functional groups and species
+# Note from Travis: Could also summarize the ESG referece production indicators with boxplot
+resp_vars <- colnames(esds)[1:21]
+resp_vars <- resp_vars[!grepl("ecoclassid", resp_vars)]
+par(mar = c(4,8,4,2)) ## This works when knited
+boxplot(esds[,resp_vars], horizontal = TRUE,las = 1, main = "Reference Production (lbs/Acre)")
 
+# TODO Travis update the esd pull to include top species from reference production??
 # knitr::kable(x = dom_plant_spp_tab, caption = "Table 1. Dominant plant species")
 ```
 
@@ -86,8 +97,31 @@ TODO write a few sentences on the slopes, elevations, and geomorphic characteris
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of landforms, elevations, slopes, water table depth, flooding duration, flooding frequency, ponding frequency
 # ideally should be able to tab between US and metric system measurements
+landforms <- unlist(strsplit(esds$landfrms[1], split=","))
+for(e in 2:nrow(esds)){
+  esdlfs <- unlist(strsplit(esds[e,c("landfrms")],split=","))
+  landforms <- append(landforms,esdlfs)
+}
+landforms <- landforms[!landforms %in% "NA"]
+lfsum <-  factor(landforms)
+lfsum <- reorder(lfsum,lfsum,FUN=function(x) -length(x))
+landforms_unique <- unique(landforms)
 
-# knitr::kable(x = dom_plant_spp_tab, caption = "Table 2. Representative physiographic features")
+# Slope
+slope_ave <- mean(comps@site$slope_r.x)
+slope_75th <- unname(quantile(comps@site$slope_r.x, probs = 0.75, na.rm = T))
+slope_max <- max(comps@site$slope_r.x, na.rm = T)
+slope_sd <- sd(comps@site$slope_r.x, na.rm = T)
+slope_field <- paste("Slopes average",format(round(slope_ave, 1), nsmall = 1), 
+                     "% with a standard deviation of",format(round(slope_sd, 1), nsmall = 1), 
+                     "and are generally less than", format(round(slope_75th, 1), nsmall = 1),
+                     "but can be up to", format(round(slope_max, 1), nsmall = 1),"%",sep=" ")
+
+phys.df <- dplyr::tribble(~Item, ~Description,
+                          "Landforms", as.character(lfsum)[1:10],
+                          "Slope", slope_field)
+
+knitr::kable(x = phys.df, caption = "Table 2. Representative physiographic features")
 ```
 
 # Climatic features
