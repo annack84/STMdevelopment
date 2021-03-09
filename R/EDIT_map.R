@@ -24,10 +24,11 @@ EDIT_map <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands",
     leaflet::addProviderTiles("Esri.WorldImagery", group = "ESRI Aerial") %>%
     leaflet::addRasterImage(x=target_ESG_raster, opacity=0.5,
                     colors=c("transparent", "dodgerblue"), project = FALSE,
-                     maxBytes = 6 * 1024 * 1024) %>%
+                     maxBytes = 6 * 1024 * 1024, group = "ESG") %>%
     leaflet::fitBounds(lng1 = -114.04, lng2 = -107.02, lat1 =35.85,  lat2 = 42) %>%
     leaflet::addLayersControl(
      baseGroups = c("Topo","ESRI Aerial"),
+     overlayGroups = c("ESG"),
      options = leaflet::layersControlOptions(collapsed = T))
   # leaflet::addLegend("bottomright", pal = factpal, values = levels(plot_locs$Agency),
   #             title = "Data source",

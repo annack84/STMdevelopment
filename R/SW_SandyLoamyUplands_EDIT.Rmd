@@ -55,7 +55,7 @@ library(STMdevelopment)
 # status input
 ```
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Mapped extent", fig.width=5, fig.height=5}
+```{r map, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Mapped extent", fig.width=5, fig.height=5}
 EDIT_map(target_ESG = target_ESG, user = user)
 ```
 
@@ -131,7 +131,7 @@ apriori_stms <- read.csv(data_file_paths(user)$apriori_stms, stringsAsFactors = 
 
 apriori_stms_target <- dplyr::filter(apriori_stms, V1 %in% c(NA, "ESG", target_ESG))
 apriori_stms_target <-  t(apriori_stms_target)[4:41,]
-colnames(apriori_stms_target) <- c("State", "Plant community", "Prp. of ESDs containing this state")
+colnames(apriori_stms_target) <- c("State", "Plant community", "Proportion of ESDs containing this state")
 # apriori_stms_target <- apriori_stms_target[c(1,2,41,3:40), ] %>%
 #   as.data.frame() %>%
 #   mutate(V3 = stringr::str_replace_all(V3, Climate_group_definitions_replace)) %>%
@@ -536,6 +536,6 @@ TODO link to PDF of the reference sheet
 
 # Print options
 
-TODO can we actually include this tab in the RMarkdown HTML format?
+TODO look into options for printing from the RMarkdown HTML format
 
 
