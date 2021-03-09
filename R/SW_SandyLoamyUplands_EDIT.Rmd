@@ -55,9 +55,8 @@ library(STMdevelopment)
 # status input
 ```
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Mapped extent"}
-# TODO create leaflet map of the ESG extent
-# EDIT_map(target_ESG = target_ESG, user = user)
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Mapped extent", fig.width=5, fig.height=5}
+EDIT_map(target_ESG = target_ESG, user = user)
 ```
 
 Areas shown in blue indicate the maximum mapped extent of this ecological site. Other ecological sites likely occur within the highlighted areas. It is also possible for this ecological site to occur outside of highlighted areas if detailed soil survey has not been completed or recently updated.
@@ -123,7 +122,7 @@ TODO narrative describing soil features including depth, parent materials, textu
 
 TODO narrative about key types of transitions and disturbances
 
-## State and transition model {.tabset} 
+## State and transition model development 
 
 ```{r apriori-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO pull in table of Ecological Site STMs for this ESG
@@ -212,6 +211,8 @@ plot_data_first <- plot_data_clean %>%
   dplyr::filter(dplyr::row_number()==1) %>%
   dplyr::ungroup()
 
+# TODO update I&M species codes to match current USDA Plants codes! probably a step for the plot_data_pull function?
+
 # make the ordination data frame
 ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotName,
                         -Year, -Longitude_NAD83, -Latitude_NAD83,
@@ -229,6 +230,7 @@ library(cluster) # for cluster analysis
 library(dendextend)
 library(labdsv)
 library(foreach)
+library(vegan)
 
 # initial clustering
 dist.df <- vegan::vegdist(ord.df, method = "bray") # creates Bray-Curtis distance matrix
@@ -275,14 +277,110 @@ par(mfrow=c(1, 1))
 k_groups <- 4 # manually change based on plot results
 ```
 
-Based on the results in \@ref(fig:clustering), the optimal number of vegetation groupings is `r k_groups` (mean p-value = `r ivlabs_df$p_mean[ivlabs_df$nclusters==k_groups]`; number of indicator species = `r ivlabs_df$nsignif[ivlabs_df$nclusters==k_groups]`).
+Based on the results in Figure \@ref(fig:clustering), the optimal number of vegetation groupings is `r k_groups` (mean p-value = `r round(ivlabs_df$p_mean[ivlabs_df$nclusters==k_groups], 3)`; number of indicator species = `r ivlabs_df$nsignif[ivlabs_df$nclusters==k_groups]`).
 
-```{r ordination-scree, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
+```{r cut-tree, echo=FALSE, message=FALSE, warning=FALSE}
+# create groups
+grp <- cutree(hclust1, k=k_groups)
+
+# create data frame that identifies indicator species by group:
+ivlab <- indval(x=ord.df, clustering = grp, numitr = 1000)
+
+gr <- ivlab$maxcls 
+iv <- ivlab$indcls 
+pv <- ivlab$pval 
+
+indvalsummary <- data.frame(group=gr, indval=iv, pvalue=pv) #, freq=fr)
+indvalsummary <- indvalsummary[order(indvalsummary$group, -indvalsummary$indval),]
+indvalsummary$Code <- rownames(indvalsummary)
+
+# add in readable indicator names
+indvalsummary <- left_join(x=indvalsummary,
+                           y=select(indicator_descriptions, Indicator_code, Indicator),
+                           by=c("Code"="Indicator_code")) %>%
+  left_join(x=.,
+            y=select(read.csv(data_file_paths(user)$species_list), SpeciesCode, ScientificName),
+            by=c("Code"="SpeciesCode")) %>%
+  mutate(Indicator = ifelse(test = is.na(Indicator), yes = ScientificName, no = Indicator))
+
+if(opuntia_combined){
+  indvalsummary$Indicator[which(indvalsummary$Code=="AH_OpuntiaCover")] <- indicator_descriptions$Indicator[which(indicator_descriptions$Indicator_code=="opuntia_combined")]
+}
+
+# add in relative abundance
+relab <- as.data.frame(ivlab$relabu)
+colnames(relab) <- paste0("RelativeAbund_", 1:ncol(relab))
+relab$Code <- rownames(relab)
+indvalsummary <- left_join(x=indvalsummary, y=relab, by="Code")
+
+# add in relative frequency
+relfr <- as.data.frame(ivlab$relfrq)
+colnames(relfr) <- paste0("RelativeFreq_", 1:ncol(relfr)) 
+relfr$Code <- rownames(relfr)
+indvalsummary <- left_join(x=indvalsummary, y=relfr, by="Code")
+
+# create a table for display where relative abundance and relative frequency are only displayed for the group for which the species is an indicator
+indvalsummary_disp <- dplyr::select(indvalsummary, group, indval, pvalue, Indicator)
+indvalsummary_disp$RelAbund <- NA
+for(g in 1:k_groups){
+ indvalsummary_disp[indvalsummary_disp$group==g, "RelAbund"] <- 
+   indvalsummary[indvalsummary$group==g, paste0("RelativeAbund_", g)]
+}
+
+indvalsummary_disp$RelFreq <- NA
+for(g in 1:k_groups){
+ indvalsummary_disp[indvalsummary_disp$group==g, "RelFreq"] <- 
+   indvalsummary[indvalsummary$group==g, paste0("RelativeFreq_", g)]
+}
+
+# order data frame by group, then significance; for output file
+#indvalsummary_disp <- indvalsummary_disp[order(indvalsummary_disp$group, indvalsummary_disp$indval), ]
+indvalsummary_disp <- indvalsummary_disp %>%
+  group_by(group) %>%
+  arrange(desc(indval), .by_group=T)
+
+indvalsummary_disp_filt <- filter(indvalsummary_disp, pvalue<=0.05) %>%
+  mutate(indval=round(indval, 2),
+         pvalue=round(pvalue, 3),
+         RelAbund=round(RelAbund, 2),
+         RelFreq=round(RelFreq, 2)) %>%
+  select(group, Indicator, indval, pvalue, RelAbund, RelFreq) %>%
+  setNames(c("Group", "Indicator", "Indicator value", "p-value", "Relative abundance", "Relative frequency"))
+
+kbl(x = indvalsummary_disp_filt, format = "html", row.names = F, align = "c",
+    caption = "Indicator species for plant community groups. The indicator value of a species is a combined measure of fidelity (always present in the group) and specificity (exclusive to the group), where higher values indicate a stronger association with the given vegetation group. Relative abundance indicates specificity, where 1 means the species only occurs in plots of the given group. Relative frequency indicates fidelity, where 1 means the species always occurs in plots of the given group. Only species with a p-value less than 0.05 are displayed.") %>%
+  kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(indvalsummary_disp_filt), background = "lightsteelblue") %>%
+  collapse_rows(columns = 1, valign = "top")
+
+```
+
+```{r dendrogram, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.cap="Cluster dendrogram for plant community groups. Boxes represent the groups identified by the indicator species analysis."}
+# Cluster dendrogram plot
+hclust1_dend <- as.dendrogram(hclust1)
+
+# veg group color palette
+pal_veg <- RColorBrewer::brewer.pal(n=k_groups, name = "Set1")
+
+plot(hclust1_dend, leaflab= "none")
+rect.dendrogram(hclust1_dend, 
+                k=k_groups, 
+                cluster = grp, 
+                border = pal_veg[unique(cutree(hclust1_dend, k=k_groups)[order.dendrogram(hclust1_dend)])], 
+                text = as.character(unique(cutree(hclust1_dend, k=k_groups)[order.dendrogram(hclust1_dend)])), 
+                text_cex = 2, 
+                lower_rect = -0.25,
+                lwd =2)
+
+#plot(ape::as.phylo(hclust1), tip.color = pal_veg9[grp], direction = "downwards")
+```
+
+```{r ordination-scree, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', cache=FALSE, fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
 NMDS_scree(ord.df)
 ord_dims <- 2 # change manually based on the plot results
 ```
 
-```{r ordination, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
+```{r ordination, eval=TRUE, include=FALSE}
 
 #run NMS ordination 
 set.seed(1)
@@ -291,9 +389,48 @@ ord <- metaMDS(ord.df,
                trymax = 30) 
 
 ```
-Based on \@ref(fig:ordination-scree), ordination stress is acceptable with `r ord_dims` dimensions, and stress reduction is minimal with additional dimensions. The stress for the ordination with `r ord_dims` dimensions is `r ord$stress`.
+
+Based on Figure \@ref(fig:ordination-scree), ordination stress is acceptable with `r ord_dims` dimensions, and stress reduction is minimal with additional dimensions. The stress for the ordination with `r ord_dims` dimensions is `r round(ord$stress, 3)`.
+
+```{r ordination-plots, echo=FALSE, fig.height=5, fig.width=10, fig.cap="NMDS ordination of plot indicator data. Points represent plots; ellipses represent plant communities identified by the hierarchical clustering and indicator species analysis."}
+# 2D plotting
+plot_data_first$PlantCommunity <- as.factor(grp)
+
+# manually update based on indicator species
+group_labels <- c("1 - C4 perennial grassland",
+                    "2 - Juniper woodland",
+                    "3 - C3 perennial grasses and sagebrush",
+                    "4 - Ephedra and biological soil crust")
+
+par(mfrow=c(1,2))
+# Axes 1x2
+plot(ord, choices = c(1,2), type = "n", 
+     xlim = c(-1.25, 1.25),
+     ylim = c(-1, 1))
+points(ord, choices = c(1,2), display = "sites",
+       col=pal_veg[plot_data_first$PlantCommunity],
+       pch = 21, cex = .6, bg=pal_veg[plot_data_first$PlantCommunity])
+ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T)
+
+# Legend
+plot(ord, type = "n", axes=FALSE,
+     display = "sites",
+     col=pal_veg[plot_data_first$PlantCommunity],
+     xlab = "",
+     ylab = "")
+legend(x="center",
+       legend = group_labels,
+       fill = pal_veg,
+       title = "Plant communities")
+
+par(mfrow=c(1,1))
+
+```
+
+## State and transition model {.tabset}
 
 ### CUSTOM DIAGRAM
+
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM"}
 # TODO create custom diagram of states
 ```

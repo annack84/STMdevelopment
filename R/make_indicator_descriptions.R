@@ -93,9 +93,9 @@ make_indicator_descriptions <- function(indicators = c("AH_C3PerenGrassCover", #
   if(opuntia_combined){
     opuntia_table <- dplyr::tribble(
       ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
-      "opuntia_combined", "Biotic", "Opuntia genus", "Percent foliar cover of the genus Opuntia"
+      "opuntia_combined", "Biotic", "Opuntia spp.", "Percent foliar cover of the genus Opuntia"
     )
-    indicator_description_table <- dplyr::bind_rows(indicator_description_table, shrub_table)
+    indicator_description_table <- dplyr::bind_rows(indicator_description_table, opuntia_table)
   }
 
   indicator_description_table <- indicator_description_table[order(indicator_description_table$Indicator_type),]
