@@ -195,11 +195,103 @@ indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
                                                       opuntia_combined = opuntia_combined)
 
 kbl(x = indicator_descriptions[,-1], format = "html", row.names = F, align = "c",
-    caption = "Indicators used to develop plant communities") %>%
+    caption = "Indicators used in ordination and clustering analysis to develop plant communities") %>%
   kable_styling(bootstrap_options = "bordered") %>%
   row_spec(kable_input=., row = 0:nrow(indicator_descriptions), background = "lightsteelblue") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
+
+```{r ordination-data, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# remove incomplete rows - Bray Curtis distance can't work with NAs
+plot_data_clean <- na.omit(plot_data)
+
+# include only the first year that a plot has complete data
+plot_data_first <- plot_data_clean %>%
+  dplyr::group_by(PlotCode) %>%
+  dplyr::arrange(.data=., Year, .by_group = TRUE) %>%
+  dplyr::filter(dplyr::row_number()==1) %>%
+  dplyr::ungroup()
+
+# make the ordination data frame
+ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotName,
+                        -Year, -Longitude_NAD83, -Latitude_NAD83,
+                        -Month, -Day) %>%
+  tibble::column_to_rownames("PlotCode") # keep plot code as row name
+
+# Keep only species that occur in at least 2 plots
+ord.df <- ord.df[ ,which(colSums(ord.df[,1:ncol(ord.df)] !=0) >= 2)] 
+
+```
+
+```{r clustering, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.cap="Mean p-value of indicator species (left) and number of significant species (right, α = 0.05) for 2 to 12 possible plant communities."}
+# cluster and indicator species analysis
+library(cluster) # for cluster analysis
+library(dendextend)
+library(labdsv)
+library(foreach)
+
+# initial clustering
+dist.df <- vegan::vegdist(ord.df, method = "bray") # creates Bray-Curtis distance matrix
+#clust <- hclust(dist.df, method = "average") # use agnes() in cluster package for flexible beta method
+clust1 <- agnes(x= dist.df, diss=T, method="flexible", par.method = c(0.625,0.625,-0.25,0)) # flexible beta with beta=-0.25
+#plot(clust1)
+hclust1 <- as.hclust(clust1) # covert to class hclust for easier plotting
+#plot(hclust1, labels = FALSE)
+
+# indicator species
+# use IndVal from Dufrene and Legendre (1997)
+# groupings from hierarchical clustering (grp)
+# ALSO CONSIDER USING MRPP
+
+# create vectors of groupings with different numbers of clusters
+grps <- data.frame(site=1:nrow(ord.df))
+for (i in 2:12) {
+  grps <- cbind(grps, cutree(hclust1, k=i))
+}
+colnames(grps) <- c("site", paste(2:12, "groups", sep="_"))
+
+# calculate IndVal for each species in each number of clusters
+listnames <- paste("indvals", 2:12, sep="")
+
+ivlabs_list <- foreach(i=2:12) %do% indval(x=ord.df, clustering =grps[,i], numitr = 1000)
+
+names(ivlabs_list) <- listnames
+
+# Create a data frame with three columns: number of clusters, average p, number of sig ind spp
+ivlabs_df <- data.frame(nclusters=2:12, p_mean=NA, nsignif=NA, sumsignif=NA)
+for(i in seq(length(ivlabs_list))){
+  ivlabs_df[i,"p_mean"] <- mean(ivlabs_list[[i]]$pval, na.rm = T) 
+  ivlabs_df[i, "nsignif"] <- length(which(ivlabs_list[[i]]$pval<=0.05))
+  ivlabs_df[i,"sumsignif"] <- sum(ivlabs_list[[i]]$indval, na.rm = T)
+}
+
+par(mfrow=c(1, 2))
+# plot average p values by number of clusters
+plot(x=ivlabs_df$nclusters, y=ivlabs_df$p_mean, xlab="Number of clusters", ylab="Mean p-value")
+# plot number of significant indicator species by number of clusters
+plot(x=ivlabs_df$nclusters, y=ivlabs_df$nsignif, xlab="Number of clusters", ylab="Number of significant species")
+par(mfrow=c(1, 1))
+
+k_groups <- 4 # manually change based on plot results
+```
+
+Based on the results in \@ref(fig:clustering), the optimal number of vegetation groupings is `r k_groups` (mean p-value = `r ivlabs_df$p_mean[ivlabs_df$nclusters==k_groups]`; number of indicator species = `r ivlabs_df$nsignif[ivlabs_df$nclusters==k_groups]`).
+
+```{r ordination-scree, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
+NMDS_scree(ord.df)
+ord_dims <- 2 # change manually based on the plot results
+```
+
+```{r ordination, echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
+
+#run NMS ordination 
+set.seed(1)
+ord <- metaMDS(ord.df,
+               k=ord_dims, # number of dimensions
+               trymax = 30) 
+
+```
+Based on \@ref(fig:ordination-scree), ordination stress is acceptable with `r ord_dims` dimensions, and stress reduction is minimal with additional dimensions. The stress for the ordination with `r ord_dims` dimensions is `r ord$stress`.
 
 ### CUSTOM DIAGRAM
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM"}
