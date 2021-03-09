@@ -1,7 +1,7 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Sandy & Loamy Uplands'
-author: "Anna Knight"
-date: "2/24/2021"
+author: "Travis Nauman and Anna Knight"
+date: "3/10/2021"
 output: 
   bookdown::html_document2:
     toc: true
@@ -123,31 +123,90 @@ TODO narrative describing soil features including depth, parent materials, textu
 
 TODO narrative about key types of transitions and disturbances
 
-## State and transition model {.tabset}
+## State and transition model {.tabset} 
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r apriori-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO pull in table of Ecological Site STMs for this ESG
 apriori_stms <- read.csv(data_file_paths(user)$apriori_stms, stringsAsFactors = F,
                          na.strings = c("NA", "", " "), header = F)
 
 apriori_stms_target <- dplyr::filter(apriori_stms, V1 %in% c(NA, "ESG", target_ESG))
 apriori_stms_target <-  t(apriori_stms_target)[4:41,]
-colnames(apriori_stms_target) <- c("State type", "State", "Prp. of ESDs containing this state")
+colnames(apriori_stms_target) <- c("State", "Plant community", "Prp. of ESDs containing this state")
 # apriori_stms_target <- apriori_stms_target[c(1,2,41,3:40), ] %>%
 #   as.data.frame() %>%
 #   mutate(V3 = stringr::str_replace_all(V3, Climate_group_definitions_replace)) %>%
 #   mutate(V3 = stringr::str_replace_all(V3, SGU_definitions_replace))
 
-kbl(x = apriori_stms_target, format = "html", row.names = F, align = "c") %>%
+kbl(x = apriori_stms_target, format = "html", row.names = F, align = "c",
+    caption = "STM summary from Ecological Sites within this ESG") %>%
+  kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(apriori_stms_target), background = "lightsteelblue") %>%
+  collapse_rows(columns = 1, valign = "top")
+```
+
+```{r load-plot-indicators, include=FALSE}
+indicators <- c("AH_C3PerenGrassCover", # C3 native perennial grasses TODO calculate C3 NATIVE
+                "AH_C4PerenGrassCover", # C4 native perennial grasses TODO calculate C4 NATIVE
+                "AH_IntroducedPerenGrassCover", # Non-native perennial grasses
+                "AH_NativePerenForbCover", # Native perennial forbs
+                "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+                "AH_NativeAnnGrassCover", # Native annual grasses
+                "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+                "AH_NativeAnnForbCover", # Native annual forbs
+                "AH_IntroducedAnnForbCover", # Non-native annual forbs
+                "BareSoilCover", # Bare soil
+                "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
+                "CP_percent_200plus",
+                "FH_LichenCover", # Lichen + moss combined cover
+                "FH_MossCover")
+
+shrub_by_spp <- T # All shrubs and sub-shrubs by species
+subshrub_by_spp <- T
+tree_by_spp <- T # All trees by species
+opuntia_combined <- T
+
+plot_data <- plot_data_pull(user=user,
+                             target_ESG = target_ESG,
+                           data_sources = c("BadgerWash",
+                             "CRCMonitoring",
+                             "IM_NCPN",
+                             "LMF",
+                             "NRI",
+                             "Parashant",
+                             "TerrADat", 
+                             "VanScoyocThesis"
+                           ),
+                           indicators = indicators,
+                           shrub_by_spp = shrub_by_spp,
+                           subshrub_by_spp = subshrub_by_spp,
+                           tree_by_spp = tree_by_spp,
+                           opuntia_combined = opuntia_combined
+                           )
+
+
+```
+
+```{r doc-plot-indicators, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
+                                                      shrub_by_spp = shrub_by_spp,
+                                                      subshrub_by_spp = subshrub_by_spp,
+                                                      tree_by_spp = tree_by_spp,
+                                                      opuntia_combined = opuntia_combined)
+
+kbl(x = indicator_descriptions[,-1], format = "html", row.names = F, align = "c",
+    caption = "Indicators used to develop plant communities") %>%
+  kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(indicator_descriptions), background = "lightsteelblue") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
 
 ### CUSTOM DIAGRAM
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 2. STM"}
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM"}
 # TODO create custom diagram of states
 ```
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 3. Legend"}
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
 # TODO legend for custom diagram if needed
 ```
 
@@ -167,7 +226,7 @@ TODO write state description
 
 TODO write state description
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 4. Annual production by plant type (representative values) or group (midpoint values)"}
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Annual production by plant type (representative values) or group (midpoint values)"}
 # TODO create pie charts of community composition by functional group. May need to change "production" to "percent cover" to fit with our data
 ```
 

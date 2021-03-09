@@ -18,14 +18,14 @@ EDIT_map <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands",
 
   # Create leaflet map
   map_figure <- leaflet::leaflet(options = leaflet::leafletOptions(zoomControl = TRUE,
-                                   minZoom = 0, maxZoom = 18)) %>%
+                                   minZoom = 3, maxZoom = 11)) %>%
     leaflet::addTiles() %>% # this chunk pulls in base maps
     leaflet::addProviderTiles("Esri.WorldTopoMap", group = "Topo") %>%
     leaflet::addProviderTiles("Esri.WorldImagery", group = "ESRI Aerial") %>%
     leaflet::addRasterImage(x=target_ESG_raster, opacity=0.5,
-                     colors=c("transparent", "dodgerblue"),
-                     maxBytes = 15 * 1024 * 1024) %>%
-    #leaflet::fitBounds(lng1 = -114.04, lng2 = -107.02, lat1 =35.85,  lat2 = 40.75) %>%
+                    colors=c("transparent", "dodgerblue"),
+                     maxBytes = 6 * 1024 * 1024) %>%
+    leaflet::fitBounds(lng1 = -114.04, lng2 = -107.02, lat1 =35.85,  lat2 = 42) %>%
     leaflet::addLayersControl(
      baseGroups = c("Topo","ESRI Aerial"),
      options = leaflet::layersControlOptions(collapsed = T))

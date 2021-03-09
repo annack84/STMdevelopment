@@ -5,7 +5,7 @@
 \title{Pull indicators from desired data sets for target ESG}
 \usage{
 plot_data_pull(
-  file_paths_user = "Anna",
+  user = "Anna",
   target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands",
   data_sources = c("BadgerWash", "CRCMonitoring", "IM_NCPN", "LMF", "NRI", "Parashant",
     "TerrADat", "VanScoyocThesis"),
@@ -22,7 +22,7 @@ plot_data_pull(
 )
 }
 \arguments{
-\item{file_paths_user}{Character. User name to generate input data file paths.
+\item{user}{Character. User name to generate input data file paths.
 Options are "Anna", "Travis", and "VPN".}
 
 \item{target_ESG}{Character. Ecological Site Group to pull plot data for.

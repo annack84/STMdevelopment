@@ -18,7 +18,7 @@ make_mappable_raster <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyU
   target_ESG_raster[target_ESG_raster!=ESG_number] <- 0
   target_ESG_raster[target_ESG_raster==ESG_number] <- 1
 
-  target_ESG_raster <- raster::aggregate(x=target_ESG_raster, fact=2, fun=raster_mode,
+  target_ESG_raster <- raster::aggregate(x=target_ESG_raster, fact=3, fun=raster_mode,
                                          na.rm=T)
 
   raster::writeRaster(x=target_ESG_raster,

@@ -1,6 +1,6 @@
 #' Pull indicators from desired data sets for target ESG
 #'
-#' @param file_paths_user Character. User name to generate input data file paths.
+#' @param user Character. User name to generate input data file paths.
 #'   Options are "Anna", "Travis", and "VPN".
 #' @param target_ESG Character. Ecological Site Group to pull plot data for.
 #'   Follow the names used in the ESG raster released with Travis's 2021 manuscript.
@@ -18,7 +18,7 @@
 #' @return Wide format data frame containing indicators for the target ESG
 #' @export
 
-plot_data_pull <- function(file_paths_user = "Anna",
+plot_data_pull <- function(user = "Anna",
                            target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands",
                            data_sources = c(# "ARSLAKE", # probably won't overlap
                              "BadgerWash",
@@ -60,7 +60,7 @@ plot_data_pull <- function(file_paths_user = "Anna",
                            tree_by_spp = T, # All trees by species
                            opuntia_combined = T # Opuntia spp. (depending on prevalence)) # vector of indicator names
 ){
-  file_paths <- data_file_paths(file_paths_user)
+  file_paths <- data_file_paths(user)
   # extract ESG for each plot location
   plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
                                 layer = "all_plot-years_2021-03-02") # TODO write code to pull the
@@ -132,13 +132,16 @@ plot_data_pull <- function(file_paths_user = "Anna",
     tidyr::pivot_wider(data = ., names_from = variable, values_from = value,
                        values_fill = 0) %>%
     dplyr::left_join(., canopy_gaps_100) %>%
-    dplyr::filter(!is.na(CP_percent_100plus))
+    dplyr::filter(!is.na(CP_percent_100plus)) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(FH_LichenMossCover = sum(FH_LichenCover, FH_MossCover, na.rm = T)) %>%
+    dplyr::select(-FH_LichenCover, -FH_MossCover)
 
 
   # pull species-level cover data for target ESG plots
   # get species lists TODO update this list's C3/C4 designations based on Travis's lit review list
   if(shrub_by_spp|subshrub_by_spp|tree_by_spp|opuntia_combined){
-    species_list <- read.csv("data/SpeciesList_WesternUS_AcceptedSymbols_2020-01-06.csv",
+    species_list <- read.csv(file_paths$species_list,
                              stringsAsFactors = F,
                              na.strings = c("NA", "", " "))
 
