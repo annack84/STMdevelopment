@@ -98,5 +98,8 @@ make_indicator_descriptions <- function(indicators = c("AH_C3PerenGrassCover", #
     indicator_description_table <- dplyr::bind_rows(indicator_description_table, shrub_table)
   }
 
+  indicator_description_table <- indicator_description_table[order(indicator_description_table$Indicator_type)]
+  colnames(indicator_description_table) <- c("Indicator_code", "Indicator type", "Indicator", "Description")
+
   return(indicator_description_table)
 }
