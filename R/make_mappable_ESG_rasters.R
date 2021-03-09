@@ -21,7 +21,9 @@ make_mappable_raster <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyU
   target_ESG_raster <- raster::aggregate(x=target_ESG_raster, fact=3, fun=raster_mode,
                                          na.rm=T)
 
-  raster::writeRaster(x=target_ESG_raster,
+raster::projectRaster(from = target_ESG_raster,
+                      to = raster::projectExtent(target_ESG_raster, crs = sp::CRS("+init=epsg:3857")),
+                      method = "ngb",
                       filename = file.path(dirname(data_file_paths(user)$ESG_map),
                                            paste0(target_ESG, ".tif")),
                       format = "GTiff",
