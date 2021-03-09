@@ -30,4 +30,5 @@ Imports:
     dplyr,
     magrittr,
     rgdal,
-    readxl
+    readxl,
+    aqp
