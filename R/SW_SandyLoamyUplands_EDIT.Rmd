@@ -159,7 +159,6 @@ These sites neither benefit significantly from run-in moisture nor experience ex
 
 # Soil features
 
-TODO narrative describing soil features including depth, parent materials, textures, etc.
 Soils in this group are moderately deep or deeper to bedrock and are composed primarily of alluvium and eolian sediments. Surface horizons have sand, loamy sand, sandy loam, and loam textures and subsurface horizons are similar but can also include sandy clay loams. Soils are non-saline and non sodic and can have up to 20% calcium carbonate, but generally have less than 6% carbonates. Soil pH ranges from 5.0 to 9.6, but is generally closer to 8.0. Water erosion hazard is moderate and wind erosion hazard is severe.  
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
@@ -215,7 +214,7 @@ lattice::xyplot(top ~ p.q50 | variable, data=agg, ylab='Depth (cm)',
              par.settings=list(superpose.line=list(col='RoyalBlue', lwd=2)),
              prepanel=aqp::prepanel.depth_function,
              cf=agg$contributing_fraction, cf.col='black', cf.interval=20, 
-             layout=c(5,1), strip=strip.custom(bg=grey(0.8)),
+             layout=c(5,1), strip=lattice::strip.custom(bg=grey(0.8)),
              scales=list(x=list(tick.number=4, alternating=3, relation='free'))
              )
 
