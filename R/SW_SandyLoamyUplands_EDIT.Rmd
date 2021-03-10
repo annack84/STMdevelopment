@@ -79,9 +79,15 @@ knitr::kable(x = esds[,c("ecoclassid","ecoclassname")], col.names=c("ESD Code","
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of dominant plant functional groups and species
+esg_prod_list <- esg_production_pull(user)
 
-# TODO Travis update the esd pull to include top species from reference production??
-# knitr::kable(x = dom_plant_spp_tab, caption = "Table 1. Dominant plant species")
+dom_plants_df <- dplyr::tribble(~Item, ~Description,
+                          "Trees", as.character(esg_prod_list[["Tree.df"]]$COMMON_NAME)[1:5],
+                          "Shrubs", as.character(esg_prod_list[["Shrub.df"]]$COMMON_NAME)[1:5],
+                          "Grasses",as.character(esg_prod_list[["Grass.df"]]$COMMON_NAME)[1:5],
+                          "Forbs", as.character(esg_prod_list[["Forb.df"]]$COMMON_NAME)[1:5])
+
+knitr::kable(x = dom_plants_df, caption = "Table 1. Dominant plant species")
 ```
 
 
@@ -245,7 +251,7 @@ kbl(x = apriori_stms_target, format = "html", row.names = F, align = "c",
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 ## Plot of reference production indicators used in paper
 resp_vars <- colnames(esds)[1:21]
-resp_vars <- resp_vars[!resp_vars %in% c("ecoclassid","ponderosa","aspen")]
+resp_vars <- resp_vars[!resp_vars %in% c("ecoclassid","Ponderosa","Aspen")]
 par(mar = c(4,8,4,2)) ## This works when knited
 boxplot(esds[,resp_vars], horizontal = TRUE,las = 1, main = "Reference Production (lbs/Acre)")
 
