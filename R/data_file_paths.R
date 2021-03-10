@@ -15,9 +15,14 @@
 data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
   network_files <- list(plotnet_processed = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData",
                         nri = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/NRI",
-                        ESG_map = NA,
-                        species_list = NA,
-                        apriori_stms = NA)
+                        ESG_map = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Spatial/datarelease/ESGs_final.tif",
+                        species_list = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/S5_ESG_STM_summary_forRMD.csv",
+                        apriori_stms = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/SpeciesList_WesternUS_AcceptedSymbols_2020-01-06.csv",
+                        prodfolder = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Nonspatial/Duniway_EDIT_qry",
+                        climate = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Spatial/shps_SSURGO18",
+                        ssurgo = "V:/PROJECTS/TRAVIS_NAUMAN/GIS_Archive/gSSURGO18/gSSURGO_CONUS.gdb",
+                        ssurgo_result_fldr = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/ssurgo_results"
+                        )
 
   if(user=="Anna"){
     file_list <- network_files
