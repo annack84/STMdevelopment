@@ -151,7 +151,7 @@ esg_production_pull <- function(
   Species <- read.delim(paste(file_paths$prodfolder,"/Duniway_qry_range_plant_composition.txt",sep=""),stringsAsFactors = F)
   SpeciesFG_corr <- read.delim(paste(file_paths$prodfolder,"/Unique_Species_Symbols_Corrected_12192019.txt",sep=""),stringsAsFactors = F)
   # Filter data to State 1 (reference state) production values
-  Species <- filter(Species, Species$STATE_SEQUENCE == 1)
+  Species <- dplyr::filter(Species, Species$STATE_SEQUENCE == 1)
   # Create new column "PRODUCTION_AVG" taking the average of the low and high production values
   Species$PRODUCTION_AVG <- (Species$PRODUCTION_LOW + Species$PRODUCTION_HIGH)/2
   # Correct functional group errors

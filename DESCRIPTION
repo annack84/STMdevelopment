@@ -34,4 +34,6 @@ Imports:
     aqp,
     lattice,
     vegan,
-    bookdown
+    bookdown,
+    knitr,
+    kableExtra

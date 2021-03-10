@@ -38,6 +38,10 @@ pre { /* Code block - determines code spacing between lines */
 }
 </style>
 
+*NOTE: This correspondence is intended for communication of project progress among funders
+and collaborators only. This report is provisional and preliminary, and the information is subject
+to change without notification. The findings have not been peer-reviewed nor Bureau approved.*
+
 # General information
 ```{r setup, include=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -71,13 +75,19 @@ esds <- esd_data_pull(user)
 comps <- comp_data_pull(user)
 num_esds <- nrow(esds)
 ```
+
 This ecological site group includes `r num_esds` ecological sites. These sites were correlated to the group based on average soil, climate and geomorphic properties of the soil components linked to each ecological site.
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+
+```{r assoc-eco-sites, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 ## Associated ecological sites
-knitr::kable(x = esds[,c("ecoclassid","ecoclassname")], col.names=c("ESD Code","ESD Name"), caption = NULL,row.names = F)
+format_tables_EDIT_style(data = esds[,c("ecoclassid","ecoclassname")],
+                         col.names=c("ESD Code","ESD Name"),
+                         caption = "Ecological Sites associated with this ESG",
+                         row.names = F)
+#knitr::kable(x = esds[,c("ecoclassid","ecoclassname")], col.names=c("ESD Code","ESD Name"), caption = NULL,row.names = F)
 ```
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r dominant-plant-production, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of dominant plant functional groups and species
 esg_prod_list <- esg_production_pull(user)
 
@@ -87,7 +97,9 @@ dom_plants_df <- dplyr::tribble(~Item, ~Description,
                           "Grasses",as.character(esg_prod_list[["Grass.df"]]$COMMON_NAME)[1:5],
                           "Forbs", as.character(esg_prod_list[["Forb.df"]]$COMMON_NAME)[1:5])
 
-knitr::kable(x = dom_plants_df, caption = "Table 1. Dominant plant species")
+format_tables_EDIT_style(data = dom_plants_df,
+                         caption = "Dominant plant species")
+#knitr::kable(x = dom_plants_df, caption = "Table 1. Dominant plant species")
 ```
 
 
@@ -96,7 +108,7 @@ TODO insert "Download full description" link to a PDF
 
 # Physiographic features
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r get-landforms, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of landforms, elevations, slopes, water table depth, flooding duration, flooding frequency, ponding frequency
 # ideally should be able to tab between US and metric system measurements
 landforms <- unlist(strsplit(esds$landfrms[1], split=","))
@@ -111,7 +123,7 @@ landforms_unique <- unique(landforms)
 ```
 These sites occur on upland positions with mostly gentle slopes on a variety of landforms (n=`r length(landforms_unique)`). Some areas can have steeper slopes, but these are not typical of the group. 
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r physio-features, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 
 # Slope
 slope_ave <- mean(comps@site$slope_r.x)
@@ -129,20 +141,22 @@ phys.df <- dplyr::tribble(~Item, ~Description,
                           "Flooding Frequency","None",
                           "Aspect", "Aspect is not a significant factor")
 
-knitr::kable(x = phys.df, caption = "Table 2. Representative physiographic features")
+format_tables_EDIT_style(data = phys.df, caption = "Representative physiographic features")
+#knitr::kable(x = phys.df, caption = "Table 2. Representative physiographic features")
 ```
 
 # Climatic features
 
 Climate is generally semiarid and warm with aridity index (precipitation / potential evapotranspiration) values averaging `r format(round(mean(esds$aimean), 2), nsmall = 2)` and ranging from `r format(round(min(esds$aimean), 2), nsmall = 2)` to `r format(round(max(esds$aimean), 2), nsmall = 2)`. The average maximum temperatures (Celsius) of the hottest month range from `r format(round(min(esds$maxtempmean), 2), nsmall = 2)` to `r format(round(max(esds$maxtempmean), 2), nsmall = 2)`, and minimum temperatures of the coldest month range from `r format(round(min(esds$mintempmean), 2), nsmall = 2)` to `r format(round(max(esds$mintempmean), 2), nsmall = 2)`. Warm season (June to September) precipitation makes up `r format(round(mean(esds$pptrt*100), 0), nsmall = 0)`% of total precipitation on average, but can range from `r format(round(min(esds$pptrt*100), 0), nsmall = 0)`% to `r format(round(max(esds$pptrt*100), 0), nsmall = 0)`%.
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r climate-features, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 
 clim.df <- dplyr::tribble(~Item, ~Description,
                           "Frost Free Period (days)", paste(format(round(min(comps@site$ffd_r), 0), nsmall = 0),format(round(mean(comps@site$ffd_r), 0), nsmall = 0),format(round(max(comps@site$ffd_r), 0), nsmall = 0),sep=", "),
                           "Mean Annual Precipitation (in)", paste(format(round(min(comps@site$reannualprecip_r/25.4,na.rm=T), 1), nsmall = 1),format(round(mean(comps@site$reannualprecip_r/25.4,na.rm=T), 1), nsmall = 1),format(round(max(comps@site$reannualprecip_r/25.4,na.rm=T), 1), nsmall = 1),sep=", "))
 
-knitr::kable(x = clim.df, caption = "Table 3. Representative climatic features (min, mean, max)")
+format_tables_EDIT_style(data = clim.df, caption = "Representative climatic features (min, mean, max)")
+#knitr::kable(x = clim.df, caption = "Table 3. Representative climatic features (min, mean, max)")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Montly precipitation range"}
@@ -161,7 +175,7 @@ These sites neither benefit significantly from run-in moisture nor experience ex
 
 Soils in this group are moderately deep or deeper to bedrock and are composed primarily of alluvium and eolian sediments. Surface horizons have sand, loamy sand, sandy loam, and loam textures and subsurface horizons are similar but can also include sandy clay loams. Soils are non-saline and non sodic and can have up to 20% calcium carbonate, but generally have less than 6% carbonates. Soil pH ranges from 5.0 to 9.6, but is generally closer to 8.0. Water erosion hazard is moderate and wind erosion hazard is severe.  
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r soil-features, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 
 ## Prep soil variables for table
 surftext <-  factor(esds$txtnm_surf)
@@ -193,7 +207,8 @@ soil.df <- dplyr::tribble(~Item, ~Description,
                           "Surface Calcium Carbonate (0-30cm)", paste(format(round(min(esds$caco3_surf,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$caco3_surf,na.rm=T), 0), nsmall = 0), "%",sep=""),
                           "Subsurface Calcium Carbonate (>30cm)", paste(format(round(min(esds$caco3_sub,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$caco3_sub,na.rm=T), 0), nsmall = 0), "%",sep=""))
 
-knitr::kable(x = soil.df, caption = "Table 4. Representative soil features")
+format_tables_EDIT_style(data = soil.df, caption = "Representative soil features")
+#knitr::kable(x = soil.df, caption = "Table 4. Representative soil features")
 ```
 
 ## Soil Component data
@@ -203,7 +218,7 @@ Soil types correlated to this group include `r length(unique(comps@site$cokey))`
 `r print(unique(comps@site$compname))`
 
 ### Component level soil property depth plots
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r soil-lattice, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Soil properties by depth"}
 agg <- aqp::slab(comps, fm= ~ claytotal_r + silttotal_r + sandtotal_r + ec_r + caco3_r)
 
 lattice::xyplot(top ~ p.q50 | variable, data=agg, ylab='Depth (cm)',
@@ -239,15 +254,13 @@ colnames(apriori_stms_target) <- c("State", "Plant community", "Proportion of ES
 #   mutate(V3 = stringr::str_replace_all(V3, Climate_group_definitions_replace)) %>%
 #   mutate(V3 = stringr::str_replace_all(V3, SGU_definitions_replace))
 
-kbl(x = apriori_stms_target, format = "html", row.names = F, align = "c",
-    caption = "STM summary from Ecological Sites within this ESG") %>%
-  kable_styling(bootstrap_options = "bordered") %>%
-  row_spec(kable_input=., row = 0:nrow(apriori_stms_target), background = "lightsteelblue") %>%
+format_tables_EDIT_style(data = apriori_stms_target,
+                         caption = "STM summary from Ecological Sites within this ESG") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
 
-## Reference state production indicators
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+### Reference state production indicators
+```{r ref-production, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Reference state production by plant functional group"}
 ## Plot of reference production indicators used in paper
 resp_vars <- colnames(esds)[1:21]
 resp_vars <- resp_vars[!resp_vars %in% c("ecoclassid","Ponderosa","Aspen")]
@@ -277,17 +290,19 @@ subshrub_by_spp <- T
 tree_by_spp <- T # All trees by species
 opuntia_combined <- T
 
-plot_data <- plot_data_pull(user=user,
-                             target_ESG = target_ESG,
-                           data_sources = c("BadgerWash",
+data_sources <- c("BadgerWash",
                              "CRCMonitoring",
                              "IM_NCPN",
-                             "LMF",
-                             "NRI",
+                             #"LMF",
+                             #"NRI",
                              "Parashant",
-                             "TerrADat", 
+                             #"TerrADat", 
                              "VanScoyocThesis"
-                           ),
+                           )
+
+plot_data <- plot_data_pull(user=user,
+                             target_ESG = target_ESG,
+                           data_sources = data_sources,
                            indicators = indicators,
                            shrub_by_spp = shrub_by_spp,
                            subshrub_by_spp = subshrub_by_spp,
@@ -297,6 +312,7 @@ plot_data <- plot_data_pull(user=user,
 
 
 ```
+
 
 ```{r doc-plot-indicators, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
@@ -335,6 +351,12 @@ ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotNa
 ord.df <- ord.df[ ,which(colSums(ord.df[,1:ncol(ord.df)] !=0) >= 2)] 
 
 ```
+
+Field data were collected by field crews with the US Geological Survey and the NPS Inventory and Monitoring Northern Colorado Plateau Network between `r min(plot_data_first$Year)` and `r max(plot_data_first$Year)`. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (in development, McCord & Stauffer, 2020). When plots were sampled in multiple years, only the first sampling year was used in STM development.
+
+The R packages “cluster” and “dendextend” were used to perform a hierarchical cluster analysis. The distance matrix was calculated using Bray-Curtis distance and a flexible beta linkage was used for clustering (β = –0.25). To determine the optimal number of groups, we used the “labdsv” R package to calculate indicator species values (IndVal, Dufrene and Legendre 1997) when the cluster analysis results were split into 2 to 12 groups. We then selected the number of groups that minimized mean p-values and maximized the number of significant indicator species (Figure \@ref(fig:clustering)). 
+
+The clustering results were visualized in ordination spaced, using non-metric multidimensional scaling (NMDS) with Bray-Curtis distance ("vegan" package in R).
 
 ```{r clustering, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.cap="Mean p-value of indicator species (left) and number of significant species (right, α = 0.05) for 2 to 12 possible plant communities."}
 # cluster and indicator species analysis
