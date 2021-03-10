@@ -16,6 +16,7 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
   network_files <- list(plotnet_processed = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData",
                         nri = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/NRI",
                         ESG_map = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Spatial/datarelease/ESGs_final.tif",
+                        target_ESG_map_folder = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/leaflet_map_ESG_rasters",
                         species_list = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/S5_ESG_STM_summary_forRMD.csv",
                         apriori_stms = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/SpeciesList_WesternUS_AcceptedSymbols_2020-01-06.csv",
                         prodfolder = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Nonspatial/Duniway_EDIT_qry",
@@ -30,6 +31,7 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
     file_list$plotnet_processed <- "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/SWDesertRangelandMonitoring/Data/ProcessedData"
     #file_list$nri <- "C:/Users/aknight/Desktop/Telework_Backups/U_drive/Projects/NRI_US_limitaccess"
     file_list$ESG_map <- "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/Eco_Site_Group_Data/ESGs_final.tif"
+    file_list$target_ESG_map_folder <- "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/Eco_Site_Group_Data"
     file_list$species_list <- "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/Eco_Site_Group_Data/SpeciesList_WesternUS_AcceptedSymbols_2020-01-06.csv"
     file_list$apriori_stms <- "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/Eco_Site_Group_Data/S5_ESG_STM_summary_formatted.csv"
   }

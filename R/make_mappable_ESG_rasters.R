@@ -25,7 +25,7 @@ make_mappable_raster <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyU
                       #to = raster::projectExtent(target_ESG_raster, crs = sp::CRS("+init=epsg:3857")),
                       crs = sp::CRS("+init=epsg:3857"),
                       method = "ngb",
-                      filename = file.path(dirname(data_file_paths(user)$ESG_map),
+                      filename = file.path(data_file_paths(user)$target_ESG_map_folder,
                                            paste0(target_ESG, ".tif")),
                       format = "GTiff",
                       datatype = "LOG1S",

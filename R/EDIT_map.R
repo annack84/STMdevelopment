@@ -13,7 +13,7 @@
 EDIT_map <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands",
                      user = "Anna"){
   # read in binary raster for target ESG
-  target_ESG_raster <- raster::raster(file.path(dirname(data_file_paths(user)$ESG_map),
+  target_ESG_raster <- raster::raster(file.path(data_file_paths(user)$target_ESG_map_folder,
                                              paste0(target_ESG, ".tif")))
 
   # Create leaflet map
