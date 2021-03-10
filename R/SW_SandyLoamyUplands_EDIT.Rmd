@@ -73,12 +73,12 @@ num_esds <- nrow(esds)
 ```
 This ecological site group includes `r num_esds` ecological sites. These sites were correlated to the group based on average soil, climate and geomorphic properties of the soil components linked to each ecological site.
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+## Associated ecological sites
 knitr::kable(x = esds[,c("ecoclassid","ecoclassname")], col.names=c("ESD Code","ESD Name"), caption = NULL,row.names = F)
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of dominant plant functional groups and species
-
 
 # TODO Travis update the esd pull to include top species from reference production??
 # knitr::kable(x = dom_plant_spp_tab, caption = "Table 1. Dominant plant species")
@@ -106,6 +106,7 @@ landforms_unique <- unique(landforms)
 These sites occur on upland positions with mostly gentle slopes on a variety of landforms (n=`r length(landforms_unique)`). Some areas can have steeper slopes, but these are not typical of the group. 
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+
 # Slope
 slope_ave <- mean(comps@site$slope_r.x)
 slope_75th <- unname(quantile(comps@site$slope_r.x, probs = 0.75, na.rm = T))
