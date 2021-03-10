@@ -114,6 +114,26 @@ esd_data_pull <- function(
   "Sa", "sand"
   )
 
+  ## Rename production fields for plotting
+  esds <- esds %>% dplyr::rename(
+    Total = TOTAL_PROD,
+    Big.Sage = bigsage,
+    Mtn.Sage = mtnsage,
+    Basin.Sage = basinsage,
+    Blackbrush = cora,
+    Gambels.Oak = quga,
+    Pinyon = pinion,
+    Juniper = juniper,
+    Aspen = aspen,
+    Ponderosa = ponderosa,
+    Greasewood = greasewd,
+    Saltbush = saltbush,
+    Shadscale = shadscale,
+    Alk.Sacaton = spai,
+    C3.Per.Grass = c3PerGr,
+    C4.Per.Grass = c4PerGr
+  )
+
   ## Join ESG names to esds
   esds <- dplyr::left_join(esds,lookup_table,by="ESGid")
   esds <- dplyr::left_join(esds,texture_table,by = c("txtcls_sub" = "textabbr"))
