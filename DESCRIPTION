@@ -31,5 +31,7 @@ Imports:
     magrittr,
     rgdal,
     readxl,
+    aqp,
+    lattice,
     vegan,
     bookdown

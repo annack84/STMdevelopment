@@ -39,6 +39,11 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
   if(user=="Travis"){
     file_list <- network_files
     # update paths specific to your computer here
+    file_list$ESG_map <- "C:/Users/tnauman/OneDrive - DOI/USGS/BLM_projects/BLM_CO_ESGs/ESGs_UCRB/ESG_UCRB_manuscript/datarelease/ESGs_final.tif"
+    file_list$prodfolder <- "C:/Users/tnauman/OneDrive - DOI/USGS/BLM_projects/BLM_CO_ESGs/ESGs_UCRB/EDIT_prod"
+    file_list$climate <- "C:/Users/tnauman/OneDrive - DOI/USGS/BLM_projects/BLM_CO_ESGs/ESGs_UCRB/shps_SSURGO18"
+    file_list$ssurgo <- "C:/models/gSSURGO18/gSSURGO_CONUS.gdb"
+    file_list$ssurgo_result_fldr <- "C:/Users/tnauman/OneDrive - DOI/USGS/BLM_projects/BLM_CO_ESGs/ESGs_UCRB/climateOptimize/ssurgo_results"
   }
 
   if(user=="VPN"){ # if using VPN to connect to the network, don't change any file paths
