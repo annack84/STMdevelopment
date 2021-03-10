@@ -42,8 +42,8 @@ pre { /* Code block - determines code spacing between lines */
 ```{r setup, include=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
-#user <- "Anna"
-user <- "VPN"
+user <- "Anna"
+#user <- "VPN"
 
 library(dplyr)
 library(kableExtra)
@@ -398,10 +398,12 @@ Based on Figure \@ref(fig:ordination-scree), ordination stress is acceptable wit
 plot_data_first$PlantCommunity <- as.factor(grp)
 
 # manually update based on indicator species
-group_labels <- c("1 - C4 perennial grassland",
-                    "2 - Juniper woodland",
-                    "3 - C3 perennial grasses and sagebrush",
-                    "4 - Ephedra and biological soil crust")
+group_labels <- c("1 - Perennial grassland with
+mixed shrubs and forbs",
+                    "2 - Juniper and shrub community
+with non-native grasses",
+                    "3 - Mixed grassland and shrub community",
+                    "4 - Sparse shrub community")
 
 par(mfrow=c(1,2))
 # Axes 1x2
@@ -432,8 +434,9 @@ par(mfrow=c(1,1))
 
 ### CUSTOM DIAGRAM
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM"}
+```{r custom-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM", fig.height=8, fig.width=10}
 # TODO create custom diagram of states
+knitr::include_graphics("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/SW_SandyLoamyUplands_boxandarrow_DRAFT.JPG")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
