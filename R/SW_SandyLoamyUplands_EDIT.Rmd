@@ -42,7 +42,7 @@ pre { /* Code block - determines code spacing between lines */
 ```{r setup, include=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
-user <- "Anna"
+user <- "Travis"
 
 library(dplyr)
 library(kableExtra)
@@ -50,7 +50,6 @@ library(STMdevelopment)
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-library(STMdevelopment)
 # TODO insert dot graphic and text about the status of the ESD (e.g. "Provisional"). Might help
 # to create a function to automatically insert the description based on the
 # status input
@@ -63,24 +62,23 @@ library(STMdevelopment)
 
 Areas shown in blue indicate the maximum mapped extent of this ecological site. Other ecological sites likely occur within the highlighted areas. It is also possible for this ecological site to occur outside of highlighted areas if detailed soil survey has not been completed or recently updated.
 
-## Associated ecological sites
+## Associated ecological site concepts
+
+This ecological site group includes a variety of upland ecological sites that have deeper sandy soils without significant rock content. The group was defined by placing ecological sites into groups by separating soils, climate, and geomorphic features to best differentiate reference vegetation production values and documented ecological states as documented ny Nauman et al., (In Review).
+
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-esds <- esd_data_pull("Travis")
-comps <- comp_data_pull("Travis")
+esds <- esd_data_pull(user)
+comps <- comp_data_pull(user)
 num_esds <- nrow(esds)
 ```
-This ecological site group includes `r num_esds` ecological sites. These sites were correlated to the group based on average soil, climate and geomorphic properties of the soil components linked to each site.
+This ecological site group includes `r num_esds` ecological sites. These sites were correlated to the group based on average soil, climate and geomorphic properties of the soil components linked to each ecological site.
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 knitr::kable(x = esds[,c("ecoclassid","ecoclassname")], col.names=c("ESD Code","ESD Name"), caption = NULL,row.names = F)
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of dominant plant functional groups and species
-# Note from Travis: Could also summarize the ESG referece production indicators with boxplot
-resp_vars <- colnames(esds)[1:21]
-resp_vars <- resp_vars[!grepl("ecoclassid", resp_vars)]
-par(mar = c(4,8,4,2)) ## This works when knited
-boxplot(esds[,resp_vars], horizontal = TRUE,las = 1, main = "Reference Production (lbs/Acre)")
+
 
 # TODO Travis update the esd pull to include top species from reference production??
 # knitr::kable(x = dom_plant_spp_tab, caption = "Table 1. Dominant plant species")
@@ -91,8 +89,6 @@ TODO insert "Download full description" link to a PDF
 
 
 # Physiographic features
-
-TODO write a few sentences on the slopes, elevations, and geomorphic characteristics typical of this ESG
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO create table of landforms, elevations, slopes, water table depth, flooding duration, flooding frequency, ponding frequency
@@ -106,7 +102,10 @@ landforms <- landforms[!landforms %in% "NA"]
 lfsum <-  factor(landforms)
 lfsum <- reorder(lfsum,lfsum,FUN=function(x) -length(x))
 landforms_unique <- unique(landforms)
+```
+These sites occur on upland positions with mostly gentle slopes on a variety of landforms (n=`r length(landforms_unique)`). Some areas can have steeper slopes, but these are not typical of the group. 
 
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # Slope
 slope_ave <- mean(comps@site$slope_r.x)
 slope_75th <- unname(quantile(comps@site$slope_r.x, probs = 0.75, na.rm = T))
@@ -118,20 +117,25 @@ slope_field <- paste("Slopes average",format(round(slope_ave, 1), nsmall = 1),
                      "but can be up to", format(round(slope_max, 1), nsmall = 1),"%",sep=" ")
 
 phys.df <- dplyr::tribble(~Item, ~Description,
-                          "Landforms", as.character(lfsum)[1:10],
-                          "Slope", slope_field)
+                          "Landforms (Top 10)", as.character(lfsum)[1:10],
+                          "Slope", slope_field,
+                          "Flooding Frequency","None",
+                          "Aspect", "Aspect is not a significant factor")
 
 knitr::kable(x = phys.df, caption = "Table 2. Representative physiographic features")
 ```
 
 # Climatic features
 
-TODO narrative of general climate patterns and growing season goes here (can probably write a basic narrative for most ESGs and insert specific numbers/dates with R chunks)
+Climate is generally semiarid and warm with aridity index (precipitation / potential evapotranspiration) values averaging `r format(round(mean(esds$aimean), 2), nsmall = 2)` and ranging from `r format(round(min(esds$aimean), 2), nsmall = 2)` to `r format(round(max(esds$aimean), 2), nsmall = 2)`. The average maximum temperatures (Celsius) of the hottest month range from `r format(round(min(esds$maxtempmean), 2), nsmall = 2)` to `r format(round(max(esds$maxtempmean), 2), nsmall = 2)`, and minimum temperatures of the coldest month range from `r format(round(min(esds$mintempmean), 2), nsmall = 2)` to `r format(round(max(esds$mintempmean), 2), nsmall = 2)`. Warm season (June to September) precipitation makes up `r format(round(mean(esds$pptrt*100), 0), nsmall = 0)`% of total precipitation on average, but can range from `r format(round(min(esds$pptrt*100), 0), nsmall = 0)`% to `r format(round(max(esds$pptrt*100), 0), nsmall = 0)`%.
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO create table of frost free period, freeze-free period, and total precip
 
-# knitr::kable(x = dom_plant_spp_tab, caption = "Table 3. Representative climatic features")
+clim.df <- dplyr::tribble(~Item, ~Description,
+                          "Frost Free Period (days)", paste(format(round(min(comps@site$ffd_r), 0), nsmall = 0),format(round(mean(comps@site$ffd_r), 0), nsmall = 0),format(round(max(comps@site$ffd_r), 0), nsmall = 0),sep=", "),
+                          "Mean Annual Precipitation (in)", paste(format(round(min(comps@site$reannualprecip_r/25.4,na.rm=T), 1), nsmall = 1),format(round(mean(comps@site$reannualprecip_r/25.4,na.rm=T), 1), nsmall = 1),format(round(max(comps@site$reannualprecip_r/25.4,na.rm=T), 1), nsmall = 1),sep=", "))
+
+knitr::kable(x = clim.df, caption = "Table 3. Representative climatic features (min, mean, max)")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Montly precipitation range"}
@@ -144,14 +148,70 @@ TODO narrative of general climate patterns and growing season goes here (can pro
 
 # Water features
 
+These sites neither benefit significantly from run-in moisture nor experience excessive loss of moisture from runoff.
+
 # Soil features
 
 TODO narrative describing soil features including depth, parent materials, textures, etc.
+Soils in this group are moderately deep or deeper to bedrock and are composed primarily of alluvium and eolian sediments. Surface horizons have sand, loamy sand, sandy loam, and loam textures and subsurface horizons are similar but can also include sandy clay loams. Soils are non-saline and non sodic and can have up to 20% calcium carbonate, but generally have less than 6% carbonates. Soil pH ranges from 5.0 to 9.6, but is generally closer to 8.0. Water erosion hazard is moderate and wind erosion hazard is severe.  
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO create table surface texture, drainage class, permeability class, soil depth class, family particle size, surface and subsurface fragments, AWC, calcium carbonate equivalent, EC, sodium adsorption ratio, soil reaction
 
-# knitr::kable(x = dom_plant_spp_tab, caption = "Table 4. Representative soil features")
+## Prep soil variables for table
+surftext <-  factor(esds$txtnm_surf)
+surftext <- reorder(surftext,surftext,FUN=function(x) -length(x))
+surftext_uni <- levels(surftext)
+subtext <-  factor(esds$txtnm_sub)
+subtext <- reorder(subtext,subtext,FUN=function(x) -length(x))
+subtext_uni <- levels(subtext)
+drainage <- factor(comps@site$drainagecl.x)
+drainage <- reorder(drainage,drainage,FUN=function(x) -length(x))
+drainage_uni <- levels(drainage)[1:3]
+
+## Make Table of soil descriptors: 
+# TODO Could update pH to be based on esd averages instead of comps. Also could update PM to grab ssurgo values
+soil.df <- dplyr::tribble(~Item, ~Description,
+                          "Parent Material", "alluvium and eolian sediments",
+                          "Surface Texture (0-30cm)", surftext_uni,
+                          "Subsurface Texture (>30cm)",subtext_uni,
+                          "Drainage", drainage_uni,
+                          "Soil Depth", paste(format(round(min(esds$depthmean,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$depthmean,na.rm=T), 0), nsmall = 0), " cm",sep=""),
+                          "Surface Rock Content %vol (0-30cm)", paste(format(round(min(esds$rock_surf,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$rock_surf,na.rm=T), 0), nsmall = 0), "%",sep=""),
+                          "Subsurface Rock Content %vol (>30cm)", paste(format(round(min(esds$rock_sub,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$rock_sub,na.rm=T), 0), nsmall = 0), "%",sep=""),
+                          "Surface Electrical Conductivity (0-30cm)", paste(format(round(min(esds$ec_surf,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$ec_surf,na.rm=T), 1), nsmall = 1), " dS/m",sep=""),
+                          "Subsurface Electrical Conductivity (>30cm)", paste(format(round(min(esds$ec_sub,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$ec_sub,na.rm=T), 1), nsmall = 1), " dS/m",sep=""),
+                          "Surface Sodium Adsorption Ratio (0-30cm)", paste(format(round(min(esds$sar_surf,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$sar_surf,na.rm=T), 1), nsmall = 1),sep=""),
+                          "Subsurface Sodium Adsorption Ratio (>30cm)", paste(format(round(min(esds$sar_sub,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$sar_sub,na.rm=T), 1), nsmall = 1),sep=""),
+                          "Surface 1:1 pH (0-30cm)", paste(format(round(min(comps@horizons[comps@horizons$hzdept_r<30,c("ph1to1h2o_r")],na.rm=T), 0), nsmall = 0),"-",format(round(max(comps@horizons[comps@horizons$hzdept_r<30,c("ph1to1h2o_r")],na.rm=T), 1), nsmall = 1),sep=""),
+                          "Subsurface 1:1 pH (>30cm)", paste(format(round(min(comps@horizons[comps@horizons$hzdept_r>30,c("ph1to1h2o_r")],na.rm=T), 0), nsmall = 0),"-",format(round(max(comps@horizons[comps@horizons$hzdept_r>30,c("ph1to1h2o_r")],na.rm=T), 1), nsmall = 1),sep=""),
+                          "Surface Calcium Carbonate (0-30cm)", paste(format(round(min(esds$caco3_surf,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$caco3_surf,na.rm=T), 0), nsmall = 0), "%",sep=""),
+                          "Subsurface Calcium Carbonate (>30cm)", paste(format(round(min(esds$caco3_sub,na.rm=T), 0), nsmall = 0),"-",format(round(max(esds$caco3_sub,na.rm=T), 0), nsmall = 0), "%",sep=""))
+
+knitr::kable(x = soil.df, caption = "Table 4. Representative soil features")
+```
+
+## Soil Component data
+
+Soil types correlated to this group include `r length(unique(comps@site$cokey))` different components mapped in SSURGO.Soil taxonomic units include:
+
+`r print(unique(comps@site$compname))`
+
+### Component level soil property depth plots
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+agg <- aqp::slab(comps, fm= ~ claytotal_r + silttotal_r + sandtotal_r + ec_r + caco3_r)
+
+lattice::xyplot(top ~ p.q50 | variable, data=agg, ylab='Depth (cm)',
+             xlab='median bounded by 25th and 75th percentiles',
+             lower=agg$p.q25, upper=agg$p.q75, ylim=c(201,-2),
+             panel=aqp::panel.depth_function,
+             alpha=0.25, sync.colors=TRUE,
+             par.settings=list(superpose.line=list(col='RoyalBlue', lwd=2)),
+             prepanel=aqp::prepanel.depth_function,
+             cf=agg$contributing_fraction, cf.col='black', cf.interval=20, 
+             layout=c(5,1), strip=strip.custom(bg=grey(0.8)),
+             scales=list(x=list(tick.number=4, alternating=3, relation='free'))
+             )
+
 ```
 
 # Ecological dynamics
@@ -178,6 +238,16 @@ kbl(x = apriori_stms_target, format = "html", row.names = F, align = "c",
   kable_styling(bootstrap_options = "bordered") %>%
   row_spec(kable_input=., row = 0:nrow(apriori_stms_target), background = "lightsteelblue") %>%
   collapse_rows(columns = 1, valign = "top")
+```
+
+## Reference state production indicators
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+## Plot of reference production indicators used in paper
+resp_vars <- colnames(esds)[1:21]
+resp_vars <- resp_vars[!resp_vars %in% c("ecoclassid","ponderosa","aspen")]
+par(mar = c(4,8,4,2)) ## This works when knited
+boxplot(esds[,resp_vars], horizontal = TRUE,las = 1, main = "Reference Production (lbs/Acre)")
+
 ```
 
 ```{r load-plot-indicators, include=FALSE}

@@ -31,4 +31,5 @@ Imports:
     magrittr,
     rgdal,
     readxl,
-    aqp
+    aqp,
+    lattice

@@ -46,7 +46,7 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
     file_list$prodfolder <- "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Nonspatial/Duniway_EDIT_qry"
     file_list$climate <- "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Spatial/shps_SSURGO18"
     file_list$ssurgo <- "V:/PROJECTS/TRAVIS_NAUMAN/GIS_Archive/gSSURGO18/gSSURGO_CONUS.gdb"
-    file_list$ssurgo_result_fldr <- "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Spatial/climateOptimize/ssurgo_results"
+    file_list$ssurgo_result_fldr <- "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/ssurgo_results"
   }
   return(file_list)
 }

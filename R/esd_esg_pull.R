@@ -6,8 +6,7 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
+
 esd_data_pull <- function(
   file_paths_user = "Travis",
   target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands"
@@ -98,8 +97,31 @@ esd_data_pull <- function(
     35,     "Riparian"
   )
 
+  ## ESG Lookup table
+  texture_table <- dplyr::tribble(
+    ~textabbr, ~textname,
+  "Cl", "clay",
+  "SiCl", "silty clay",
+  "SaCl", "sandy clay",
+  "ClLo", "clay loam",
+  "SiClLo", "silty clay loam",
+  "SaClLo", "sandy clay loam",
+  "Lo", "loam",
+  "SiLo", "silty loam",
+  "SaLo", "sandy loam",
+  "Si", "silt",
+  "LoSa", "loamy sand",
+  "Sa", "sand"
+  )
+
   ## Join ESG names to esds
   esds <- dplyr::left_join(esds,lookup_table,by="ESGid")
+  esds <- dplyr::left_join(esds,texture_table,by = c("txtcls_sub" = "textabbr"))
+  esds$txtnm_sub <- esds$textname
+  esds$textname <- NULL
+  esds <- dplyr::left_join(esds,texture_table,by = c("txtcls_surf" = "textabbr"))
+  esds$txtnm_surf <- esds$textname
+  esds$textname <- NULL
   esd_comps <- esd_comps[!duplicated(esd_comps$ecoclassid),]
   esds <- dplyr::left_join(esds,esd_comps[,c("ecoclassid","ecoclassname")],by="ecoclassid")
   esds <- esds[esds$ESG==target_ESG,]
