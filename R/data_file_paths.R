@@ -15,7 +15,7 @@
 data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
   network_files <- list(plotnet_processed = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData",
                         nri = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/NRI",
-                        ESG_map = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Data_Spatial/datarelease/ESGs_final.tif",
+                        ESG_map = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/ESGs_final.tif",
                         target_ESG_map_folder = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/leaflet_map_ESG_rasters",
                         apriori_stms = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/S5_ESG_STM_summary_forRMD.csv",
                         species_list = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/SpeciesList_WesternUS_AcceptedSymbols_2020-01-06.csv",
