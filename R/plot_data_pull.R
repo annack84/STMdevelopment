@@ -63,7 +63,7 @@ plot_data_pull <- function(user = "Anna",
   file_paths <- data_file_paths(user)
   # extract ESG for each plot location
   plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
-                                layer = "all_plot-years_2021-03-02") # TODO write code to pull the
+                                layer = "all_plot-years_2021-09-30") # TODO write code to pull the
                                  # most recent version so we don't have to change this file name
                                  # when a new project is added to PlotNet
 

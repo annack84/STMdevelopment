@@ -270,8 +270,12 @@ boxplot(esds[,resp_vars], horizontal = TRUE,las = 1, main = "Reference Productio
 ```
 
 ```{r load-plot-indicators, include=FALSE}
-indicators <- c("AH_C3PerenGrassCover", # C3 native perennial grasses TODO calculate C3 NATIVE
-                "AH_C4PerenGrassCover", # C4 native perennial grasses TODO calculate C4 NATIVE
+indicators <- c(#"AH_C4PerenGrassCover", # C4 native perennial grasses TODO calculate C4 NATIVE
+                #"AH_C3PerenGrassCover", # C3 native perennial grasses TODO calculate C3 NATIVE
+                "AH_C3NativePerenGrassCover", 
+                "AH_C3IntroducedPerenGrassCover",
+                "AH_C4NativePerenGrassCover", 
+                "AH_C4IntroducedPerenGrassCover",
                 "AH_IntroducedPerenGrassCover", # Non-native perennial grasses
                 "AH_NativePerenForbCover", # Native perennial forbs
                 "AH_IntroducedPerenForbCover", # Non-native perennial forbs
@@ -352,7 +356,7 @@ ord.df <- ord.df[ ,which(colSums(ord.df[,1:ncol(ord.df)] !=0) >= 2)]
 
 ```
 
-Field data were collected by field crews with the US Geological Survey and the NPS Inventory and Monitoring Northern Colorado Plateau Network between `r min(plot_data_first$Year)` and `r max(plot_data_first$Year)`. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (in development, McCord & Stauffer, 2020). When plots were sampled in multiple years, only the first sampling year was used in STM development.
+Field data from were collected by field crews with the US Geological Survey and the NPS Inventory and Monitoring Northern Colorado Plateau Network between `r min(plot_data_first$Year)` and `r max(plot_data_first$Year)`. `r nrow(ord.df)` plots were included for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (in development, McCord & Stauffer, 2020). When plots were sampled in multiple years, only the first sampling year was used in STM development.
 
 The R packages “cluster” and “dendextend” were used to perform a hierarchical cluster analysis. The distance matrix was calculated using Bray-Curtis distance and a flexible beta linkage was used for clustering (β = –0.25). To determine the optimal number of groups, we used the “labdsv” R package to calculate indicator species values (IndVal, Dufrene and Legendre 1997) when the cluster analysis results were split into 2 to 12 groups. We then selected the number of groups that minimized mean p-values and maximized the number of significant indicator species (Figure \@ref(fig:clustering)). 
 
