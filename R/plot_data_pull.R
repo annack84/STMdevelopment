@@ -37,7 +37,8 @@ plot_data_pull <- function(user = "Anna",
                              "Parashant",
                              # "SwEDD", # no
                              # "USFWSPartners", # maybe? still in development but only from untreated areas currently
-                             "TerrADat", # aka AIM
+                             #"TerrADat", # aka AIM
+                             "AIM",
                              "VanScoyocThesis"
                            ),
                            indicators = c(# Cover types to pull:

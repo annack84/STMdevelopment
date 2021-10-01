@@ -10,7 +10,11 @@
 #' @export
 #'
 
-make_indicator_descriptions <- function(indicators = c("AH_C3PerenGrassCover", # C3 native perennial grasses TODO calculate C3 NATIVE
+make_indicator_descriptions <- function(indicators = c("AH_C3NativePerenGrassCover",
+                                                       "AH_C3IntroducedPerenGrassCover",
+                                                       "AH_C4NativePerenGrassCover",
+                                                       "AH_C4IntroducedPerenGrassCover",
+                                                       "AH_C3PerenGrassCover", # C3 native perennial grasses TODO calculate C3 NATIVE
                                                         "AH_C4PerenGrassCover", # C4 native perennial grasses TODO calculate C4 NATIVE
                                                         "AH_IntroducedPerenGrassCover", # Non-native perennial grasses
                                                         "AH_NativePerenForbCover", # Native perennial forbs
@@ -32,6 +36,10 @@ make_indicator_descriptions <- function(indicators = c("AH_C3PerenGrassCover", #
   # Create a table of indicator descriptions
   indicator_description_table_options <- dplyr::tribble(
     ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
+    "AH_C3NativePerenGrassCover", "Biotic", "C3 native perennial grasses", "Percent foliar cover of the functional group",
+    "AH_C3IntroducedPerenGrassCover", "Biotic", "C3 introduced perennial grasses", "Percent foliar cover of the functional group",
+    "AH_C4NativePerenGrassCover", "Biotic", "C4 native perennial grasses", "Percent foliar cover of the functional group",
+    "AH_C4IntroducedPerenGrassCover","Biotic", "C4 introduced perennial grasses", "Percent foliar cover of the functional group",
     "AH_C3PerenGrassCover", "Biotic", "C3 perennial grasses", "Percent foliar cover of the functional group",
     "AH_C4PerenGrassCover", "Biotic", "C4 perennial grasses", "Percent foliar cover of the functional group",
     "AH_IntroducedPerenGrassCover", "Biotic", "Introduced perennial grasses", "Percent foliar cover of the functional group",

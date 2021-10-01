@@ -1,0 +1,421 @@
+---
+title: "Exploring Clustering and Ordination Techniques"
+author: "Anna Knight"
+date: "9/30/2021"
+output: 
+  bookdown::html_document2:
+    toc: true
+    toc_depth: 1
+    toc_float: true
+    number_sections: false
+---
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 14px;
+  }
+td {  /* Table  */
+  font-size: 14px;
+}
+h1.title {
+  font-size: 30px;
+}
+h1 { /* Header 1 */
+  font-size: 26px;
+}
+h2 { /* Header 2 */
+    font-size: 22px;
+}
+h3 { /* Header 3 */
+  font-size: 18px;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}
+</style>
+
+# Helpful resources
+  1. "Analysis of Ecological Communities" by McCune & Grace - Great place to start to understand the statistics! Detailed, but not overwhelming. Provides specific recommendations helpful for community ecology. Does NOT provide any R coding help. (Cheapest hardcopies usually from the authors' website: https://www.wildblueberrymedia.net/store/analysis-of-ecological-communities)
+  2. "Numerical Ecology" by Legendre & Legendre - Loads of detail about the stats. Comprehensive descriptions of almost every ordination and clustering method available. Recommends some R packages but doesn't provide code. Available free on DOI VPN here: https://www.sciencedirect.com/bookseries/developments-in-environmental-modelling/vol/24/suppl/C
+  3. Vegan R package vignette - Lots of handy R coding demos for ordination. Light on stats descriptions. See https://cran.r-project.org/web/packages/vegan/vignettes/intro-vegan.pdf 
+  4. Some additional handy online tutorials: https://www.rpubs.com/an-bui/vegan-cheat-sheet and  http://www.umass.edu/landeco/teaching/multivariate/schedule/summary.handouts.pdf
+  5. Your pals in the Moab UseR group!
+
+# Community analysis goals and workflow
+In this demo, I'm trying to identify plant communities within a set of plots that occur on similar soil types (ask Travis about his Ecological Site Groups if you want the nitty-gritty). I want to know how distinct the plant communities are from one another, and whether there are any major environmental gradients that separate them.
+
+The general workflow is:
+  1. Format your data, pick a **distance metric**, and use those to calculate a distance matrix
+  2. Group the plots with a **cluster analysis**
+  3. Determine the appropriate number of groups (many method options - I'll do an **indicator species analysis**)
+  4. Investigate relationships among groups (e.g. do they overlap a lot?) with **ordination**
+  5. Look at how environmental variables correspond to the plant community structure with more ordination-related tools
+  
+I've structured this around plant community analysis because that's my jam, but there are plenty of other reasons to use clustering and ordination - feel free to bring up your own scenarios as we go through this!
+
+# Data prep and distance matrix
+```{r setup, include=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
+user <- "Anna"
+#user <- "VPN"
+
+
+library(STMdevelopment)
+```
+
+```{r visible-setup, include=TRUE}
+library(dplyr) # for data wrangling
+library(kableExtra) # for formatting tables in RMarkdown
+library(vegan) # for clustering and ordination!
+```
+
+```{r load-plot-indicators, include=FALSE}
+indicators <- c("AH_C3NativePerenGrassCover", 
+                "AH_C3IntroducedPerenGrassCover",
+                "AH_C4NativePerenGrassCover", 
+                "AH_C4IntroducedPerenGrassCover",
+                "AH_IntroducedPerenGrassCover", # Non-native perennial grasses
+                "AH_NativePerenForbCover", # Native perennial forbs
+                "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+                "AH_NativeAnnGrassCover", # Native annual grasses
+                "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+                "AH_NativeAnnForbCover", # Native annual forbs
+                "AH_IntroducedAnnForbCover", # Non-native annual forbs
+                "BareSoilCover", # Bare soil
+                "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
+                "CP_percent_200plus",
+                "FH_LichenCover", # Lichen + moss combined cover
+                "FH_MossCover")
+
+shrub_by_spp <- T # All shrubs and sub-shrubs by species
+subshrub_by_spp <- T
+tree_by_spp <- T # All trees by species
+opuntia_combined <- T
+
+data_sources <- c("BadgerWash",
+                             "CRCMonitoring",
+                             "IM_NCPN",
+                             "LMF",
+                             #"NRI",
+                             "Parashant",
+                             "AIM", 
+                             "VanScoyocThesis"
+                           )
+
+plot_data <- plot_data_pull(user=user,
+                             target_ESG = target_ESG,
+                           data_sources = data_sources,
+                           indicators = indicators,
+                           shrub_by_spp = shrub_by_spp,
+                           subshrub_by_spp = subshrub_by_spp,
+                           tree_by_spp = tree_by_spp,
+                           opuntia_combined = opuntia_combined
+                           )
+
+
+```
+
+Decide what variables to include. Often in community ecology, people include every species as its own variable. This data set covers a large area with a LOT of herbaceous species, so we lumped them into functional groups pertinent to our objectives. 
+
+```{r doc-plot-indicators, echo=TRUE, error=FALSE, warning=FALSE, message=FALSE}
+indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
+                                                      shrub_by_spp = shrub_by_spp,
+                                                      subshrub_by_spp = subshrub_by_spp,
+                                                      tree_by_spp = tree_by_spp,
+                                                      opuntia_combined = opuntia_combined)
+
+kbl(x = indicator_descriptions[,-1], format = "html", row.names = F, align = "c",
+    caption = "Indicators used in ordination and clustering analysis to develop plant communities") %>%
+   kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(indicator_descriptions), background = "lightsteelblue") %>%
+  collapse_rows(columns = 1, valign = "top")
+```
+
+### Other data prep things to consider:
+  * Sometimes it helps to drop out species/variables with non-zero values in only a few plots (<5% of plots or sample units).
+  * For presence/absence data with a lot of absences (zeros), consider converting the data to probability of presence with Beals smoothing
+  * Decide whether to relativize the data.
+    + Lots of ways to do this (see Ch 9. in McCune & Grace). Relative cover is a common one for plant cover data.
+      * relative cover = species cover/total foliar cover
+    + Useful if species composition matters to your objectives more than absolute cover (rare species will get more weight)
+    + Also helpful if you have variables in different units (e.g. cover and count data)
+      * e.g. my soil stability dilemma
+  * Decide what to do about incomplete or missing values, if you have them
+
+```{r ordination-data, echo=TRUE, error=FALSE, warning=FALSE, message=FALSE}
+# remove incomplete rows - Bray Curtis distance can't work with NAs
+plot_data_clean <- na.omit(plot_data)
+
+# Some plots were sampled multiple times - I'll include only the first year that a plot has complete data
+plot_data_first <- plot_data_clean %>%
+  dplyr::group_by(PlotCode) %>%
+  dplyr::arrange(.data=., Year, .by_group = TRUE) %>%
+  dplyr::filter(dplyr::row_number()==1) %>%
+  dplyr::ungroup()
+
+# make the clustering and ordination data frame - can't include ANY columns except the actual variables!
+ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotName,
+                        -Year, -Longitude_NAD83, -Latitude_NAD83,
+                        -Month, -Day) %>%
+  tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
+
+# Keep only species that occur in at least 2 plots
+ord.df <- ord.df[ ,which(colSums(ord.df[,1:ncol(ord.df)] !=0) >= 2)] 
+
+head(ord.df)
+
+```
+
+### Distance measures (aka dissimilarity measures)
+  * Quantify how different each unit is from another
+  * Can calculate among rows (i.e. how different each plot is from another) or columns (i.e. how different each species is from another)
+  * LOTS of options here! Some common ones:
+    + Euclidean - basic geometry. Uses the Pythagorean theorem on as many dimensions as you have variables
+    + Bray-Curtis (aka Sorensen) - One of the most common in community ecology. Works with binary data (e.g. presence/absence) as well as cover, abundance, etc. No negative numbers in your data allowed! 
+
+```{r distance, echo=TRUE}
+dist.df <- vegan::vegdist(ord.df, method = "bray") # creates Bray-Curtis distance matrix
+```
+
+# Clustering
+  * Lots of ways to find groups in data!
+    + Hierarchical clustering (many flavors) - groups are nested on branches of a tree
+    + K-means clustering - groups are not nested
+      * Fuzzy clustering - plots are assigned a probability of being in each group
+    + Multivariate classification trees (CART, random forest, etc.) - supervised (you pre-define the groups with training data) or unsupervised (you decide how many groups and then let the machine learning process define them)
+    + TWINSPAN
+
+## Hierarchical clustering
+There are dozens of ways to do hierarchical clustering! The two things you have to choose are a distance measure (see above) and a linkage method compatible with your distance measure. A common combo that works well for a lot of ecological community data is to use Bray-Curtis distance with a flexible beta linkage (β = –0.25).
+
+```{r clustering, echo=TRUE, message=FALSE, warning=FALSE, fig.width=10, fig.cap="Initial clustering dendrogram"}
+# cluster and indicator species analysis
+library(cluster) # for cluster analysis
+library(dendextend) # for pretty cluster plotting
+
+#clust <- hclust(dist.df, method = "average")
+clust1 <- agnes(x= dist.df, diss=T, method="flexible", par.method = c(0.625,0.625,-0.25,0)) # flexible beta with beta=-0.25
+#plot(clust1)
+hclust1 <- as.hclust(clust1) # covert to class hclust for easier plotting
+plot(hclust1, labels = FALSE)
+```
+
+## How many groups should I have?
+The hardest part about clustering is determining the right number of groups!
+Some strategies:
+  * Silhouette plots (compare dissimilarity between a plot and its group vs. between a plot and everything not in its group)
+  * Maximize the correlation between the distance matrix and a binary grouping matrix
+  * Indicator species analysis (i.e. species fidelity)
+  
+```{r indicatorsp, echo=TRUE, fig.cap="Mean, fig.width=10, message=FALSE, warning=FALSE, fig.cap="Mean p-value of indicator species (left) and number of significant species (right, α = 0.05) for 2 to 12 possible plant communities."}
+library(labdsv)
+library(foreach)
+# indicator species
+# use IndVal from Dufrene and Legendre (1997)
+# groupings from hierarchical clustering (grp)
+
+# create vectors of groupings with different numbers of clusters
+grps <- data.frame(site=1:nrow(ord.df))
+for (i in 2:12) {
+  grps <- cbind(grps, cutree(hclust1, k=i))
+}
+colnames(grps) <- c("site", paste(2:12, "groups", sep="_"))
+
+# calculate IndVal for each species in each number of clusters
+listnames <- paste("indvals", 2:12, sep="")
+
+ivlabs_list <- foreach(i=2:12) %do% indval(x=ord.df, clustering =grps[,i], numitr = 1000)
+
+names(ivlabs_list) <- listnames
+
+# Create a data frame with three columns: number of clusters, average p, number of sig ind spp
+ivlabs_df <- data.frame(nclusters=2:12, p_mean=NA, nsignif=NA, sumsignif=NA)
+for(i in seq(length(ivlabs_list))){
+  ivlabs_df[i,"p_mean"] <- mean(ivlabs_list[[i]]$pval, na.rm = T) 
+  ivlabs_df[i, "nsignif"] <- length(which(ivlabs_list[[i]]$pval<=0.05))
+  ivlabs_df[i,"sumsignif"] <- sum(ivlabs_list[[i]]$indval, na.rm = T)
+}
+
+par(mfrow=c(1, 2))
+# plot average p values by number of clusters
+plot(x=ivlabs_df$nclusters, y=ivlabs_df$p_mean, xlab="Number of clusters", ylab="Mean p-value")
+# plot number of significant indicator species by number of clusters
+plot(x=ivlabs_df$nclusters, y=ivlabs_df$nsignif, xlab="Number of clusters", ylab="Number of significant species")
+par(mfrow=c(1, 1))
+
+k_groups <- 8 # manually change based on plot results
+```
+
+The idea here is to minimize the mean p-value and maximize the number of significant species. Based on the results in Figure \@ref(fig:clustering), the optimal number of vegetation groupings is `r k_groups` (mean p-value = `r round(ivlabs_df$p_mean[ivlabs_df$nclusters==k_groups], 3)`; number of indicator species = `r ivlabs_df$nsignif[ivlabs_df$nclusters==k_groups]`).
+
+```{r cut-tree, echo=TRUE, message=FALSE, warning=FALSE}
+# create groups
+grp <- cutree(hclust1, k=k_groups)
+
+# create data frame that identifies indicator species by group:
+ivlab <- indval(x=ord.df, clustering = grp, numitr = 1000)
+
+gr <- ivlab$maxcls 
+iv <- ivlab$indcls 
+pv <- ivlab$pval 
+
+indvalsummary <- data.frame(group=gr, indval=iv, pvalue=pv) #, freq=fr)
+indvalsummary <- indvalsummary[order(indvalsummary$group, -indvalsummary$indval),]
+indvalsummary$Code <- rownames(indvalsummary)
+
+# add in readable indicator names
+indvalsummary <- left_join(x=indvalsummary,
+                           y=select(indicator_descriptions, Indicator_code, Indicator),
+                           by=c("Code"="Indicator_code")) %>%
+  left_join(x=.,
+            y=select(read.csv(data_file_paths(user)$species_list), SpeciesCode, ScientificName),
+            by=c("Code"="SpeciesCode")) %>%
+  mutate(Indicator = ifelse(test = is.na(Indicator), yes = ScientificName, no = Indicator))
+
+if(opuntia_combined){
+  indvalsummary$Indicator[which(indvalsummary$Code=="AH_OpuntiaCover")] <- indicator_descriptions$Indicator[which(indicator_descriptions$Indicator_code=="opuntia_combined")]
+}
+
+# add in relative abundance
+relab <- as.data.frame(ivlab$relabu)
+colnames(relab) <- paste0("RelativeAbund_", 1:ncol(relab))
+relab$Code <- rownames(relab)
+indvalsummary <- left_join(x=indvalsummary, y=relab, by="Code")
+
+# add in relative frequency
+relfr <- as.data.frame(ivlab$relfrq)
+colnames(relfr) <- paste0("RelativeFreq_", 1:ncol(relfr)) 
+relfr$Code <- rownames(relfr)
+indvalsummary <- left_join(x=indvalsummary, y=relfr, by="Code")
+
+# create a table for display where relative abundance and relative frequency are only displayed for the group for which the species is an indicator
+indvalsummary_disp <- dplyr::select(indvalsummary, group, indval, pvalue, Indicator)
+indvalsummary_disp$RelAbund <- NA
+for(g in 1:k_groups){
+ indvalsummary_disp[indvalsummary_disp$group==g, "RelAbund"] <- 
+   indvalsummary[indvalsummary$group==g, paste0("RelativeAbund_", g)]
+}
+
+indvalsummary_disp$RelFreq <- NA
+for(g in 1:k_groups){
+ indvalsummary_disp[indvalsummary_disp$group==g, "RelFreq"] <- 
+   indvalsummary[indvalsummary$group==g, paste0("RelativeFreq_", g)]
+}
+
+# order data frame by group, then significance; for output file
+#indvalsummary_disp <- indvalsummary_disp[order(indvalsummary_disp$group, indvalsummary_disp$indval), ]
+indvalsummary_disp <- indvalsummary_disp %>%
+  group_by(group) %>%
+  arrange(desc(indval), .by_group=T)
+
+indvalsummary_disp_filt <- filter(indvalsummary_disp, pvalue<=0.05) %>%
+  mutate(indval=round(indval, 2),
+         pvalue=round(pvalue, 3),
+         RelAbund=round(RelAbund, 2),
+         RelFreq=round(RelFreq, 2)) %>%
+  select(group, Indicator, indval, pvalue, RelAbund, RelFreq) %>%
+  setNames(c("Group", "Indicator", "Indicator value", "p-value", "Relative abundance", "Relative frequency"))
+
+kbl(x = indvalsummary_disp_filt, format = "html", row.names = F, align = "c",
+    caption = "Indicator species for plant community groups. The indicator value of a species is a combined measure of fidelity (always present in the group) and specificity (exclusive to the group), where higher values indicate a stronger association with the given vegetation group. Relative abundance indicates specificity, where 1 means the species only occurs in plots of the given group. Relative frequency indicates fidelity, where 1 means the species always occurs in plots of the given group. Only species with a p-value less than 0.05 are displayed.") %>%
+  kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(indvalsummary_disp_filt), background = "lightsteelblue") %>%
+  collapse_rows(columns = 1, valign = "top")
+
+```
+
+Going back to our clustering dendrogram, here's what it looks like with o
+```{r dendrogram, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.cap="Cluster dendrogram for plant community groups. Boxes represent the groups identified by the indicator species analysis."}
+# Cluster dendrogram plot
+hclust1_dend <- as.dendrogram(hclust1)
+
+# veg group color palette
+pal_veg <- RColorBrewer::brewer.pal(n=k_groups, name = "Set1")
+
+plot(hclust1_dend, leaflab= "none")
+rect.dendrogram(hclust1_dend, 
+                k=k_groups, 
+                cluster = grp, 
+                border = pal_veg[unique(cutree(hclust1_dend, k=k_groups)[order.dendrogram(hclust1_dend)])], 
+                text = as.character(unique(cutree(hclust1_dend, k=k_groups)[order.dendrogram(hclust1_dend)])), 
+                text_cex = 2, 
+                lower_rect = -0.25,
+                lwd =2)
+
+#plot(ape::as.phylo(hclust1), tip.color = pal_veg9[grp], direction = "downwards")
+```
+
+# Ordination
+## Why do an ordination?
+  * Data reduction - simplify a complex web of intercorrelated variables 
+    + Can create a smaller number of composite variables, e.g. combining many similar climate variables (PCA is great for this!)
+  * Visualize patterns
+  * Identify strong vs. weak patterns
+
+## Ordination methods
+  * Constrained ordination - e.g. canonical correspondence analysis
+    + Use with two sets of many variables (explanatory and response)
+  * Unconstrained ordination - e.g. principal components analysis (PCA), nonmetric multi-dimensional scaling (NMDS)
+    + Use with one set of many variables (e.g. plant cover by species)
+    + Can fit another set of variables (e.g. environmental conditions) _after_ running the ordination
+    + PCA is best for normal data with roughly linear relationships between variables
+    + NMDS works well for non-normal and zero-inflated data (most plant community data!)
+
+```{r ordination-scree, echo=TRUE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', cache=FALSE, fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
+NMDS_scree(ord.df)
+ord_dims <- 2 # change manually based on the plot results
+```
+
+```{r ordination, eval=TRUE, include=TRUE}
+
+#run NMS ordination 
+set.seed(1)
+ord <- metaMDS(ord.df,
+               k=ord_dims, # number of dimensions
+               trymax = 30) 
+
+```
+
+Based on Figure \@ref(fig:ordination-scree), ordination stress is acceptable with `r ord_dims` dimensions, and stress reduction is minimal with additional dimensions. The stress for the ordination with `r ord_dims` dimensions is `r round(ord$stress, 3)`.
+
+```{r ordination-plots, echo=TRUE, fig.height=5, fig.width=10, fig.cap="NMDS ordination of plot indicator data. Points represent plots; ellipses represent plant communities identified by the hierarchical clustering and indicator species analysis."}
+# 2D plotting
+plot_data_first$PlantCommunity <- as.factor(grp)
+
+# manually update based on indicator species
+group_labels <- c("1 - Perennial grassland with
+mixed shrubs and forbs",
+                    "2 - Juniper and shrub community
+with non-native grasses",
+                    "3 - Mixed grassland and shrub community",
+                    "4 - Sparse shrub community")
+
+par(mfrow=c(1,2))
+# Axes 1x2
+plot(ord, choices = c(1,2), type = "n", 
+     xlim = c(-1.25, 1.25),
+     ylim = c(-1, 1))
+points(ord, choices = c(1,2), display = "sites",
+       col=pal_veg[plot_data_first$PlantCommunity],
+       pch = 21, cex = .6, bg=pal_veg[plot_data_first$PlantCommunity])
+ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T)
+
+# Legend
+plot(ord, type = "n", axes=FALSE,
+     display = "sites",
+     col=pal_veg[plot_data_first$PlantCommunity],
+     xlab = "",
+     ylab = "")
+legend(x="center",
+       legend = group_labels,
+       fill = pal_veg,
+       title = "Plant communities")
+
+par(mfrow=c(1,1))
+
+```
