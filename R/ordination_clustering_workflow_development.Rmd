@@ -65,7 +65,7 @@ target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
 user <- "Anna"
 #user <- "VPN"
 
-
+#devtools::install_github("annack84/STMdevelopment")
 library(STMdevelopment)
 ```
 
@@ -73,6 +73,7 @@ library(STMdevelopment)
 library(dplyr) # for data wrangling
 library(kableExtra) # for formatting tables in RMarkdown
 library(vegan) # for clustering and ordination!
+library(ggplot2, quietly = T)
 ```
 
 ```{r load-plot-indicators, include=FALSE}
@@ -92,7 +93,9 @@ indicators <- c("AH_C3NativePerenGrassCover",
                 "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
                 "CP_percent_200plus",
                 "FH_LichenCover", # Lichen + moss combined cover
-                "FH_MossCover")
+                "FH_MossCover",
+                "SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+                )
 
 shrub_by_spp <- T # All shrubs and sub-shrubs by species
 subshrub_by_spp <- T
@@ -135,6 +138,8 @@ plot_data <- select(plot_data,
 ```
 
 Decide what variables to include. Often in community ecology, people include every species as its own variable. This data set covers a large area with a LOT of herbaceous species, so we lumped them into functional groups pertinent to our objectives. 
+
+This report was run on `r Sys.Date()`. The PlotNet files used are those with the most recent dates before `r Sys.Date()`.
 
 ```{r doc-plot-indicators, echo=TRUE, error=FALSE, warning=FALSE, message=FALSE}
 indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
@@ -180,11 +185,9 @@ ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotNa
 
 # remove rare species
 sp_pa <- mutate(rowwise(ord.df), across(everything(), function(x){if(x>0){1}else{0}})) # make a presence/absence data frame
-sp_keep <- names(colSums(sp_pa)[which(colSums(sp_pa)>10)])
+sp_keep <- names(colSums(sp_pa)[which(colSums(sp_pa)>2)])
 ord.df <- select(ord.df, all_of(sp_keep))
 
-
-head(ord.df)
 
 ```
 
@@ -229,6 +232,76 @@ Some strategies:
   * Maximize the correlation between the distance matrix and a binary grouping matrix
   * Indicator species analysis (i.e. species fidelity)
   
+```{r silhouette, echo=TRUE, message=FALSE, warning=FALSE, fig.width=10, fig.cap="Silhouette optimal number of clusters"}
+Si <- numeric(50)
+for(k in 2:50){
+  sil <- silhouette(x=cutree(hclust1, k=k),
+                    dist=dist.df)
+  Si[k] <- summary(sil)$avg.width
+}
+
+k.best <- which.max(Si)
+
+plot(1:50,
+     Si,
+     type = "h",
+     xlab = "k (number of clusters)",
+     ylab = "Average silhouette width")
+axis(1,
+     k.best,
+     paste("Optimum", k.best, sep = "\n"),
+     col = "red",
+     font = 2,
+     col.axis = "red")
+points(k.best,
+       max(Si),
+       pch=16,
+       col = "red",
+       cex = 1.5)
+
+```
+  
+```{r matrix-cor, echo=TRUE, message=FALSE, warning=FALSE, fig.width=10, fig.cap="Matrix correlation optimal number of clusters"}
+
+grpdist <- function(X){
+  require(cluster)
+  gr <- as.data.frame(as.factor(X))
+  distgr <- daisy(gr, "gower")
+  distgr
+}
+
+kt <- data.frame(k=1:50, r=0)
+
+for(i in 2:50) {
+  gr <- cutree(hclust1, i)
+  distgr <- grpdist(gr)
+  mt <- cor(dist.df, distgr, method = "pearson")
+  kt [i, 2] <- mt
+}
+
+k.best <- which.max(kt$r)
+
+plot(kt$k,
+     kt$r,
+     type = "h",
+     xlab = "k (number of clusters)",
+     ylab = "Pearson's correlation")
+
+axis(1,
+     k.best,
+     paste("Optimum", k.best, sep = "\n"),
+     col = "red",
+     font = 2,
+     col.axis = "red")
+
+points(k.best,
+       max(kt$r),
+       pch = 16,
+       col = "red",
+       cex = 1.5)
+
+```
+  
 ```{r indicatorsp, echo=TRUE, message=FALSE, warning=FALSE, fig.width=10, fig.cap="Mean p-value of indicator species (left) and number of significant species (right, α = 0.05) for 2 to 12 possible plant communities."}
 library(labdsv) # indicator species analysis
 library(foreach)
@@ -265,10 +338,10 @@ plot(x=ivlabs_df$nclusters, y=ivlabs_df$p_mean, xlab="Number of clusters", ylab=
 plot(x=ivlabs_df$nclusters, y=ivlabs_df$nsignif, xlab="Number of clusters", ylab="Number of significant species")
 par(mfrow=c(1, 1))
 
-k_groups <- 9 # manually change based on plot results
+k_groups <- 4 # manually change based on plot results
 ```
 
-The idea here is to minimize the mean p-value and maximize the number of significant species. Based on the results in Figure \@ref(fig:clustering), the optimal number of vegetation groupings is `r k_groups` (mean p-value = `r round(ivlabs_df$p_mean[ivlabs_df$nclusters==k_groups], 3)`; number of indicator species = `r ivlabs_df$nsignif[ivlabs_df$nclusters==k_groups]`).
+The idea here is to minimize the mean p-value and maximize the number of significant species. Based on the results from the three different tests, the optimal number of vegetation groupings is `r k_groups`. The silhouette method and matrix correlation method both selected 4 groups. Only the indicator species analysis suggested including more.
 
 It's a good idea to check your indicator species groupings with a good botanist to make sure the groupings make sense bioligically! E.g. here, pinyon and juniper got grouped together, which definitely makes botanical sense. However, the sagebrush groupings are a bit weird - I need to go back and lump all sagebrush subspecies together.
 
@@ -370,6 +443,18 @@ rect.dendrogram(hclust1_dend, # put boxes around each group
 #plot(ape::as.phylo(hclust1), tip.color = pal_veg[grp], direction = "downwards")
 ```
 
+```{r silhouette-results, echo=TRUE, warning=FALSE, message=FALSE, fig.width=10, fig.cap="Silhouette plot of the final groupings."}
+
+sil <- silhouette(cutree(hclust1, k=k_groups), dist.df)
+
+rownames(sil) <- rownames(ord.df)
+plot(sil,
+     cex.names = 0.8,
+     col = 2:(k_groups + 1),
+     nmax = 100)
+
+```
+
 # Ordination
 ## Why do an ordination?
   * Data reduction - simplify a complex web of intercorrelated variables 
@@ -394,22 +479,8 @@ Here, we're using ordination to visualize patterns in the plant communities. The
   * For interpretablility, you're really choosing between 2 and 3 axes
   
 ```{r ordination-scree, echo=TRUE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', cache=FALSE, fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
-# The part takes a while!
-NMDS_scree_plot<-function(x) { #x is the name of the data frame
-  plot(rep(1,2),
-       replicate(2,vegan::metaMDS(x,k=1)$stress),
-       xlim=c(1,5),
-       ylim=c(0,1),
-       xlab="# of Dimensions",
-       ylab="Stress",
-       main="NMDS stress plot")
-  for (i in 1:4) {
-    points(rep(i+1,2),
-           replicate(2,vegan::metaMDS(x,distance="bray",k=i+1)$stress))
-  }}
-
-
-NMDS_scree_plot(ord.df)
+# This part takes a while!
+NMDS_scree(ord.df)
 ord_dims <- 3 # change manually based on the plot results
 ```
 
@@ -430,18 +501,23 @@ Based on Figure \@ref(fig:ordination-scree), ordination stress is acceptable wit
 plot_data_first$PlantCommunity <- as.factor(grp)
 
 # manually update based on indicator species
-group_labels <- c("1 - Sagebrush shrubland",
-                    "2 - Wyoming big sagebrush shrubland",
-                    "3 - Sparse shrubland",
-                    "4 - C3 perennial grassland with
-mixed shrubs",
-                    "5 - Pinyon-juniper woodland",
-                    "6 - Mixed oak shrubland",
-                    "7 - Introduced annual herbaceous 
-community",
-                    "8 - Ephedra shrubland with biocrust",
-                    "6 - C4 perennial grassland"
-)
+# group_labels <- c("1 - Sagebrush shrubland",
+#                     "2 - Wyoming big sagebrush shrubland",
+#                     "3 - Sparse shrubland",
+#                     "4 - C3 perennial grassland with
+# mixed shrubs",
+#                     "5 - Pinyon-juniper woodland",
+#                     "6 - Mixed oak shrubland",
+#                     "7 - Introduced annual herbaceous 
+# community",
+#                     "8 - Ephedra shrubland with biocrust",
+#                     "6 - C4 perennial grassland"
+# )
+
+group_labels <- c("1",
+                  "2",
+                  "3",
+                  "4")
 
 par(mfrow=c(2,2))
 # Axes 1x2
@@ -451,7 +527,8 @@ plot(ord, choices = c(1,2), type = "n", # plot the axes
 points(ord, choices = c(1,2), display = "sites", # plot points - can choose "sites" or "species"
        col=pal_veg[plot_data_first$PlantCommunity],
        pch = 21, cex = .6, bg=pal_veg[plot_data_first$PlantCommunity])
-ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T) # plot your groups
+ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T,
+            choices = c(1,2)) # plot your groups
 # can use oriellipse, orihull, or ordispider to plot groups, depending on your needs
 
 # Axes 3x2
@@ -461,7 +538,8 @@ plot(ord, choices = c(3,2), type = "n",
 points(ord, choices = c(3,2), display = "sites", 
        col=pal_veg[plot_data_first$PlantCommunity],
        pch = 21, cex = .6, bg=pal_veg[plot_data_first$PlantCommunity])
-ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T) 
+ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T,
+            choices = c(3,2)) 
 
 # Axes 1x3
 plot(ord, choices = c(1,3), type = "n",
@@ -470,7 +548,8 @@ plot(ord, choices = c(1,3), type = "n",
 points(ord, choices = c(1,3), display = "sites",
        col=pal_veg[plot_data_first$PlantCommunity],
        pch = 21, cex = .6, bg=pal_veg[plot_data_first$PlantCommunity])
-ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T) 
+ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T,
+            choices = c(1,3)) 
 
 # Legend
 plot(ord, type = "n", axes=FALSE,
@@ -562,6 +641,270 @@ plot(ord, choices=c(1,3))
 ordisurf(ord~Elevation_ft, ord.full, labcex=1, choices=c(1,3)) # non-linear
 plot(ord.fit_Elev, choices=c(1,3))
 ```
+
+# Fuzzy clustering
+Fuzzy c-means clustering uses Euclidean distances and least-squares solutions to find the optimal grouping for each site. This means that our data going into the clustering algorithm need to be normalized. Borcard, Gillet, and Legendre (2011) suggest two ways of doing this. One is to used the "normalize" in the function vegan::decostand() on the raw species matrix. The other is to take the square root of the Bray-Curtis distance matrix, run a principal coordinates analysis (PCoA), take the site scores from the PCoA, and run them through the clustering algorithm (I think? see pp. 97-98 in Borcard et al. 2011).
+
+The first option sound simpler, so let's try that:
+
+```{r normalize, echo=TRUE}
+norm.df <- vegan::decostand(x=ord.df, method = "normalize")
+chord.df <- vegdist(x=norm.df, method = "euclidean")
+# NOTE: normalizing and then computing Euclidean distance is called "chord distance".
+```
+
+## What is the optimal number of fuzzy groups?
+
+We'll test splitting into 2 to 12 fuzzy groups. The best solution will maximize both the normalized Dunn's partition coefficient and the average silhouette width.
+
+```{r num-fuzzy-grps, echo=TRUE, fig.width=10, fig.cap="Normalized Dunn's index and average silhouette width for 2 to 12 possible groups in fuzzy clustering."}
+# test out groupings of 2 to 12
+res<- data.frame()
+for (i in 2:12) {super=fanny(chord.df, #d.bray,
+                             k=i,
+                             diss=T,
+                             #maxit=500,
+                             #metric = "euclidean",
+                             memb.exp= 1.2 #1.1
+)
+res=rbind(res, c(i, super$convergence[1], super$coeff[2], super$silinfo$avg.width))
+colnames(res)<-c("i", "inter", "dunn.index.normalized", "silhouette.averaged.width")
+}
+
+k.best.dunn <- res$i[which.max(res$dunn.index.normalized)]
+k.best.sil <- res$i[which.max(res$silhouette.averaged.width)]
+
+par(mfrow= c(1,2))
+plot(x=res$i,
+     y=res$dunn.index.normalized,
+     type = "h",
+     xlab = "k (number of clusters)",
+     ylab = "Normalized Dunn's partition coef.")
+axis(1,
+     k.best.dunn,
+     paste("Optimum", k.best.dunn, sep = "\n"),
+     col = "red",
+     font = 2,
+     col.axis = "red")
+points(k.best.dunn,
+       max(res$dunn.index.normalized),
+       pch = 16,
+       col = "red",
+       cex = 1.5)
+
+plot(x=res$i,
+     y=res$silhouette.averaged.width,
+     type = "h",
+     xlab = "k (number of clusters)",
+     ylab = "Silhouette averaged width")
+axis(1,
+     k.best.sil,
+     paste("Optimum", k.best.sil, sep = "\n"),
+     col = "red",
+     font = 2,
+     col.axis = "red")
+points(k.best.sil,
+       max(res$silhouette.averaged.width),
+       pch = 16,
+       col = "red",
+       cex = 1.5)
+
+par(mfrow= c(1,1))
+
+```
+
+
+```{r fuzzy-cluster, echo=TRUE}
+k_groups_fuzzy <- 3
+clust_fuzz <- fanny(x=chord.df,
+                    k = k_groups_fuzzy,
+                    diss = T,
+                    #metric = "euclidean",
+                    memb.exp = 1.2 # this affects how crisp/fuzzy the clusters are - closer to 1 is crisper
+                    )
+
+```
+
+```{r sil-plot-custom, echo=TRUE, fig.height=5, fig.width=5, fig.cap="Silhouette width by group."}
+# veg group color palette
+pal_veg2 <- RColorBrewer::brewer.pal(n=k_groups_fuzzy, name = "Dark2")
+
+sil_fuzzy <- as.data.frame(clust_fuzz$silinfo$widths)
+sil_fuzzy$cluster <- as.factor(as.character(sil_fuzzy$cluster))
+
+boxplot(sil_width~cluster,
+        data = sil_fuzzy,
+        ylab = "Silhouette width",
+        notch = T,
+        col = pal_veg2
+        )
+
+```
+
+## Ordination of the fuzzy clusters
+Borcard et al. (2011) recommend using PCoA ordination to visualized fuzzy clustering results.
+
+```{r pcoa, echo=TRUE, fig.height=10, fig.width=10, fig.cap="Ordination of fuzzy clusters (PCoA"}
+dc.pcoa <- cmdscale(chord.df, k=3, eig = T, add = T) # if add = T, you have applied a Cailliez correction (helps reduce problems with negative eigenvalues)
+
+
+par(mfrow=c(2,2))
+choice_list <- list(c(1,2), c(3,2), c(1,3))
+for(c in 1:length(choice_list)){
+  choices = choice_list[[c]]
+  
+  dc.scores <- scores(dc.pcoa, choices = choices)
+
+plot(dc.scores,
+     asp = 1,
+     type = "n",
+     )
+
+abline(h=0, lty = "dotted")
+abline(v=0, lty = "dotted")
+
+stars(
+  clust_fuzz$membership,
+  labels = NULL,
+  location = dc.scores,
+  key.loc = c(0.6, 0.6),
+  key.labels = 1:k_groups_fuzzy,
+  draw.segments = T,
+  add = T,
+  len = 0.075,
+  col.segments = pal_veg2[1:(k_groups_fuzzy)]
+)
+
+for(i in 1:k_groups_fuzzy){
+  gg <- dc.scores[clust_fuzz$clustering == i, ]
+  hpts <- chull(gg)
+  hpts <- c(hpts, hpts[1])
+  lines(gg[hpts, ], col = pal_veg2[i], lwd = 2)
+}
+
+}
+par(mfrow=c(1,1))
+
+```
+
+```{r pca, eval=FALSE, echo=FALSE, fig.height=5, fig.width=10, fig.cap="Ordination of fuzzy clusters (PCA"}
+spe.h.pca <- rda(norm.df)
+
+screeplot(spe.h.pca,
+          bstick = T,
+          npcs = length(spe.h.pca$CA$eig))
+# okay so don't do PCA, it wants me to interpret 8 axes!
+```
+
+```{r ordination-scree2, echo=TRUE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', cache=FALSE, fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
+# This part takes a while!
+NMDS_scree_euc<-function(x) { #x is the name of the data frame
+  plot(rep(1,2),
+       replicate(2,vegan::metaMDS(x,k=1, distance = "euclidean")$stress),
+       xlim=c(1,6),
+       ylim=c(0,1),
+       xlab="# of Dimensions",
+       ylab="Stress",
+       main="NMDS stress plot")
+  for (i in 1:3) {
+    points(rep(i+1,2),
+           replicate(2,vegan::metaMDS(x, distance = "euclidean",k=i+1)$stress))
+  }}
+
+NMDS_scree_euc(norm.df)
+ord_dims2 <- 3 # change manually based on the plot results
+```
+
+```{r ordination2, eval=TRUE, include=TRUE}
+
+#run NMS ordination 
+set.seed(1) # always set a seed if you want to be able to rerun your code and get the exact same ordination results!
+ord2 <- metaMDS(norm.df,
+               k=ord_dims2, # number of dimensions
+               trymax = 50, # can increase this number if you're having convergence problems
+               distance = "euclidean"
+               )  
+
+```
+
+Based on Figure \@ref(fig:ordination-scree2), ordination stress is acceptable with `r ord_dimss` dimensions, and stress reduction is minimal with additional dimensions. The stress for the ordination with `r ord_dims2` dimensions is `r round(ord2$stress, 3)`..
+
+```{r ordination-plots2, echo=TRUE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of normalized plot indicator data. Points represent plots; ellipses represent plant communities identified by fuzzy clustering analysis."}
+# 2D plotting
+grp_fuzz <- clust_fuzz$clustering
+plot_data_first$PlantCommunity_fuzzy <- as.factor(grp_fuzz)
+
+# manually update based on indicator species
+# group_labels <- c("1 - Sagebrush shrubland",
+#                     "2 - Wyoming big sagebrush shrubland",
+#                     "3 - Sparse shrubland",
+#                     "4 - C3 perennial grassland with
+# mixed shrubs",
+#                     "5 - Pinyon-juniper woodland",
+#                     "6 - Mixed oak shrubland",
+#                     "7 - Introduced annual herbaceous 
+# community",
+#                     "8 - Ephedra shrubland with biocrust",
+#                     "6 - C4 perennial grassland"
+# )
+
+group_labels <- c("1",
+                  "2",
+                  "3")
+
+par(mfrow=c(2,2))
+# Axes 1x2
+plot(ord2, choices = c(1,2), type = "n", # plot the axes
+     xlim = c(-0.75, 0.75),
+     ylim = c(-0.75, 0.75))
+points(ord2, choices = c(1,2), display = "sites", # plot points - can choose "sites" or "species"
+       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
+ordiellipse(ord2, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
+            choices = c(1,2)) # plot your groups
+# can use oriellipse, orihull, or ordispider to plot groups, depending on your needs
+
+# Axes 3x2
+plot(ord2, choices = c(3,2), type = "n", 
+     xlim = c(-0.75, 0.75),
+     ylim = c(-0.75, 0.75))
+points(ord2, choices = c(3,2), display = "sites", 
+       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
+ordiellipse(ord2, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
+            choices = c(3,2)) 
+
+# Axes 1x3
+plot(ord2, choices = c(1,3), type = "n",
+     xlim = c(-0.75, 0.75),
+     ylim = c(-0.75, 0.75))
+points(ord2, choices = c(1,3), display = "sites",
+       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
+ordiellipse(ord2, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
+            choices = c(1,3)) 
+
+# Legend
+plot(ord2, type = "n", axes=FALSE,
+     display = "sites",
+     col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+     xlab = "",
+     ylab = "")
+legend(x="center",
+       legend = group_labels,
+       fill = pal_veg2,
+       title = "Plant communities")
+
+par(mfrow=c(1,1))
+
+```
+
+Other things to try:
+- put the star plot in physical space to look for geographic patterns
+- What to do with the fuzziest plots (lowest silhouette width, and/or group membership below some threshold)
+- Indicator species analysis on the fuzzy cluster results? To help describe the communities, and provide indicator species for end-users
+- plot plant functional type gradients on whichever ordination you decide to go with (also helps describe communities)
+
 
 ```{r echo=FALSE}
 # TO MAKE THE 3D PLOT WORK, DON'T USE THE KNIT BUTTON! COPY AND PASTE THE CODE BELOW INTO THE CONSOLE!!

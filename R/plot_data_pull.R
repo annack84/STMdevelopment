@@ -51,6 +51,7 @@ plot_data_pull <- function(user = "Anna",
                              "AH_IntroducedAnnGrassCover", # Non-native annual grasses
                              "AH_NativeAnnForbCover", # Native annual forbs
                              "AH_IntroducedAnnForbCover", # Non-native annual forbs
+                             "AH_ArtemisiaTridentataCover", # all big sagebrush subspecies combined
                              "BareSoilCover", # Bare soil
                              "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
                              "CP_percent_200plus",

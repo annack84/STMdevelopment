@@ -49,8 +49,9 @@ make_indicator_descriptions <- function(indicators = c("AH_C3NativePerenGrassCov
     "AH_IntroducedPerenForbCover", "Biotic", "Introduced perennial forbs", "Percent foliar cover of the functional group",
     "AH_NativeAnnForbCover", "Biotic", "Native annual forbs", "Percent foliar cover of the functional group",
     "AH_IntroducedAnnForbCover", "Biotic", "Introduced annual forbs", "Percent foliar cover of the functional group",
-    "AH_ArtemisiaTridentataCover", "Biotic", "Artemisia tridentata", "Percent foliar cover of the functional group",
-    "BareSoilCover", "Ecosystem structure", "Bare soil", "Percent cover of bare soil"
+    "AH_ArtemisiaTridentataCover", "Biotic", "Artemisia tridentata (all subspecies)", "Percent foliar cover of the functional group",
+    "BareSoilCover", "Ecosystem structure", "Bare soil", "Percent cover of bare soil",
+    "SoilStab_all", "Ecosystem structure", "Soil stability (all cover types)", "Ordinal soil stability rating (1-6), averaged across all plot samples"
     )
 
   # filter to only include the indicators used
