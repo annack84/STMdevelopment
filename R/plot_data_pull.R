@@ -147,9 +147,9 @@ plot_data_pull <- function(user = "Anna",
                              stringsAsFactors = F,
                              na.strings = c("NA", "", " "))
 
-    shrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="Shrub")
-    subshrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="SubShrub")
-    tree_spp <- dplyr::filter(species_list, GrowthHabitSub=="Tree")
+    # shrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="Shrub")
+    # subshrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="SubShrub")
+    # tree_spp <- dplyr::filter(species_list, GrowthHabitSub=="Tree")
     Opunt_spp <- species_list[grep(pattern = "^Opuntia", x=species_list$ScientificName), ]
 
     # compile species data
@@ -171,6 +171,10 @@ plot_data_pull <- function(user = "Anna",
                                      sep = "_")
 
     species_data_all_target <- dplyr::filter(species_data_all, PlotCode %in% plot_target_ESG$PlotCode)
+    species_data_all_target_fg <- left_join(species_data_all_target,
+                                            species_list,
+                                            by = c("SourceKey" = "SpeciesState",
+                                                   "SpeciesCode" = "SpeciesCode"))
 
     # filter to just desired species
     species_data <- data.frame(SourceKey = character(),
@@ -187,15 +191,15 @@ plot_data_pull <- function(user = "Anna",
                                PlotCode = character()
                                )
     if(shrub_by_spp){
-      species_data_shrub <- dplyr::filter(species_data_all_target, SpeciesCode %in% shrub_spp$SpeciesCode)
+      species_data_shrub <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Shrub")
       species_data <- dplyr::bind_rows(species_data, species_data_shrub)
     }
     if(subshrub_by_spp){
-      species_data_subshrub <- dplyr::filter(species_data_all_target, SpeciesCode %in% subshrub_spp$SpeciesCode)
+      species_data_subshrub <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="SubShrub")
       species_data <- dplyr::bind_rows(species_data, species_data_subshrub)
     }
     if(tree_by_spp){
-      species_data_tree <- dplyr::filter(species_data_all_target, SpeciesCode %in% tree_spp$SpeciesCode)
+      species_data_tree <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Tree")
       species_data <- dplyr::bind_rows(species_data, species_data_tree)
     }
     if(opuntia_combined){
@@ -208,7 +212,8 @@ plot_data_pull <- function(user = "Anna",
       species_data <- dplyr::bind_rows(species_data, species_data_opunt)
     }
     # make wide
-    species_data_wide <- tidyr::pivot_wider(data = species_data, names_from = SpeciesCode,
+    species_data_wide <- select(species_data, any_of(colnames(species_data_all_target))) %>%
+      tidyr::pivot_wider(data = ., names_from = SpeciesCode,
                                             values_from = percent, values_fill = 0)
 
     # combine with indicator data

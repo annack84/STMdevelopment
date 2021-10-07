@@ -31,7 +31,8 @@ compile_species_lists <- function(user = "Anna",
                                   SpeciesState = "AIM")) %>%
     bind_rows(.,
               mutate(aimlmf_splist_slim,
-                     SpeciesState = "LMF"))
+                     SpeciesState = "LMF")) %>%
+    distinct()
 
   #save it
   write.csv(full_splist,

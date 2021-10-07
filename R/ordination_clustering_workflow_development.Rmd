@@ -188,6 +188,8 @@ sp_pa <- mutate(rowwise(ord.df), across(everything(), function(x){if(x>0){1}else
 sp_keep <- names(colSums(sp_pa)[which(colSums(sp_pa)>2)])
 ord.df <- select(ord.df, all_of(sp_keep))
 
+# remove unknown species if present
+ord.df <- select(ord.df, -any_of("UNKS"))
 
 ```
 
@@ -337,11 +339,66 @@ plot(x=ivlabs_df$nclusters, y=ivlabs_df$p_mean, xlab="Number of clusters", ylab=
 # plot number of significant indicator species by number of clusters
 plot(x=ivlabs_df$nclusters, y=ivlabs_df$nsignif, xlab="Number of clusters", ylab="Number of significant species")
 par(mfrow=c(1, 1))
-
-k_groups <- 4 # manually change based on plot results
 ```
 
-The idea here is to minimize the mean p-value and maximize the number of significant species. Based on the results from the three different tests, the optimal number of vegetation groupings is `r k_groups`. The silhouette method and matrix correlation method both selected 4 groups. Only the indicator species analysis suggested including more.
+For the indicator species analysis, McCune and Grace suggest selecting the number of clusters that minimizes the mean p-value and maximizes the number of significant species. Borcard et al. suggest selecting the number that maximizes the sum of the indicator values and also maximizes the proportion of clusters with significant indicator species. Do these two approaches agree?
+
+```{r indicatorsp-borcard, echo=TRUE, message=FALSE, warning=FALSE, fig.width=10, fig.cap="Sum of the indicator values for all species and proportion of clusters with significan indicator species for 2 to 12 possible plant communities."}
+IndVal <- numeric(12)
+ng <- numeric(12)
+for(k in 2:12){
+  iva <- indval(ord.df, cutree(hclust1, k=k), numitr = 1000)
+  gr <- factor(iva$maxcls[iva$pval <= 0.05])
+  ng[k] <- length(levels(gr))/k
+  iv <- iva$indcls[iva$pval <= 0.05]
+  IndVal[k] <- sum(iv)
+}
+
+k.best <- which.max(IndVal[ng==1]) + 1
+col3 <- rep(1, 12)
+col3[ng==1] <- 3
+
+par(mfrow=c(1,2))
+plot(
+  1:12,
+  IndVal,
+  type = "h",
+  xlab = "k (number of clusters)",
+  ylab = "IndVal sum",
+  col = col3
+)
+axis(1,
+     k.best,
+     paste("Optimum", k.best, sep = "\n"),
+     col = "red",
+     font = 2,
+     col.axis = "red")
+points(which.max(IndVal),
+       max(IndVal),
+       pch = 16,
+       col = "red",
+       cex = 1.5)
+
+plot(1:12,
+     ng,
+     type = "h",
+     xlab = "k (number of clusters)",
+  ylab = "Ratio",
+  col = col3)
+axis(1,
+     k.best,
+     paste("Optimum", k.best, sep = "\n"),
+     col = "red",
+     font = 2,
+     col.axis = "red")
+points(k.best,
+       max(ng),
+       pch = 16,
+       col = "red",
+       cex = 1.5)
+```
+
+Based on the results from the three different tests, `r k_groups` is a reasonable numbe for groups to start with. 
 
 It's a good idea to check your indicator species groupings with a good botanist to make sure the groupings make sense bioligically! E.g. here, pinyon and juniper got grouped together, which definitely makes botanical sense. However, the sagebrush groupings are a bit weird - I need to go back and lump all sagebrush subspecies together.
 
