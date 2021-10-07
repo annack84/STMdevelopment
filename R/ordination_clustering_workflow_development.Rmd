@@ -658,6 +658,7 @@ chord.df <- vegdist(x=norm.df, method = "euclidean")
 We'll test splitting into 2 to 12 fuzzy groups. The best solution will maximize both the normalized Dunn's partition coefficient and the average silhouette width.
 
 ```{r num-fuzzy-grps, echo=TRUE, fig.width=10, fig.cap="Normalized Dunn's index and average silhouette width for 2 to 12 possible groups in fuzzy clustering."}
+library(cluster)
 # test out groupings of 2 to 12
 res<- data.frame()
 for (i in 2:12) {super=fanny(chord.df, #d.bray,
@@ -822,7 +823,7 @@ set.seed(1) # always set a seed if you want to be able to rerun your code and ge
 ord2 <- metaMDS(norm.df,
                k=ord_dims2, # number of dimensions
                trymax = 50, # can increase this number if you're having convergence problems
-               distance = "euclidean"
+               distance = "euclidean" # you have to use the same distance metric as you did for you clustering technique (https://www.davidzeleny.net/anadat-r/doku.php/en:hier-agglom_examples)
                )  
 
 ```

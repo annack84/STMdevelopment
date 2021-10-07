@@ -5,9 +5,10 @@
 \title{Create a table describing the plot indicators}
 \usage{
 make_indicator_descriptions(
-  indicators = c("AH_C3PerenGrassCover", "AH_C4PerenGrassCover",
-    "AH_IntroducedPerenGrassCover", "AH_NativePerenForbCover",
-    "AH_IntroducedPerenForbCover", "AH_NativeAnnGrassCover",
+  indicators = c("AH_C3NativePerenGrassCover", "AH_C3IntroducedPerenGrassCover",
+    "AH_C4NativePerenGrassCover", "AH_C4IntroducedPerenGrassCover",
+    "AH_C3PerenGrassCover", "AH_C4PerenGrassCover", "AH_IntroducedPerenGrassCover",
+    "AH_NativePerenForbCover", "AH_IntroducedPerenForbCover", "AH_NativeAnnGrassCover",
     "AH_IntroducedAnnGrassCover", "AH_NativeAnnForbCover", "AH_IntroducedAnnForbCover",
     "BareSoilCover", "CP_percent_100to200", "CP_percent_200plus", "FH_LichenCover",
     "FH_MossCover"),
