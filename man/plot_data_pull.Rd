@@ -15,10 +15,15 @@ plot_data_pull(
     "AH_IntroducedAnnGrassCover", "AH_NativeAnnForbCover", "AH_IntroducedAnnForbCover",
     "AH_ArtemisiaTridentataCover", "BareSoilCover", "CP_percent_100to200",
     "CP_percent_200plus", "FH_LichenCover", "FH_MossCover"),
-  shrub_by_spp = T,
-  subshrub_by_spp = T,
-  tree_by_spp = T,
-  opuntia_combined = T
+  ann_grass_by_spp = FALSE,
+  ann_forb_by_spp = FALSE,
+  per_grass_by_spp = FALSE,
+  per_forb_by_spp = FALSE,
+  succulent_by_spp = FALSE,
+  shrub_by_spp = TRUE,
+  subshrub_by_spp = TRUE,
+  tree_by_spp = TRUE,
+  opuntia_combined = TRUE
 )
 }
 \arguments{
@@ -36,13 +41,23 @@ but recommended to select from the following: "BadgerWash", "CRCMonitoring",
 \item{indicators}{Character vector of indicators to return data from. Can
 include anything calculated in PlotNet.}
 
+\item{ann_grass_by_spp}{Logical. Include all annual grasses by species?}
+
+\item{ann_forb_by_spp}{Logical. Include all annual forbs by species?}
+
+\item{per_grass_by_spp}{Logical. Include all perennial grasses by species?}
+
+\item{per_forb_by_spp}{Logical. Include all perennial forbs by species?}
+
+\item{succulent_by_spp}{Logical. Include all succulents by species? If TRUE, opuntia_combined should be FALSE}
+
 \item{shrub_by_spp}{Logical. Include all shrubs by species?}
 
 \item{subshrub_by_spp}{Logical. Include all sub-shrubs by species?}
 
 \item{tree_by_spp}{Logical. Include all trees by species?}
 
-\item{opuntia_combined}{Logical. Include combined cover of genus Opuntia?}
+\item{opuntia_combined}{Logical. Include combined cover of genus Opuntia? If TRUE, succulent_by_spp should be FALSE}
 }
 \value{
 Wide format data frame containing indicators for the target ESG

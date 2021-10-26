@@ -10,10 +10,15 @@
 #'  "IM_NCPN", "LMF", "NRI", "Parashant", "TerrADat", "VanScoyocThesis"
 #' @param indicators Character vector of indicators to return data from. Can
 #'   include anything calculated in PlotNet.
+#' @param ann_grass_by_spp Logical. Include all annual grasses by species?
+#' @param ann_forb_by_spp Logical. Include all annual forbs by species?
+#' @param per_grass_by_spp Logical. Include all perennial grasses by species?
+#' @param per_forb_by_spp Logical. Include all perennial forbs by species?
+#' @param succulent_by_spp Logical. Include all succulents by species? If TRUE, opuntia_combined should be FALSE
 #' @param shrub_by_spp Logical. Include all shrubs by species?
 #' @param subshrub_by_spp Logical. Include all sub-shrubs by species?
 #' @param tree_by_spp Logical. Include all trees by species?
-#' @param opuntia_combined Logical. Include combined cover of genus Opuntia?
+#' @param opuntia_combined Logical. Include combined cover of genus Opuntia? If TRUE, succulent_by_spp should be FALSE
 #'
 #' @return Wide format data frame containing indicators for the target ESG
 #' @export
@@ -57,10 +62,15 @@ plot_data_pull <- function(user = "Anna",
                              "CP_percent_200plus",
                              "FH_LichenCover", # Lichen + moss combined cover
                              "FH_MossCover"),
-                           shrub_by_spp = T, # All shrubs and sub-shrubs by species
-                           subshrub_by_spp = T,
-                           tree_by_spp = T, # All trees by species
-                           opuntia_combined = T # Opuntia spp. (depending on prevalence)) # vector of indicator names
+                           ann_grass_by_spp = FALSE,
+                           ann_forb_by_spp = FALSE,
+                           per_grass_by_spp = FALSE,
+                           per_forb_by_spp = FALSE,
+                           succulent_by_spp = FALSE,
+                           shrub_by_spp = TRUE, # All shrubs and sub-shrubs by species
+                           subshrub_by_spp = TRUE,
+                           tree_by_spp = TRUE, # All trees by species
+                           opuntia_combined = TRUE # Opuntia spp. (depending on prevalence)) # vector of indicator names
 ){
   file_paths <- data_file_paths(user)
   # extract ESG for each plot location
@@ -142,7 +152,8 @@ plot_data_pull <- function(user = "Anna",
 
   # pull species-level cover data for target ESG plots
   # get species lists TODO update this list's C3/C4 designations based on Travis's lit review list
-  if(shrub_by_spp|subshrub_by_spp|tree_by_spp|opuntia_combined){
+  if(ann_grass_by_spp | ann_forb_by_spp | per_grass_by_spp | per_forb_by_spp |
+     shrub_by_spp | subshrub_by_spp | tree_by_spp | opuntia_combined){
     species_list <- read.csv(file_paths$species_list,
                              stringsAsFactors = F,
                              na.strings = c("NA", "", " "))
@@ -190,6 +201,26 @@ plot_data_pull <- function(user = "Anna",
                                percent = double(),
                                PlotCode = character()
                                )
+    if(ann_grass_by_spp){
+      species_data_anngrass <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Graminoid" & Duration=="Annual")
+      species_data <- dplyr::bind_rows(species_data, species_data_anngrass)
+    }
+    if(ann_forb_by_spp){
+      species_data_annforb <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Forb" & Duration=="Annual")
+      species_data <- dplyr::bind_rows(species_data, species_data_annforb)
+    }
+    if(per_grass_by_spp){
+      species_data_pergrass <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Graminoid" & Duration=="Perennial")
+      species_data <- dplyr::bind_rows(species_data, species_data_pergrass)
+    }
+    if(per_forb_by_spp){
+      species_data_perforb <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Forb" & Duration=="Perennial")
+      species_data <- dplyr::bind_rows(species_data, species_data_perforb)
+    }
+    if(succulent_by_spp){
+      species_data_succulent <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Succulent")
+      species_data <- dplyr::bind_rows(species_data, species_data_succulent)
+    }
     if(shrub_by_spp){
       species_data_shrub <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Shrub")
       species_data <- dplyr::bind_rows(species_data, species_data_shrub)
