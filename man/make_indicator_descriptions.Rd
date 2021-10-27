@@ -12,6 +12,11 @@ make_indicator_descriptions(
     "AH_IntroducedAnnGrassCover", "AH_NativeAnnForbCover", "AH_IntroducedAnnForbCover",
     "BareSoilCover", "CP_percent_100to200", "CP_percent_200plus", "FH_LichenCover",
     "FH_MossCover"),
+  ann_grass_by_spp = FALSE,
+  ann_forb_by_spp = FALSE,
+  per_grass_by_spp = FALSE,
+  per_forb_by_spp = FALSE,
+  succulent_by_spp = FALSE,
   shrub_by_spp = T,
   subshrub_by_spp = T,
   tree_by_spp = T,
@@ -21,13 +26,23 @@ make_indicator_descriptions(
 \arguments{
 \item{indicators}{Character vector. Functional group indicators used to pull plot data}
 
+\item{ann_grass_by_spp}{Logical. Include all annual grasses by species?}
+
+\item{ann_forb_by_spp}{Logical. Include all annual forbs by species?}
+
+\item{per_grass_by_spp}{Logical. Include all perennial grasses by species?}
+
+\item{per_forb_by_spp}{Logical. Include all perennial forbs by species?}
+
+\item{succulent_by_spp}{Logical. Include all succulents by species? If TRUE, opuntia_combined should be FALSE}
+
 \item{shrub_by_spp}{Logical. Include all shrubs by species?}
 
 \item{subshrub_by_spp}{Logical. Include all sub-shrubs by species?}
 
 \item{tree_by_spp}{Logical. Include all trees by species?}
 
-\item{opuntia_combined}{Logical. Include combined cover of genus Opuntia?}
+\item{opuntia_combined}{Logical. Include combined cover of genus Opuntia? If TRUE, succulent_by_spp should be FALSE}
 }
 \value{
 Data frame describing each indicator and set of indicators

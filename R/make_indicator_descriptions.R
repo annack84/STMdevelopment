@@ -1,10 +1,15 @@
 #' Create a table describing the plot indicators
 #'
 #' @param indicators Character vector. Functional group indicators used to pull plot data
+#' @param ann_grass_by_spp Logical. Include all annual grasses by species?
+#' @param ann_forb_by_spp Logical. Include all annual forbs by species?
+#' @param per_grass_by_spp Logical. Include all perennial grasses by species?
+#' @param per_forb_by_spp Logical. Include all perennial forbs by species?
+#' @param succulent_by_spp Logical. Include all succulents by species? If TRUE, opuntia_combined should be FALSE
 #' @param shrub_by_spp Logical. Include all shrubs by species?
 #' @param subshrub_by_spp Logical. Include all sub-shrubs by species?
 #' @param tree_by_spp Logical. Include all trees by species?
-#' @param opuntia_combined Logical. Include combined cover of genus Opuntia?
+#' @param opuntia_combined Logical. Include combined cover of genus Opuntia? If TRUE, succulent_by_spp should be FALSE
 #'
 #' @return Data frame describing each indicator and set of indicators
 #' @export
@@ -28,6 +33,11 @@ make_indicator_descriptions <- function(indicators = c("AH_C3NativePerenGrassCov
                                                         "CP_percent_200plus",
                                                         "FH_LichenCover", # Lichen + moss combined cover
                                                         "FH_MossCover"),
+                                        ann_grass_by_spp = FALSE,
+                                        ann_forb_by_spp = FALSE,
+                                        per_grass_by_spp = FALSE,
+                                        per_forb_by_spp = FALSE,
+                                        succulent_by_spp = FALSE,
                                         shrub_by_spp = T, # All shrubs and sub-shrubs by species
                                         subshrub_by_spp = T,
                                         tree_by_spp = T, # All trees by species
@@ -49,7 +59,7 @@ make_indicator_descriptions <- function(indicators = c("AH_C3NativePerenGrassCov
     "AH_IntroducedPerenForbCover", "Biotic", "Introduced perennial forbs", "Percent foliar cover of the functional group",
     "AH_NativeAnnForbCover", "Biotic", "Native annual forbs", "Percent foliar cover of the functional group",
     "AH_IntroducedAnnForbCover", "Biotic", "Introduced annual forbs", "Percent foliar cover of the functional group",
-    "AH_ArtemisiaTridentataCover", "Biotic", "Artemisia tridentata (all subspecies)", "Percent foliar cover of the functional group",
+    "AH_ArtemisiaTridentataCover", "Biotic", "Artemisia tridentata (all subspecies)", "Percent foliar cover of A. tridentata",
     "BareSoilCover", "Ecosystem structure", "Bare soil", "Percent cover of bare soil",
     "SoilStab_all", "Ecosystem structure", "Soil stability (all cover types)", "Ordinal soil stability rating (1-6), averaged across all plot samples"
     )
@@ -76,6 +86,46 @@ make_indicator_descriptions <- function(indicators = c("AH_C3NativePerenGrassCov
   }
 
   # Add species-level indicators
+  if(ann_grass_by_spp){
+    ann_grass_table <- dplyr::tribble(
+      ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
+      "ann_grass_by_spp", "Biotic", "Annual grass species", "Percent foliar cover of each annual grass species"
+    )
+    indicator_description_table <- dplyr::bind_rows(indicator_description_table, ann_grass_table)
+  }
+
+  if(ann_forb_by_spp){
+    ann_forb_by_spp <- dplyr::tribble(
+      ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
+      "ann_forb_by_spp", "Biotic", "Annual forb species", "Percent foliar cover of each annual forb species"
+    )
+    indicator_description_table <- dplyr::bind_rows(indicator_description_table, ann_forb_by_spp)
+  }
+
+  if(per_grass_by_spp){
+    per_grass_table <- dplyr::tribble(
+      ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
+      "per_grass_by_spp", "Biotic", "Perennial grass species", "Percent foliar cover of each perennial grass species"
+    )
+    indicator_description_table <- dplyr::bind_rows(indicator_description_table, per_grass_table)
+  }
+
+  if(per_forb_by_spp){
+    per_forb_table <- dplyr::tribble(
+      ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
+      "per_forb_by_spp", "Biotic", "Perennial forb species", "Percent foliar cover of each perennial forb species"
+    )
+    indicator_description_table <- dplyr::bind_rows(indicator_description_table, per_forb_table)
+  }
+
+  if(succulent_by_spp){
+    succulent_table <- dplyr::tribble(
+      ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
+      "succulent_by_spp", "Biotic", "Succulent species", "Percent foliar cover of each succulent species"
+    )
+    indicator_description_table <- dplyr::bind_rows(indicator_description_table, succulent_table)
+  }
+
   if(shrub_by_spp){
     shrub_table <- dplyr::tribble(
       ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
