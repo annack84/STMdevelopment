@@ -66,47 +66,16 @@ library(labdsv) # indicator species analysis
 
 ```{r load-plot-indicators, include=FALSE}
 # by species cover
-indicators <- c(#"AH_C3NativePerenGrassCover", 
-                #"AH_C3IntroducedPerenGrassCover",
-                #"AH_C4NativePerenGrassCover", 
-                #"AH_C4IntroducedPerenGrassCover",
-                #"AH_NativePerenForbCover", # Native perennial forbs
-                #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
-                #"AH_NativeAnnGrassCover", # Native annual grasses
-                #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
-                #"AH_NativeAnnForbCover", # Native annual forbs
-                #"AH_IntroducedAnnForbCover", # Non-native annual forbs
-                "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
-                "BareSoilCover", # Bare soil
-                "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
-                "CP_percent_200plus",
-                "FH_LichenCover", # Lichen + moss combined cover
-                "FH_MossCover"#,
-                #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
-                )
-
-ann_grass_by_spp <- T #F
-ann_forb_by_spp <- T #F
-per_grass_by_spp <- T #F
-per_forb_by_spp <- T #F
-succulent_by_spp <- T #F
-shrub_by_spp <- T # All shrubs and sub-shrubs by species
-subshrub_by_spp <- T
-tree_by_spp <- T # All trees by species
-#opuntia_combined <- T
-opuntia_combined <- F
-
-# by functional group cover
-# indicators <- c("AH_C3NativePerenGrassCover", 
-#                 "AH_C3IntroducedPerenGrassCover",
-#                 "AH_C4NativePerenGrassCover", 
-#                 "AH_C4IntroducedPerenGrassCover",
-#                 "AH_NativePerenForbCover", # Native perennial forbs
-#                 "AH_IntroducedPerenForbCover", # Non-native perennial forbs
-#                 "AH_NativeAnnGrassCover", # Native annual grasses
-#                 "AH_IntroducedAnnGrassCover", # Non-native annual grasses
-#                 "AH_NativeAnnForbCover", # Native annual forbs
-#                 "AH_IntroducedAnnForbCover", # Non-native annual forbs
+# indicators <- c(#"AH_C3NativePerenGrassCover", 
+#                 #"AH_C3IntroducedPerenGrassCover",
+#                 #"AH_C4NativePerenGrassCover", 
+#                 #"AH_C4IntroducedPerenGrassCover",
+#                 #"AH_NativePerenForbCover", # Native perennial forbs
+#                 #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
+#                 #"AH_NativeAnnGrassCover", # Native annual grasses
+#                 #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
+#                 #"AH_NativeAnnForbCover", # Native annual forbs
+#                 #"AH_IntroducedAnnForbCover", # Non-native annual forbs
 #                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
 #                 "BareSoilCover", # Bare soil
 #                 "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
@@ -115,15 +84,45 @@ opuntia_combined <- F
 #                 "FH_MossCover"#,
 #                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
 #                 )
-# ann_grass_by_spp <- F
-# ann_forb_by_spp <- F
-# per_grass_by_spp <- F
-# per_forb_by_spp <- F
-# succulent_by_spp <- F
+# 
+# ann_grass_by_spp <- T #F
+# ann_forb_by_spp <- T #F
+# per_grass_by_spp <- T #F
+# per_forb_by_spp <- T #F
+# succulent_by_spp <- T #F
 # shrub_by_spp <- T # All shrubs and sub-shrubs by species
 # subshrub_by_spp <- T
 # tree_by_spp <- T # All trees by species
-# opuntia_combined <- T
+# opuntia_combined <- F
+
+# by functional group cover
+indicators <- c("AH_C3NativePerenGrassCover",
+                "AH_C3IntroducedPerenGrassCover",
+                "AH_C4NativePerenGrassCover",
+                "AH_C4IntroducedPerenGrassCover",
+                "AH_NativePerenForbCover", # Native perennial forbs
+                "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+                "AH_NativeAnnGrassCover", # Native annual grasses
+                "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+                "AH_NativeAnnForbCover", # Native annual forbs
+                "AH_IntroducedAnnForbCover", # Non-native annual forbs
+                "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
+                "BareSoilCover", # Bare soil
+                "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
+                "CP_percent_200plus",
+                "FH_LichenCover", # Lichen + moss combined cover
+                "FH_MossCover"#,
+                #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+                )
+ann_grass_by_spp <- F
+ann_forb_by_spp <- F
+per_grass_by_spp <- F
+per_forb_by_spp <- F
+succulent_by_spp <- F
+shrub_by_spp <- T # All shrubs and sub-shrubs by species
+subshrub_by_spp <- T
+tree_by_spp <- T # All trees by species
+opuntia_combined <- T
 
 
 
