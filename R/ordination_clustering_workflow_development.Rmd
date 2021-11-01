@@ -41,7 +41,7 @@ pre { /* Code block - determines code spacing between lines */
 
 # Data prep and distance matrix
 ```{r setup, include=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
 user <- "Anna"
 #user <- "VPN"
@@ -54,10 +54,18 @@ library(STMdevelopment)
 library(dplyr) # for data wrangling
 library(kableExtra) # for formatting tables in RMarkdown
 library(vegan) # for clustering and ordination!
+library(vegan3d)
 library(ggplot2, quietly = T)
+library(foreach, quietly = T)
+library(parallel, quietly = T)
+library(doParallel, quietly = T)
+library(cluster) # for cluster analysis
+library(dendextend) # for pretty cluster plotting
+library(labdsv) # indicator species analysis
 ```
 
 ```{r load-plot-indicators, include=FALSE}
+# by species cover
 indicators <- c(#"AH_C3NativePerenGrassCover", 
                 #"AH_C3IntroducedPerenGrassCover",
                 #"AH_C4NativePerenGrassCover", 
@@ -77,25 +85,56 @@ indicators <- c(#"AH_C3NativePerenGrassCover",
                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
                 )
 
-ann_grass_by_spp <- T
-ann_forb_by_spp <- T
-per_grass_by_spp <- T
-per_forb_by_spp <- T
-succulent_by_spp <- T
+ann_grass_by_spp <- T #F
+ann_forb_by_spp <- T #F
+per_grass_by_spp <- T #F
+per_forb_by_spp <- T #F
+succulent_by_spp <- T #F
 shrub_by_spp <- T # All shrubs and sub-shrubs by species
 subshrub_by_spp <- T
 tree_by_spp <- T # All trees by species
 #opuntia_combined <- T
 opuntia_combined <- F
 
+# by functional group cover
+# indicators <- c("AH_C3NativePerenGrassCover", 
+#                 "AH_C3IntroducedPerenGrassCover",
+#                 "AH_C4NativePerenGrassCover", 
+#                 "AH_C4IntroducedPerenGrassCover",
+#                 "AH_NativePerenForbCover", # Native perennial forbs
+#                 "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+#                 "AH_NativeAnnGrassCover", # Native annual grasses
+#                 "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+#                 "AH_NativeAnnForbCover", # Native annual forbs
+#                 "AH_IntroducedAnnForbCover", # Non-native annual forbs
+#                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
+#                 "BareSoilCover", # Bare soil
+#                 "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
+#                 "CP_percent_200plus",
+#                 "FH_LichenCover", # Lichen + moss combined cover
+#                 "FH_MossCover"#,
+#                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+#                 )
+# ann_grass_by_spp <- F
+# ann_forb_by_spp <- F
+# per_grass_by_spp <- F
+# per_forb_by_spp <- F
+# succulent_by_spp <- F
+# shrub_by_spp <- T # All shrubs and sub-shrubs by species
+# subshrub_by_spp <- T
+# tree_by_spp <- T # All trees by species
+# opuntia_combined <- T
+
+
+
 data_sources <- c(#"BadgerWash",
-                             "CRCMonitoring", # drop if not needed for spatial representation
+                             #"CRCMonitoring", # drop if not needed for spatial representation
                              "IM_NCPN",
                              "LMF",
-                             #"NRI",
-                             "Parashant", # drop if not needed for spatial representation
-                             "AIM", 
-                             "VanScoyocThesis" # drop if not needed for spatial representation
+                             "NRI",
+                             #"Parashant", # drop if not needed for spatial representation
+                             "AIM"#, 
+                             #"VanScoyocThesis" # drop if not needed for spatial representation
                            )
 
 plot_data <- plot_data_pull(user=user,
@@ -169,7 +208,7 @@ ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotNa
 
 # remove rare species
 sp_pa <- mutate(rowwise(ord.df), across(everything(), function(x){if(x>0){1}else{0}})) # make a presence/absence data frame
-sp_keep <- names(colSums(sp_pa)[which(colSums(sp_pa)>2)])
+sp_keep <- names(colSums(sp_pa)[which(colSums(sp_pa)>2)]) # 36 for 5% of plots
 ord.df <- select(ord.df, all_of(sp_keep))
 
 # remove unknown species if present
@@ -199,8 +238,6 @@ Using Bray-Curtis distance with a flexible beta linkage (β = –0.25).
 
 ```{r clustering, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.cap="Initial clustering dendrogram"}
 # cluster and indicator species analysis
-library(cluster) # for cluster analysis
-library(dendextend) # for pretty cluster plotting
 
 #clust <- hclust(dist.df, method = "average")
 clust1 <- agnes(x= dist.df, diss=T, method="flexible", par.method = c(0.625,0.625,-0.25,0)) # flexible beta with beta=-0.25
@@ -294,8 +331,7 @@ points(k.best,
 Indicator species analysis is a method for identifying indicator species and species assemblages that characterize a group of plots (Dufrene & Legendre, 1997; Legendre & Legendre, 2012). An indicator value index (IndVal) is calculated for each species within each group based on the relative abundance of the species (i.e. how high its cover is in Group 1 vs. Group 2 vs. Group n) and the relative frequency of the species (i.e. how many plots it is present in for Group 1 vs. Group 2 vs. Group n). IndVal is based on within-species comparisons - its value for one species is not affected by the presence or abundance of other species. Higher values of IndVal indicate that a species has greater specificity and fidelity for the given group (i.e. it is likely to be present and abundant in a plot that falls within the given group).
 
 ```{r indicatorsp, echo=FALSE, message=FALSE, warning=FALSE, fig.height = 5, fig.width=10, fig.cap="Mean p-value of indicator species (left) and number of significant species (right, α = 0.05) for 2 to 12 possible plant communities."}
-library(labdsv) # indicator species analysis
-library(foreach)
+
 
 # use IndVal from Dufrene and Legendre (1997)
 # groupings from hierarchical clustering (grp)
@@ -310,7 +346,16 @@ colnames(grps) <- c("site", paste(2:12, "groups", sep="_"))
 # calculate IndVal for each species in each number of clusters
 listnames <- paste("indvals", 2:12, sep="")
 
-ivlabs_list <- foreach(i=2:12) %do% indval(x=ord.df, clustering =grps[,i], numitr = 1000)
+cl <- makeCluster(spec = 3, # number of cores to use
+                  type = "PSOCK",
+                  methods = FALSE)
+registerDoParallel(cl)
+
+ivlabs_list <- foreach(i=2:12, .packages = "labdsv") %dopar% indval(x=ord.df, clustering =grps[,i], numitr = 1000)
+
+registerDoSEQ()
+stopCluster(cl)
+
 
 names(ivlabs_list) <- listnames
 
@@ -438,7 +483,7 @@ The different clustering methods support different numbers of groups - alas!
 
 ```{r k_groups, echo=FALSE, message=FALSE, warning=FALSE}
 
-k_groups <- 3 #4
+k_groups <- 4 #3 
 
 ```
 
@@ -662,13 +707,103 @@ par(mfrow=c(1,1))
 
 ```{r ordination-spplots, echo=FALSE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of plot indicator data with plant species overlayed."}
 
+spec_scores1 <- scores(ord, display = "species") %>%
+  as.data.frame()
 
+spec_scores1$SpeciesCode <- rownames(spec_scores1)
+
+species_list <- read.csv(data_file_paths(user)$species_list,
+                             stringsAsFactors = F,
+                             na.strings = c("NA", "", " ")) %>%
+  filter(SpeciesCode %in% spec_scores1$SpeciesCode) %>%
+  group_by(SpeciesCode) %>%
+  summarise(across(everything(), first))
+
+spec_scores <- left_join(spec_scores1, species_list) %>%
+  mutate(SpeciesCat = ifelse(test = Duration=="Perennial" & GrowthHabitSub=="Graminoid",
+                             yes = paste(PhotosyntheticPathway,
+                                         Native, Duration,
+                                         GrowthHabitSub),
+                             no = NA)) %>%
+  mutate(SpeciesCat = ifelse(test = GrowthHabitSub=="Forb" | (GrowthHabitSub=="Graminoid" & Duration=="Annual"),
+                             yes = paste(Native, Duration,
+                                         GrowthHabitSub),
+                             no = SpeciesCat)) %>%
+  mutate(SpeciesCat = ifelse(test = GrowthHabitSub!="Graminoid" & GrowthHabitSub!="Forb",
+                             yes = paste(GrowthHabitSub),
+                             no = SpeciesCat))
+
+spec_scores$SpeciesCat <- gsub(pattern = "NA ", replacement = "", x=spec_scores$SpeciesCat, ignore.case = F)
+spec_scores$SpeciesCat <- as.factor(spec_scores$SpeciesCat)
+
+specPal <- c(
+  "dodgerblue2", "#E31A1C", # red
+  "green4",
+  "#6A3D9A", # purple
+  "#FF7F00", # orange
+  "black", "gold1",
+  "skyblue2", "#FB9A99", # lt pink
+  "palegreen2",
+  "#CAB2D6", # lt purple
+  "#FDBF6F", # lt orange
+  "gray70", "khaki2",
+  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
+  "darkturquoise", "green1", "yellow4", "yellow3",
+  "darkorange4", "brown"
+)
+par(mfrow=c(2,2))
 # Axes 1x2
-plot(ord, choices = c(1,2), type = "n", # plot the axes
-     xlim = c(-1.25, 1.25),
-     ylim = c(-1, 1))
-text(ord, choices = c(1,2), display = "species")
-ordiellipse(ord, plot_data_first$PlantCommunity, col=pal_veg, lwd = 2, label = T) # plot your groups
+plot(x=spec_scores$NMDS1, y=spec_scores$NMDS2,
+     xlim = c(-1.5, 1.5),
+     ylim = c(-1.1, 1.1),
+     xlab = "NMDS1",
+     ylab = "NMDS2",
+     col = "white")
+text(x=spec_scores$NMDS1, y=spec_scores$NMDS2,
+     labels = spec_scores$SpeciesCode,
+     col = specPal[spec_scores$SpeciesCat],
+     cex = 0.7)
+
+# Axes 3x2
+plot(x=spec_scores$NMDS3, y=spec_scores$NMDS2,
+     xlim = c(-1.5, 1.5),
+     ylim = c(-1.1, 1.1),
+     xlab = "NMDS3",
+     ylab = "NMDS2",
+     col = "white")
+text(x=spec_scores$NMDS3, y=spec_scores$NMDS2,
+     labels = spec_scores$SpeciesCode,
+     col = specPal[spec_scores$SpeciesCat],
+     cex = 0.7)
+
+# Axes 1X3
+plot(x=spec_scores$NMDS1, y=spec_scores$NMDS3,
+     xlim = c(-1.5, 1.5),
+     ylim = c(-1.1, 1.1),
+     xlab = "NMDS1",
+     ylab = "NMDS3",
+     col = "white")
+text(x=spec_scores$NMDS1, y=spec_scores$NMDS3,
+     labels = spec_scores$SpeciesCode,
+     col = specPal[spec_scores$SpeciesCat],
+     cex = 0.7)
+
+# Legend
+plot(x=spec_scores$NMDS1, y=spec_scores$NMDS2,
+     axes = FALSE,
+     col = "white",
+     xlab = "",
+     ylab = "")
+points(x=spec_scores$NMDS1, y=spec_scores$NMDS2,
+     col = specPal[spec_scores$SpeciesCat],
+     cex = 0)
+legend(x="center",
+       legend = levels(spec_scores$SpeciesCat),
+       fill = specPal,
+       title = "Plant functional groups",
+       cex = 0.9)
+
+par(mfrow=c(1,1))
 
 
 ```
@@ -677,7 +812,6 @@ You can plot in 3 dimensions if you're feeling fancy!
 
 ```{r threeD-plots, eval=TRUE, echo=FALSE, fig.height=5, fig.width=10, fig.cap="Surface diagrams for environmental variables"}
 # make a 3d plot
-library(vegan3d)
 
 invisible(rgl::open3d())
 
@@ -752,7 +886,6 @@ chord.df <- vegdist(x=norm.df, method = "euclidean")
 ```{r num-fuzzy-grps, eval=FALSE, echo=FALSE, warning=FALSE, fig.width=10, fig.cap="Normalized Dunn's index and average silhouette width for 2 to 12 possible groups in fuzzy clustering."}
 # The best solution will maximize both the normalized Dunn's partition coefficient and the average silhouette width. Dunn's partition coefficient indicates how crisp the clustering result is, with values close to 1 indicating crisp (i.e. good) results.
 
-library(cluster)
 # test out groupings of 2 to 12
 res<- data.frame()
 for (i in 2:12) {super=fanny(dist.df, #chord.df, #d.bray,
@@ -829,10 +962,13 @@ clust_fuzz_stats <- cluster.stats(d = chord.df,
 
 ```{r clValid, echo=FALSE, eval=FALSE}
 # The clValid package does some automatic validation (but it's not displaying results properly?)
-res_clValid <- clValid::clValid(obj = norm.df, nClust = 2:12, clMethods = "fanny",
+library(clValid)
+res_clValid <- clValid(obj = norm.df, nClust = 2:12, clMethods = "fanny",
                  validation = c("internal"#, "stability"
                                 ),
                  maxitems = 889, metric = 'euclidean', memb.exp = 1.2)
+
+summary(res_clValid)
 
 ```
 
@@ -897,9 +1033,6 @@ I then tested out combinations of number of clusters (2 - 12) and membership exp
 
 ```{r NbClust-fanny-loop, echo=FALSE, warning=FALSE, fig.show='hide', results='hide'}
 # get index values for all combos of membership exponent and number of clusters
-library(foreach, quietly = T)
-library(parallel, quietly = T)
-library(doParallel, quietly = T)
 
 indices_arg <- c("ch", #"duda", won't work with the ranking scheme 
                  "cindex",
@@ -922,7 +1055,7 @@ indices_name <- c("CH", #"Duda",
              )
 
 memb_exps <- seq(1.1,
-                 1.4, # start with 2.0, can reduce value to rerun if some larger values don't give results
+                 1.3, # start with 2.0, can reduce value to rerun if some larger values don't give results
                  by = 0.1)
 
 cl <- makeCluster(spec = 3, # number of cores to use
@@ -931,7 +1064,7 @@ cl <- makeCluster(spec = 3, # number of cores to use
 registerDoParallel(cl)
 
 cluster_eval_fanny <- foreach(memb_exp=memb_exps,
-                              .packages = c("STMdevelopment", "dplyr")
+                              .packages = c("STMdevelopment", "dplyr", "cluster"),
                               .combine = "rbind") %dopar% {
       nbmetrics_fanny_temp <- NbClust_fanny(data = ord.df,
               diss = dist.df, #chord.df,
@@ -954,43 +1087,43 @@ registerDoSEQ()
 stopCluster(cl)
 
 ###
-nbmetrics_fanny_temp <- NbClust_fanny(data = ord.df,
-                                      diss = dist.df, #chord.df,
-                                      distance = NULL,
-                                      min.nc = 2,
-                                      max.nc = 12,
-                                      method = "fanny",
-                                      index = "all", # could also try alllong to get a few more metrics - this is SLOW
-                                      alphaBeale = 0.1,
-                                      memb.exp= memb_exps[1] # 1.2
-)
-
-cluster_eval_fanny <- nbmetrics_fanny_temp$All.index %>%
-  as.data.frame() %>%
-  mutate(Number_clusters = rownames(.),
-         Memb_exp = memb_exps[1])
-
-
-for(memb_exp in memb_exps[-1]){
-    
-    nbmetrics_fanny_temp <- NbClust_fanny(data = ord.df,
-              diss = dist.df, #chord.df,
-              distance = NULL,
-              min.nc = 2,
-              max.nc = 12,
-              method = "fanny",
-              index = "all", # could also try alllong to get a few more metrics - this is SLOW
-              alphaBeale = 0.1,
-              memb.exp= memb_exp # 1.2
-              )
-    
-    cluster_eval_fanny_temp <- nbmetrics_fanny_temp$All.index %>%
-      as.data.frame() %>%
-      mutate(Number_clusters = rownames(.),
-             Memb_exp = memb_exp)
-    
-    cluster_eval_fanny <- bind_rows(cluster_eval_fanny, cluster_eval_fanny_temp)
-}
+# nbmetrics_fanny_temp <- NbClust_fanny(data = ord.df,
+#                                       diss = dist.df, #chord.df,
+#                                       distance = NULL,
+#                                       min.nc = 2,
+#                                       max.nc = 12,
+#                                       method = "fanny",
+#                                       index = "all", # could also try alllong to get a few more metrics - this is SLOW
+#                                       alphaBeale = 0.1,
+#                                       memb.exp= memb_exps[1] # 1.2
+# )
+# 
+# cluster_eval_fanny <- nbmetrics_fanny_temp$All.index %>%
+#   as.data.frame() %>%
+#   mutate(Number_clusters = rownames(.),
+#          Memb_exp = memb_exps[1])
+# 
+# 
+# for(memb_exp in memb_exps[-1]){
+#     
+#     nbmetrics_fanny_temp <- NbClust_fanny(data = ord.df,
+#               diss = dist.df, #chord.df,
+#               distance = NULL,
+#               min.nc = 2,
+#               max.nc = 12,
+#               method = "fanny",
+#               index = "all", # could also try alllong to get a few more metrics - this is SLOW
+#               alphaBeale = 0.1,
+#               memb.exp= memb_exp # 1.2
+#               )
+#     
+#     cluster_eval_fanny_temp <- nbmetrics_fanny_temp$All.index %>%
+#       as.data.frame() %>%
+#       mutate(Number_clusters = rownames(.),
+#              Memb_exp = memb_exp)
+#     
+#     cluster_eval_fanny <- bind_rows(cluster_eval_fanny, cluster_eval_fanny_temp)
+# }
 
 cluster_eval_fanny_indices <- select(cluster_eval_fanny, any_of(c("Memb_exp", "Number_clusters", indices_name)))
 
@@ -1037,7 +1170,7 @@ Based on a suite of cluster validation indices, the best number of clusters is `
 
 ```{r fuzzy-cluster, echo=FALSE}
 k_groups_fuzzy <- best_n_clust
-clust_fuzz <- fanny(x=chord.df,
+clust_fuzz <- fanny(x=dist.df,
                     k = k_groups_fuzzy,
                     diss = T,
                     #metric = "euclidean",
@@ -1317,7 +1450,6 @@ par(mfrow=c(1,1))
 Here, we'll use an indicator species analysis to identify species associated with each of the fuzzy cluster groups. We'll drop out plots with negative silhouette width values, since these plots may be misclassified. (Could also/instead drop plots based on a minimum membership valued).
 
 ```{r indval-fuzzy, echo=FALSE, message=FALSE, warning=FALSE}
-library(labdsv)
 
 clust_silhouette_df <- as.data.frame(clust_fuzz$silinfo$widths) %>%
   tibble::rownames_to_column() %>%
@@ -1333,7 +1465,7 @@ ord.df.fuzzydrop <- dplyr::select(plot_data_fuzzydrop, -SourceKey, -PlotID, -Sit
   tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
 
 ord.df.fuzzydrop <- select(ord.df.fuzzydrop, all_of(sp_keep))
-ord.df.fuzzydrop <- select(ord.df.fuzzydrop, -any_of("UNKS"))
+ord.df.fuzzydrop <- select(ord.df.fuzzydrop, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
 
 
 # create data frame that identifies indicator species by group:
@@ -1416,7 +1548,8 @@ kbl(x = indvalsummary_disp_filt, format = "html", row.names = F, align = "c",
 
 clust_membership_df <- as.data.frame(clust_fuzz$membership) %>%
   tibble::rownames_to_column() %>%
-  setNames(c("PlotCode", "Group1memb", "Group2memb", "Group3memb"))
+  setNames(c("PlotCode", "Group1memb", "Group2memb", "Group3memb"
+             ))
 
 plot_data_first <- left_join(plot_data_first, clust_membership_df)
 
@@ -1445,7 +1578,8 @@ plot_data_first <- left_join(plot_data_first, clust_membership_df)
 leaflet.minicharts::addMinicharts(map = EDIT_map(target_ESG = target_ESG, user = user),
                                   lng = plot_data_first$Longitude_NAD83,
                                     lat = plot_data_first$Latitude_NAD83,
-                                    chartdata = plot_data_first[ , c("Group1memb", "Group2memb", "Group3memb")],
+                                    chartdata = plot_data_first[ , c("Group1memb", "Group2memb", "Group3memb"
+                                                                     )],
                                     type = "pie",
                                     colorPalette = pal_veg2[1:(k_groups_fuzzy)],
                                   width = 20)

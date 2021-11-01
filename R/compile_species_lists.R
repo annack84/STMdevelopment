@@ -18,21 +18,28 @@ compile_species_lists <- function(user = "Anna",
   aimlmf_splist <- read.csv(data_file_paths(user = user)$aimlmf_splist,
                             na.strings = c("NA", ""))
 
-  # get the same columns for each list
-  plotnet_splist_slim <- select(plotnet_splist, any_of(colnames(aimlmf_splist)))
+  nri_splist <- read.csv(file.path(dirname(data_file_paths(user = user)$nri), "SpeciesList_NRI_UCRB_clean.csv"),
+                            na.strings = c("NA", ""))
 
-  aimlmf_splist_slim <- select(aimlmf_splist, any_of(colnames(plotnet_splist_slim)))
+  # get the same columns for each list
+  plotnet_splist_slim <- dplyr::select(plotnet_splist, dplyr::any_of(colnames(aimlmf_splist)))
+
+  aimlmf_splist_slim <- dplyr::select(aimlmf_splist, dplyr::any_of(colnames(plotnet_splist_slim)))
+
+  nri_splist_slim <- dplyr::select(nri_splist, dplyr::any_of(colnames(aimlmf_splist_slim)))
 
   # combine the lists, creating separate SpeciesState entries for AIM vs LMF so
   # that they can be matched to the SourceKey column later on
 
-  full_splist <- bind_rows(plotnet_splist_slim,
-                           mutate(aimlmf_splist_slim,
+  full_splist <- dplyr::bind_rows(plotnet_splist_slim,
+                           dplyr::mutate(aimlmf_splist_slim,
                                   SpeciesState = "AIM")) %>%
-    bind_rows(.,
-              mutate(aimlmf_splist_slim,
+    dplyr::bind_rows(.,
+                     dplyr::mutate(aimlmf_splist_slim,
                      SpeciesState = "LMF")) %>%
-    distinct()
+    dplyr::bind_rows(.,
+              nri_splist_slim) %>%
+    dplyr::distinct()
 
   #save it
   write.csv(full_splist,

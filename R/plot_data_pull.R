@@ -79,6 +79,15 @@ plot_data_pull <- function(user = "Anna",
                                  # most recent version so we don't have to change this file name
                                  # when a new project is added to PlotNet
 
+  if("NRI" %in% data_sources){
+    nri_locations <- sf::st_read(dsn = file_paths$nri,
+                                 layer = "NRI_UCRB_plot-years_2021-11-01")
+
+    plot_locations <- dplyr::filter(plot_locations, !grepl(pattern = "^NRI_",
+                                                           x=PlotCode)) %>%
+      dplyr::bind_rows(., nri_locations)
+  }
+
   ESG_raster <- raster::raster(file_paths$ESG_map)
 
   plot_ESGs <- sf::st_as_sf(raster::extract(x = ESG_raster,
@@ -98,6 +107,11 @@ plot_data_pull <- function(user = "Anna",
   # list the indicator files
   plot_files <- list.files(file_paths$plotnet_processed,
                            full.names = T)
+  if("NRI" %in% data_sources){
+    nri_files <- list.files(file_paths$nri,
+                            full.names = T)
+    plot_files <- c(plot_files, nri_files)
+  }
   plot_files <- grep(pattern = paste(data_sources, collapse = "|"),
                     x=plot_files, value = T)
   plot_files <- grep(pattern = ".csv", x=plot_files, value = T)
@@ -182,7 +196,7 @@ plot_data_pull <- function(user = "Anna",
                                      sep = "_")
 
     species_data_all_target <- dplyr::filter(species_data_all, PlotCode %in% plot_target_ESG$PlotCode)
-    species_data_all_target_fg <- left_join(species_data_all_target,
+    species_data_all_target_fg <- dplyr::left_join(species_data_all_target,
                                             species_list,
                                             by = c("SourceKey" = "SpeciesState",
                                                    "SpeciesCode" = "SpeciesCode"))
@@ -243,7 +257,7 @@ plot_data_pull <- function(user = "Anna",
       species_data <- dplyr::bind_rows(species_data, species_data_opunt)
     }
     # make wide
-    species_data_wide <- select(species_data, any_of(colnames(species_data_all_target))) %>%
+    species_data_wide <- dplyr::select(species_data, any_of(colnames(species_data_all_target))) %>%
       tidyr::pivot_wider(data = ., names_from = SpeciesCode,
                                             values_from = percent, values_fill = 0)
 
