@@ -61,20 +61,30 @@ make_indicator_descriptions <- function(indicators = c("AH_C3NativePerenGrassCov
     "AH_IntroducedAnnForbCover", "Biotic", "Introduced annual forbs", "Percent foliar cover of the functional group",
     "AH_ArtemisiaTridentataCover", "Biotic", "Artemisia tridentata (all subspecies)", "Percent foliar cover of A. tridentata",
     "BareSoilCover", "Ecosystem structure", "Bare soil", "Percent cover of bare soil",
-    "SoilStab_all", "Ecosystem structure", "Soil stability (all cover types)", "Ordinal soil stability rating (1-6), averaged across all plot samples"
+    "FH_TotalLitterCover", "Ecosystem structure", "Litter", "Percent cover of plant litter",
+    "SoilStab_all", "Ecosystem structure", "Soil stability (all cover types)", "Ordinal soil stability rating (1-6), averaged across all plot samples",
+    "CP_percent_100plus", "Ecosystem structure", "Perennial canopy gaps > 100 cm", "Percent of transect lengths with perennial canopy gaps > 100 cm",
+    "CP_percent_200plus", "Ecosystem structure", "Perennial canopy gaps > 200 cm", "Percent of transect lengths with perennial canopy gaps > 200 cm"
     )
 
   # filter to only include the indicators used
   indicator_description_table <- dplyr::filter(indicator_description_table_options, Indicator_code %in% indicators)
 
   # Add on canopy gaps if needed
-  if("CP_percent_100to200" %in% indicators & "CP_percent_200plus" %in% indicators){
-    canopy_100plus_table <- dplyr::tribble(
-      ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
-      "CP_percent_100plus", "Ecosystem structure", "Perennial canopy gaps > 100 cm", "Percent of transect lengths with perennial canopy gaps > 100 cm"
-    )
-    indicator_description_table <- dplyr::bind_rows(indicator_description_table, canopy_100plus_table)
-  }
+  # if("CP_percent_100plus" %in% indicators){
+  #   canopy_100plus_table <- dplyr::tribble(
+  #     ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
+  #     "CP_percent_100plus", "Ecosystem structure", "Perennial canopy gaps > 100 cm", "Percent of transect lengths with perennial canopy gaps > 100 cm"
+  #   )
+  #   indicator_description_table <- dplyr::bind_rows(indicator_description_table, canopy_100plus_table)
+  # }
+  # if("CP_percent_200plus" %in% indicators){
+  #   canopy_200plus_table <- dplyr::tribble(
+  #     ~Indicator_code, ~Indicator_type, ~Indicator, ~Description,
+  #     "CP_percent_200plus", "Ecosystem structure", "Perennial canopy gaps > 200 cm", "Percent of transect lengths with perennial canopy gaps > 200 cm"
+  #   )
+  #   indicator_description_table <- dplyr::bind_rows(indicator_description_table, canopy_200plus_table)
+  # }
 
   # Add on lichen and moss cover if needed
   if("FH_LichenCover" %in% indicators & "FH_MossCover" %in% indicators){

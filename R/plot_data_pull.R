@@ -132,7 +132,13 @@ plot_data_pull <- function(user = "Anna",
   }
 
   # filter to just desired indicators
-  indicator_data <- dplyr::filter(indicator_data_all, variable %in% indicators)
+  if("CP_percent_100plus" %in% indicators){
+    indicators_expanded <- unique(c(indicators, "CP_percent_100to200", "CP_percent_200plus"))
+  }else{
+    indicators_expanded <- indicators
+  }
+
+  indicator_data <- dplyr::filter(indicator_data_all, variable %in% indicators_expanded)
   indicator_data$PlotCode <- paste(indicator_data$SourceKey,
                                    indicator_data$SiteName,
                                    indicator_data$PlotName,
@@ -142,27 +148,38 @@ plot_data_pull <- function(user = "Anna",
   indicator_data_target <- dplyr::filter(indicator_data, PlotCode %in% plot_target_ESG$PlotCode) %>%
     dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83)
 
-  # calculate canopy gap >100 - doing this one separately because we don't want to autofill with 0s
-  # like we do for LPI
-  canopy_gaps_100 <- indicator_data_target %>%
-    dplyr::filter(variable %in% c("CP_percent_100to200", "CP_percent_200plus")) %>%
-    dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Year) %>%
-    dplyr::summarize(variable = "CP_percent_100plus", value = sum(value, na.rm = T),
-                     .groups = "drop") %>%
-    tidyr::pivot_wider(data = ., names_from = variable, values_from = value) %>%
-    dplyr::filter(!is.na(CP_percent_100plus))
-
   # make wide
   indicator_data_target_wide <- indicator_data_target %>%
-    dplyr::filter(variable!="CP_percent_100to200" & variable!="CP_percent_200plus") %>%
+    #dplyr::filter(variable!="CP_percent_100to200" & variable!="CP_percent_200plus") %>%
     tidyr::pivot_wider(data = ., names_from = variable, values_from = value,
                        values_fill = 0) %>%
-    dplyr::left_join(., canopy_gaps_100) %>%
-    dplyr::filter(!is.na(CP_percent_100plus)) %>%
     dplyr::rowwise() %>%
     dplyr::mutate(FH_LichenMossCover = sum(FH_LichenCover, FH_MossCover, na.rm = T)) %>%
     dplyr::select(-FH_LichenCover, -FH_MossCover)
 
+  # calculate canopy gap >100 - doing this one separately because we don't want to autofill with 0s
+  # like we do for LPI
+  if("CP_percent_100plus" %in% indicators){
+    canopy_gaps_100plus <- indicator_data_target %>%
+      dplyr::filter(variable %in% c("CP_percent_100to200", "CP_percent_200plus")) %>%
+      dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Year) %>%
+      dplyr::summarize(variable = "CP_percent_100plus", value = sum(value, na.rm = T),
+                       .groups = "drop") %>%
+      tidyr::pivot_wider(data = ., names_from = variable, values_from = value) %>%
+      dplyr::filter(!is.na(CP_percent_100plus))
+
+    indicator_data_target_wide <- indicator_data_target_wide %>%
+      dplyr::left_join(., canopy_gaps_100plus) %>%
+      dplyr::filter(!is.na(CP_percent_100plus))
+
+    # remove the indicators used to calculate CP_percent_100plus if not specified by user to keep
+    if(!("CP_percent_100to200" %in% indicators)){
+      indicator_data_target_wide <- dplyr::select(indicator_data_target_wide, -CP_percent_100to200)
+    }
+    if(!("CP_percent_200plus" %in% indicators)){
+      indicator_data_target_wide <- dplyr::select(indicator_data_target_wide, -CP_percent_200plus)
+    }
+  }
 
   # pull species-level cover data for target ESG plots
   # get species lists TODO update this list's C3/C4 designations based on Travis's lit review list
@@ -252,7 +269,8 @@ plot_data_pull <- function(user = "Anna",
         dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Longitude_NAD83,
                         Latitude_NAD83, Year, Month, Day) %>%
         dplyr::summarize(SpeciesCode = "AH_OpuntiaCover",
-                         percent = sum(percent))
+                         percent = sum(percent),
+                         .groups = "drop")
 
       species_data <- dplyr::bind_rows(species_data, species_data_opunt)
     }
@@ -263,6 +281,20 @@ plot_data_pull <- function(user = "Anna",
 
     # combine with indicator data
     indicator_data_target_wide <- dplyr::left_join(indicator_data_target_wide, species_data_wide)
+  }
+
+  # If using AH_ArtemisiaTridentataCover, remove Artemisia tridentata individual subspecies to avoid double counting them
+  if("AH_ArtemisiaTridentataCover" %in% indicators){
+    indicator_data_target_wide <- select(indicator_data_target_wide, -any_of(c("ARTR2",
+                                                                               "ARTRW8",
+                                                                               "ARTRT",
+                                                                               "ARTRV",
+                                                                               "ARTRP4",
+                                                                               "ARTRV2",
+                                                                               "ARTRW",
+                                                                               "ARTRS2",
+                                                                               "ARTRX",
+                                                                               "ARTRP2")))
   }
 
 return(indicator_data_target_wide)

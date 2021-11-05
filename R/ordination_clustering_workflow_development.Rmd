@@ -66,63 +66,65 @@ library(labdsv) # indicator species analysis
 
 ```{r load-plot-indicators, include=FALSE}
 # by species cover
-# indicators <- c(#"AH_C3NativePerenGrassCover", 
-#                 #"AH_C3IntroducedPerenGrassCover",
-#                 #"AH_C4NativePerenGrassCover", 
-#                 #"AH_C4IntroducedPerenGrassCover",
-#                 #"AH_NativePerenForbCover", # Native perennial forbs
-#                 #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
-#                 #"AH_NativeAnnGrassCover", # Native annual grasses
-#                 #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
-#                 #"AH_NativeAnnForbCover", # Native annual forbs
-#                 #"AH_IntroducedAnnForbCover", # Non-native annual forbs
-#                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
-#                 "BareSoilCover", # Bare soil
-#                 "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
-#                 "CP_percent_200plus",
-#                 "FH_LichenCover", # Lichen + moss combined cover
-#                 "FH_MossCover"#,
-#                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
-#                 )
-# 
-# ann_grass_by_spp <- T #F
-# ann_forb_by_spp <- T #F
-# per_grass_by_spp <- T #F
-# per_forb_by_spp <- T #F
-# succulent_by_spp <- T #F
-# shrub_by_spp <- T # All shrubs and sub-shrubs by species
-# subshrub_by_spp <- T
-# tree_by_spp <- T # All trees by species
-# opuntia_combined <- F
-
-# by functional group cover
-indicators <- c("AH_C3NativePerenGrassCover",
-                "AH_C3IntroducedPerenGrassCover",
-                "AH_C4NativePerenGrassCover",
-                "AH_C4IntroducedPerenGrassCover",
-                "AH_NativePerenForbCover", # Native perennial forbs
-                "AH_IntroducedPerenForbCover", # Non-native perennial forbs
-                "AH_NativeAnnGrassCover", # Native annual grasses
-                "AH_IntroducedAnnGrassCover", # Non-native annual grasses
-                "AH_NativeAnnForbCover", # Native annual forbs
-                "AH_IntroducedAnnForbCover", # Non-native annual forbs
+indicators <- c(#"AH_C3NativePerenGrassCover",
+                #"AH_C3IntroducedPerenGrassCover",
+                #"AH_C4NativePerenGrassCover",
+                #"AH_C4IntroducedPerenGrassCover",
+                #"AH_NativePerenForbCover", # Native perennial forbs
+                #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
+                #"AH_NativeAnnGrassCover", # Native annual grasses
+                #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
+                #"AH_NativeAnnForbCover", # Native annual forbs
+                #"AH_IntroducedAnnForbCover", # Non-native annual forbs
                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
                 "BareSoilCover", # Bare soil
-                "CP_percent_100to200", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
+                "FH_TotalLitterCover", # Litter
+                "CP_percent_100plus", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
                 "CP_percent_200plus",
                 "FH_LichenCover", # Lichen + moss combined cover
                 "FH_MossCover"#,
                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
                 )
-ann_grass_by_spp <- F
-ann_forb_by_spp <- F
-per_grass_by_spp <- F
-per_forb_by_spp <- F
-succulent_by_spp <- F
+
+ann_grass_by_spp <- T #F
+ann_forb_by_spp <- T #F
+per_grass_by_spp <- T #F
+per_forb_by_spp <- T #F
+succulent_by_spp <- T #F
 shrub_by_spp <- T # All shrubs and sub-shrubs by species
 subshrub_by_spp <- T
 tree_by_spp <- T # All trees by species
-opuntia_combined <- T
+opuntia_combined <- F
+
+# by functional group cover
+# indicators <- c("AH_C3NativePerenGrassCover",
+#                 "AH_C3IntroducedPerenGrassCover",
+#                 "AH_C4NativePerenGrassCover",
+#                 "AH_C4IntroducedPerenGrassCover",
+#                 "AH_NativePerenForbCover", # Native perennial forbs
+#                 "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+#                 "AH_NativeAnnGrassCover", # Native annual grasses
+#                 "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+#                 "AH_NativeAnnForbCover", # Native annual forbs
+#                 "AH_IntroducedAnnForbCover", # Non-native annual forbs
+#                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
+#                 "BareSoilCover", # Bare soil
+#                 "FH_TotalLitterCover", # Litter
+#                 "CP_percent_100plus", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
+#                 "CP_percent_200plus",
+#                 "FH_LichenCover", # Lichen + moss combined cover
+#                 "FH_MossCover"#,
+#                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+#                 )
+# ann_grass_by_spp <- F
+# ann_forb_by_spp <- F
+# per_grass_by_spp <- F
+# per_forb_by_spp <- F
+# succulent_by_spp <- F
+# shrub_by_spp <- T # All shrubs and sub-shrubs by species
+# subshrub_by_spp <- T
+# tree_by_spp <- T # All trees by species
+# opuntia_combined <- T
 
 
 
@@ -150,18 +152,6 @@ plot_data <- plot_data_pull(user=user,
                            tree_by_spp = tree_by_spp,
                            opuntia_combined = opuntia_combined
                            )
-
-# remove Artemisia tridentata individual subspecies - use AH_ArtemisiaTridentataCover instead
-plot_data <- select(plot_data,
-                     -any_of(c("ARTR2",
-                               "ARTRW8",
-                               "ARTRT",
-                               "ARTRV",
-                               "ARTRP4",
-                               "ARTRV2",
-                               "ARTRW",
-                               "ARTRS2", 
-                               "ARTRX")))
 
 
 ```
@@ -387,7 +377,9 @@ for(k in 1:12){
   IndVal[k] <- sum(iv)
 }
 
-k.best <- which.max(IndVal[ng==1]) + 1
+names(IndVal) <- as.character(1:12)
+
+k.best <- as.numeric(names(which.max(IndVal[ng==1])))
 col3 <- rep(1, 12)
 col3[ng==1] <- 3
 
@@ -482,7 +474,7 @@ The different clustering methods support different numbers of groups - alas!
 
 ```{r k_groups, echo=FALSE, message=FALSE, warning=FALSE}
 
-k_groups <- 4 #3 
+k_groups <- 3 #4 
 
 ```
 
@@ -871,7 +863,7 @@ The two most common fuzzy clustering methods are FANNY (Kaufman and Rousseeuw, 1
 
 Fuzzy c-means clustering uses Euclidean distances and least-squares solutions to find the optimal grouping for each site. This means that our data going into the clustering algorithm need to be normalized. Borcard, Gillet, and Legendre (2011) suggest two ways of doing this. One is to used the "normalize" in the function vegan::decostand() on the raw species matrix, which make margin sum of squares equal to one. The other is to take the square root of the Bray-Curtis distance matrix, run a principal coordinates analysis (PCoA), take the site scores from the PCoA, and run them through the clustering algorithm (I think? see pp. 97-98 in Borcard et al. 2011).
 
-FANNY allows the user to input their own distance (aka dissimilarity) matrix. Bray-Curtis is a good option for plant cover data per McCune & Grace. Since fuzzy C-means clustering can't use Bray-Curtis distance directly, we'll use the FANNY algorithm instead.
+FANNY allows the user to input their own distance (aka dissimilarity) matrix. Bray-Curtis is a good option for plant cover data per McCune & Grace. Since fuzzy C-means clustering requires Euclidean distance but other distance metrics are more appropriate for our data, we'll use the FANNY algorithm instead.
 
 ```{r normalize, echo=FALSE}
 norm.df <- vegan::decostand(x=ord.df, method = "normalize")
@@ -1583,6 +1575,20 @@ leaflet.minicharts::addMinicharts(map = EDIT_map(target_ESG = target_ESG, user =
                                     colorPalette = pal_veg2[1:(k_groups_fuzzy)],
                                   width = 20)
 
+```
+
+```{r clusters-by-datasource, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Group membership by data source"}
+
+plot_memb_by_source <- select(plot_data_first, SourceKey, PlotCode, Group1memb, Group2memb, Group3memb) %>%
+  tidyr::pivot_longer(cols = c(Group1memb, Group2memb, Group3memb), names_to = "Group")
+
+ggplot(data = plot_memb_by_source, aes(x=SourceKey, y=value, fill = Group)) +
+  geom_boxplot() +
+  #scale_fill_manual() +
+  ylab("Group membership coefficient") +
+  xlab("Data source")
+
+# add another plot for the hard groupings
 ```
 
 
