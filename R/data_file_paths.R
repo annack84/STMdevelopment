@@ -10,7 +10,8 @@
 #'
 #' @return List. Use this list in other functions to access data from different
 #'  file locations
-#' @export
+#' @export data_file_paths
+#' @rdname data_file_paths
 
 data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
   network_files <- list(plotnet_processed = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData",
