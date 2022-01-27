@@ -76,8 +76,8 @@ plot_data_pull <- function(user = "Anna",
   # extract ESG for each plot location
   plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
                                 layer = "all_plot-years_2021-09-30") # TODO write code to pull the
-                                 # most recent version so we don't have to change this file name
-                                 # when a new project is added to PlotNet
+  # most recent version so we don't have to change this file name
+  # when a new project is added to PlotNet
 
   if("NRI" %in% data_sources){
     nri_locations <- sf::st_read(dsn = file_paths$nri,
@@ -91,8 +91,8 @@ plot_data_pull <- function(user = "Anna",
   ESG_raster <- raster::raster(file_paths$ESG_map)
 
   plot_ESGs <- sf::st_as_sf(raster::extract(x = ESG_raster,
-                               y = plot_locations,
-                               sp = T))
+                                            y = plot_locations,
+                                            sp = T))
 
   plot_ESGs_join <- dplyr::left_join(plot_ESGs, ESG_table)
 
@@ -113,7 +113,7 @@ plot_data_pull <- function(user = "Anna",
     plot_files <- c(plot_files, nri_files)
   }
   plot_files <- grep(pattern = paste(data_sources, collapse = "|"),
-                    x=plot_files, value = T)
+                     x=plot_files, value = T)
   plot_files <- grep(pattern = ".csv", x=plot_files, value = T)
 
   species_files <- grep(x=plot_files, pattern = "_species_", value = T)
@@ -152,10 +152,22 @@ plot_data_pull <- function(user = "Anna",
   indicator_data_target_wide <- indicator_data_target %>%
     #dplyr::filter(variable!="CP_percent_100to200" & variable!="CP_percent_200plus") %>%
     tidyr::pivot_wider(data = ., names_from = variable, values_from = value,
-                       values_fill = 0) %>%
+                       values_fill = NA) %>%
     dplyr::rowwise() %>%
     dplyr::mutate(FH_LichenMossCover = sum(FH_LichenCover, FH_MossCover, na.rm = T)) %>%
     dplyr::select(-FH_LichenCover, -FH_MossCover)
+
+  # Missing values for LPI measure mean that functional group wasn't present at
+  # a plot. These should be changed to 0. For soil stability and canopy gap,
+  # NA means those data weren't collected at the plot, so they should remain NA
+  replaceNA <- function(x){
+    replace(x, is.na(x), 0)
+  }
+
+  indicator_data_target_wide <- indicator_data_target_wide %>%
+    mutate(across(.cols = starts_with("AH_"), .fns = replaceNA)) %>%
+    mutate(across(.cols = starts_with("FH_"), .fns = replaceNA)) %>%
+    mutate(BareSoilCover = replaceNA(BareSoilCover))
 
   # calculate canopy gap >100 - doing this one separately because we don't want to autofill with 0s
   # like we do for LPI
@@ -169,8 +181,8 @@ plot_data_pull <- function(user = "Anna",
       dplyr::filter(!is.na(CP_percent_100plus))
 
     indicator_data_target_wide <- indicator_data_target_wide %>%
-      dplyr::left_join(., canopy_gaps_100plus) %>%
-      dplyr::filter(!is.na(CP_percent_100plus))
+      dplyr::left_join(., canopy_gaps_100plus) #%>%
+    #dplyr::filter(!is.na(CP_percent_100plus))
 
     # remove the indicators used to calculate CP_percent_100plus if not specified by user to keep
     if(!("CP_percent_100to200" %in% indicators)){
@@ -208,15 +220,15 @@ plot_data_pull <- function(user = "Anna",
 
     # filter species to just target ESG plots
     species_data_all$PlotCode <- paste(species_data_all$SourceKey,
-                                     species_data_all$SiteName,
-                                     species_data_all$PlotName,
-                                     sep = "_")
+                                       species_data_all$SiteName,
+                                       species_data_all$PlotName,
+                                       sep = "_")
 
     species_data_all_target <- dplyr::filter(species_data_all, PlotCode %in% plot_target_ESG$PlotCode)
     species_data_all_target_fg <- dplyr::left_join(species_data_all_target,
-                                            species_list,
-                                            by = c("SourceKey" = "SpeciesState",
-                                                   "SpeciesCode" = "SpeciesCode"))
+                                                   species_list,
+                                                   by = c("SourceKey" = "SpeciesState",
+                                                          "SpeciesCode" = "SpeciesCode"))
 
     # filter to just desired species
     species_data <- data.frame(SourceKey = character(),
@@ -231,7 +243,7 @@ plot_data_pull <- function(user = "Anna",
                                SpeciesCode = character(),
                                percent = double(),
                                PlotCode = character()
-                               )
+    )
     if(ann_grass_by_spp){
       species_data_anngrass <- dplyr::filter(species_data_all_target_fg, GrowthHabitSub=="Graminoid" & Duration=="Annual")
       species_data <- dplyr::bind_rows(species_data, species_data_anngrass)
@@ -276,8 +288,11 @@ plot_data_pull <- function(user = "Anna",
     }
     # make wide
     species_data_wide <- dplyr::select(species_data, any_of(colnames(species_data_all_target))) %>%
-      tidyr::pivot_wider(data = ., names_from = SpeciesCode,
-                                            values_from = percent, values_fill = 0)
+      tidyr::pivot_wider(data = .,
+                         names_from = SpeciesCode,
+                         values_from = percent,
+                         values_fill = 0 # fill missing values with 0 instead of NA because missing species had 0% cover
+      )
 
     # combine with indicator data
     indicator_data_target_wide <- dplyr::left_join(indicator_data_target_wide, species_data_wide)
@@ -297,7 +312,7 @@ plot_data_pull <- function(user = "Anna",
                                                                                "ARTRP2")))
   }
 
-return(indicator_data_target_wide)
+  return(indicator_data_target_wide)
 }
 
 
