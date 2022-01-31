@@ -9,16 +9,24 @@
 #'  but recommended to select from the following: "BadgerWash", "CRCMonitoring",
 #'  "IM_NCPN", "LMF", "NRI", "Parashant", "TerrADat", "VanScoyocThesis"
 #' @param indicators Character vector of indicators to return data from. Can
-#'   include anything calculated in PlotNet.
+#' include anything calculated in PlotNet.
 #' @param ann_grass_by_spp Logical. Include all annual grasses by species?
 #' @param ann_forb_by_spp Logical. Include all annual forbs by species?
 #' @param per_grass_by_spp Logical. Include all perennial grasses by species?
 #' @param per_forb_by_spp Logical. Include all perennial forbs by species?
-#' @param succulent_by_spp Logical. Include all succulents by species? If TRUE, opuntia_combined should be FALSE
+#' @param succulent_by_spp Logical. Include all succulents by species? If TRUE,
+#'   opuntia_combined should be FALSE
 #' @param shrub_by_spp Logical. Include all shrubs by species?
 #' @param subshrub_by_spp Logical. Include all sub-shrubs by species?
 #' @param tree_by_spp Logical. Include all trees by species?
-#' @param opuntia_combined Logical. Include combined cover of genus Opuntia? If TRUE, succulent_by_spp should be FALSE
+#' @param opuntia_combined Logical. Include combined cover of genus Opuntia? If
+#'   TRUE, succulent_by_spp should be FALSE
+#' @param impute_gap_type Character vector. Gap type to predict. Supported
+#'   options are "CA_percent_100plus" (% cover annual & perennial gaps >100 cm)
+#'   and "CA_percent_200plus" (% cover annual & perennial gaps >200 cm). Set to
+#'   NULL if no imputation is desired.
+#' @param impute_sources Character vector. Optional. Only impute missing data for
+#'   specific data source(s). Set to NULL if not imputation is desired.
 #'
 #' @return Wide format data frame containing indicators for the target ESG
 #' @export
@@ -70,8 +78,16 @@ plot_data_pull <- function(user = "Anna",
                            shrub_by_spp = TRUE, # All shrubs and sub-shrubs by species
                            subshrub_by_spp = TRUE,
                            tree_by_spp = TRUE, # All trees by species
-                           opuntia_combined = TRUE # Opuntia spp. (depending on prevalence)) # vector of indicator names
+                           opuntia_combined = TRUE, # Opuntia spp. (depending on prevalence)) # vector of indicator names
+                           impute_gap_type = NULL,
+                           impute_sources = NULL
 ){
+  # Check arguments
+  if(!is.null(impute_sources)){
+    if(!all(impute_sources %in% data_sources)){stop("All impute_sources must also be included in the data_sources argument.")}
+    if(is.null(impute_gap_type)){stop("If you supply impute_sources, you must also supply impute_gap_type. Options are c('CA_percent_100plus', 'CA_percent_200plus')")}
+  }
+
   file_paths <- data_file_paths(user)
   # extract ESG for each plot location
   plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
@@ -132,11 +148,19 @@ plot_data_pull <- function(user = "Anna",
   }
 
   # filter to just desired indicators
-  if("CP_percent_100plus" %in% indicators){
-    indicators_expanded <- unique(c(indicators, "CP_percent_100to200", "CP_percent_200plus"))
-  }else{
-    indicators_expanded <- indicators
+  indicators_expanded <- indicators
+  if(!is.null(impute_gap_type)){
+    indicators_expanded <- unique(c(indicators_expanded,
+                                    stringr::str_replace_all(impute_gap_type, "CA_", "CP_"),
+                                    "AH_AnnForbGrassCover"))
   }
+  if("CP_percent_100plus" %in% indicators_expanded){
+    indicators_expanded <- unique(c(indicators_expanded, "CP_percent_100to200", "CP_percent_200plus"))
+  }
+  if("CA_percent_100plus" %in% indicators_expanded){
+    indicators_expanded <- unique(c(indicators_expanded, "CA_percent_100to200", "CA_percent_200plus"))
+  }
+
 
   indicator_data <- dplyr::filter(indicator_data_all, variable %in% indicators_expanded)
   indicator_data$PlotCode <- paste(indicator_data$SourceKey,
@@ -171,7 +195,7 @@ plot_data_pull <- function(user = "Anna",
 
   # calculate canopy gap >100 - doing this one separately because we don't want to autofill with 0s
   # like we do for LPI
-  if("CP_percent_100plus" %in% indicators){
+  if("CP_percent_100plus" %in% indicators_expanded){
     canopy_gaps_100plus <- indicator_data_target %>%
       dplyr::filter(variable %in% c("CP_percent_100to200", "CP_percent_200plus")) %>%
       dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Year) %>%
@@ -183,14 +207,33 @@ plot_data_pull <- function(user = "Anna",
     indicator_data_target_wide <- indicator_data_target_wide %>%
       dplyr::left_join(., canopy_gaps_100plus) #%>%
     #dplyr::filter(!is.na(CP_percent_100plus))
+  }
 
-    # remove the indicators used to calculate CP_percent_100plus if not specified by user to keep
-    if(!("CP_percent_100to200" %in% indicators)){
-      indicator_data_target_wide <- dplyr::select(indicator_data_target_wide, -CP_percent_100to200)
-    }
-    if(!("CP_percent_200plus" %in% indicators)){
-      indicator_data_target_wide <- dplyr::select(indicator_data_target_wide, -CP_percent_200plus)
-    }
+  if("CA_percent_100plus" %in% indicators_expanded){
+    canopy_gaps_100plus <- indicator_data_target %>%
+      dplyr::filter(variable %in% c("CA_percent_100to200", "CA_percent_200plus")) %>%
+      dplyr::group_by(PlotCode, SourceKey, PlotID, SiteName, PlotName, Year) %>%
+      dplyr::summarize(variable = "CA_percent_100plus", value = sum(value, na.rm = T),
+                       .groups = "drop") %>%
+      tidyr::pivot_wider(data = ., names_from = variable, values_from = value) %>%
+      dplyr::filter(!is.na(CA_percent_100plus))
+
+    indicator_data_target_wide <- indicator_data_target_wide %>%
+      dplyr::left_join(., canopy_gaps_100plus) #%>%
+    #dplyr::filter(!is.na(CA_percent_100plus))
+  }
+
+  # impute missing gap values if desired here
+  if(!is.null(impute_gap_type)){
+    indicator_data_target_wide <- impute_missing_gaps(indicator_data_target_wide = indicator_data_target_wide,
+                                                      impute_gap_type = impute_gap_type,
+                                                      impute_sources = impute_sources)
+  }
+
+  # remove any indicators not requested by the user
+  if(!all(indicators_expanded %in% indicators)){
+    indicator_data_target_wide <- dplyr::select(indicator_data_target_wide,
+                                                -tidyselect::any_of(indicators_expanded[which(!(indicators_expanded %in% indicators))]))
   }
 
   # pull species-level cover data for target ESG plots
@@ -299,7 +342,7 @@ plot_data_pull <- function(user = "Anna",
   }
 
   # If using AH_ArtemisiaTridentataCover, remove Artemisia tridentata individual subspecies to avoid double counting them
-  if("AH_ArtemisiaTridentataCover" %in% indicators){
+  if(("AH_ArtemisiaTridentataCover" %in% indicators)&shrub_by_spp){
     indicator_data_target_wide <- select(indicator_data_target_wide, -any_of(c("ARTR2",
                                                                                "ARTRW8",
                                                                                "ARTRT",

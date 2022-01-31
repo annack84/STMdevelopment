@@ -23,7 +23,9 @@ plot_data_pull(
   shrub_by_spp = TRUE,
   subshrub_by_spp = TRUE,
   tree_by_spp = TRUE,
-  opuntia_combined = TRUE
+  opuntia_combined = TRUE,
+  impute_gap_type = NULL,
+  impute_sources = NULL
 )
 }
 \arguments{
@@ -49,7 +51,8 @@ include anything calculated in PlotNet.}
 
 \item{per_forb_by_spp}{Logical. Include all perennial forbs by species?}
 
-\item{succulent_by_spp}{Logical. Include all succulents by species? If TRUE, opuntia_combined should be FALSE}
+\item{succulent_by_spp}{Logical. Include all succulents by species? If TRUE,
+opuntia_combined should be FALSE}
 
 \item{shrub_by_spp}{Logical. Include all shrubs by species?}
 
@@ -57,7 +60,16 @@ include anything calculated in PlotNet.}
 
 \item{tree_by_spp}{Logical. Include all trees by species?}
 
-\item{opuntia_combined}{Logical. Include combined cover of genus Opuntia? If TRUE, succulent_by_spp should be FALSE}
+\item{opuntia_combined}{Logical. Include combined cover of genus Opuntia? If
+TRUE, succulent_by_spp should be FALSE}
+
+\item{impute_gap_type}{Character vector. Gap type to predict. Supported
+options are "CA_percent_100plus" (\% cover annual & perennial gaps >100 cm)
+and "CA_percent_200plus" (\% cover annual & perennial gaps >200 cm). Set to
+NULL if no imputation is desired.}
+
+\item{impute_sources}{Character vector. Optional. Only impute missing data for
+specific data source(s). Set to NULL if not imputation is desired.}
 }
 \value{
 Wide format data frame containing indicators for the target ESG

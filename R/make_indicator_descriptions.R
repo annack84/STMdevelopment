@@ -63,8 +63,10 @@ make_indicator_descriptions <- function(indicators = c("AH_C3NativePerenGrassCov
     "BareSoilCover", "Ecosystem structure", "Bare soil", "Percent cover of bare soil",
     "FH_TotalLitterCover", "Ecosystem structure", "Litter", "Percent cover of plant litter",
     "SoilStab_all", "Ecosystem structure", "Soil stability (all cover types)", "Ordinal soil stability rating (1-6), averaged across all plot samples",
-    "CP_percent_100plus", "Ecosystem structure", "Perennial canopy gaps > 100 cm", "Percent of transect lengths with perennial canopy gaps > 100 cm",
-    "CP_percent_200plus", "Ecosystem structure", "Perennial canopy gaps > 200 cm", "Percent of transect lengths with perennial canopy gaps > 200 cm"
+    "CP_percent_100plus", "Ecosystem structure", "Perennial canopy gaps > 100 cm", "Percent of transect lengths with perennial canopy gaps > 100 cm, where only perennial plants stop a gap",
+    "CP_percent_200plus", "Ecosystem structure", "Perennial canopy gaps > 200 cm", "Percent of transect lengths with perennial canopy gaps > 200 cm, where only perennial plants stop a gap",
+    "CA_percent_100plus", "Ecosystem structure", "Ann. & peren. canopy gaps > 100 cm", "Percent of transect lengths with canopy gaps > 100 cm, where annual and perennial plants stop a gap",
+    "CA_percent_200plus", "Ecosystem structure", "Ann. & peren. canopy gaps > 200 cm", "Percent of transect lengths with canopy gaps > 200 cm, where annual and perennial plants stop a gap"
     )
 
   # filter to only include the indicators used
