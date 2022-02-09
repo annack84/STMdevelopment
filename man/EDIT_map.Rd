@@ -4,14 +4,22 @@
 \alias{EDIT_map}
 \title{Create leaflet map of the target ESG}
 \usage{
-EDIT_map(target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands", user = "Anna")
+EDIT_map(
+  target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands",
+  user = "Anna",
+  maxZoomStyle = "public"
+)
 }
 \arguments{
-\item{target_ESG}{Character. Ecological Site Group to be mapped.
-Follow the names used in the ESG raster released with Travis's 2021 manuscript.}
+\item{target_ESG}{Character. Ecological Site Group to be mapped. Follow the
+names used in the ESG raster released with Travis's 2021 manuscript.}
 
-\item{user}{Character. User name to generate input data file paths.
-Options are "Anna", "Travis", and "VPN".}
+\item{user}{Character. User name to generate input data file paths. Options
+are "Anna", "Travis", and "VPN".}
+
+\item{maxZoomStyle}{Character. Use "public" for maps prepared for EDIT
+(zooming limited to match ESG resampled map resolution). Use "developer" to
+allow zooming in farther.}
 }
 \value{
 
