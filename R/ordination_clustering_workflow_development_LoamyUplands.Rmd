@@ -1,5 +1,5 @@
 ---
-title: "Draft Clustering and Ordination for Loamy Uplands only in the Semiarid Warm Sandy and Loamy Uplands ESG"
+title: "Draft Clustering and Ordination for Loamy Uplands only in the Semiarid Warm Sandy and Loamy Uplands ESG (by plant func. group)"
 author: "Anna Knight"
 date: "2/9/2022"
 output: 
@@ -67,65 +67,65 @@ library(labdsv) # indicator species analysis
 
 ```{r load-plot-indicators, include=FALSE}
 # by species cover
-# indicators <- c(#"AH_C3NativePerenGrassCover",
-#                 #"AH_C3IntroducedPerenGrassCover",
-#                 #"AH_C4NativePerenGrassCover",
-#                 #"AH_C4IntroducedPerenGrassCover",
-#                 #"AH_NativePerenForbCover", # Native perennial forbs
-#                 #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
-#                 #"AH_NativeAnnGrassCover", # Native annual grasses
-#                 #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
-#                 #"AH_NativeAnnForbCover", # Native annual forbs
-#                 #"AH_IntroducedAnnForbCover", # Non-native annual forbs
-#                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
-#                 "BareSoilCover", # Bare soil
-#                 "FH_TotalLitterCover", # Litter
-#                 "CP_percent_100plus", # Canopy gaps > 100 cm TODO do we want annual or perennial gaps?
-#                 "CP_percent_200plus",
-#                 "FH_LichenCover", # Lichen + moss combined cover
-#                 "FH_MossCover"#,
-#                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
-#                 )
-# 
-# ann_grass_by_spp <- T #F
-# ann_forb_by_spp <- T #F
-# per_grass_by_spp <- T #F
-# per_forb_by_spp <- T #F
-# succulent_by_spp <- T #F
-# shrub_by_spp <- T # All shrubs and sub-shrubs by species
-# subshrub_by_spp <- T
-# tree_by_spp <- T # All trees by species
-# opuntia_combined <- F
-
-# by functional group cover
-indicators <- c("AH_C3NativePerenGrassCover",
-                "AH_C3IntroducedPerenGrassCover",
-                "AH_C4NativePerenGrassCover",
-                "AH_C4IntroducedPerenGrassCover",
-                "AH_NativePerenForbCover", # Native perennial forbs
-                "AH_IntroducedPerenForbCover", # Non-native perennial forbs
-                "AH_NativeAnnGrassCover", # Native annual grasses
-                "AH_IntroducedAnnGrassCover", # Non-native annual grasses
-                "AH_NativeAnnForbCover", # Native annual forbs
-                "AH_IntroducedAnnForbCover", # Non-native annual forbs
+indicators <- c(#"AH_C3NativePerenGrassCover",
+                #"AH_C3IntroducedPerenGrassCover",
+                #"AH_C4NativePerenGrassCover",
+                #"AH_C4IntroducedPerenGrassCover",
+                #"AH_NativePerenForbCover", # Native perennial forbs
+                #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
+                #"AH_NativeAnnGrassCover", # Native annual grasses
+                #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
+                #"AH_NativeAnnForbCover", # Native annual forbs
+                #"AH_IntroducedAnnForbCover", # Non-native annual forbs
                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
                 "BareSoilCover", # Bare soil
                 "FH_TotalLitterCover", # Litter
                 "CA_percent_100plus", # Canopy gaps > 100 cm 
                 "CA_percent_200plus",
                 "FH_LichenCover", # Lichen + moss combined cover
-                "FH_MossCover",
-                "SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+                "FH_MossCover"#,
+                #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
                 )
-ann_grass_by_spp <- F
-ann_forb_by_spp <- F
-per_grass_by_spp <- F
-per_forb_by_spp <- F
-succulent_by_spp <- F
+
+ann_grass_by_spp <- T #F
+ann_forb_by_spp <- T #F
+per_grass_by_spp <- T #F
+per_forb_by_spp <- T #F
+succulent_by_spp <- T #F
 shrub_by_spp <- T # All shrubs and sub-shrubs by species
 subshrub_by_spp <- T
 tree_by_spp <- T # All trees by species
-opuntia_combined <- T
+opuntia_combined <- F
+
+# # by functional group cover
+# indicators <- c("AH_C3NativePerenGrassCover",
+#                 "AH_C3IntroducedPerenGrassCover",
+#                 "AH_C4NativePerenGrassCover",
+#                 "AH_C4IntroducedPerenGrassCover",
+#                 "AH_NativePerenForbCover", # Native perennial forbs
+#                 "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+#                 "AH_NativeAnnGrassCover", # Native annual grasses
+#                 "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+#                 "AH_NativeAnnForbCover", # Native annual forbs
+#                 "AH_IntroducedAnnForbCover", # Non-native annual forbs
+#                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
+#                 "BareSoilCover", # Bare soil
+#                 "FH_TotalLitterCover", # Litter
+#                 "CA_percent_100plus", # Canopy gaps > 100 cm 
+#                 "CA_percent_200plus",
+#                 "FH_LichenCover", # Lichen + moss combined cover
+#                 "FH_MossCover",
+#                 "SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+#                 )
+# ann_grass_by_spp <- F
+# ann_forb_by_spp <- F
+# per_grass_by_spp <- F
+# per_forb_by_spp <- F
+# succulent_by_spp <- F
+# shrub_by_spp <- T # All shrubs and sub-shrubs by species
+# subshrub_by_spp <- T
+# tree_by_spp <- T # All trees by species
+# opuntia_combined <- T
 
 
 
@@ -161,7 +161,7 @@ plot_data <- plot_data_pull(user=user,
 ```
 
 
-This report was run on `r Sys.Date()`. The PlotNet files used are those with the most recent dates before `r Sys.Date()`. The variable used are shown in \@ref(tab:doc-plot-indicators). The data came from the following projects: `r paste(data_sources, collapse = ", ")`. For plots that were sampled multiple times, only the most recent complete sampling data were used. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.86 and 0.85 for 100-cm and 200-cm gap predictions, respectively.")}`
+This report was run on `r Sys.Date()`. The PlotNet files used are those with the most recent dates before `r Sys.Date()`. The variable used are shown in \@ref(tab:doc-plot-indicators). The data came from the following projects: `r paste(data_sources, collapse = ", ")`. For plots that were sampled multiple times, only the most recent complete sampling data were used. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.86 and 0.85 for 100-cm and 200-cm gap predictions, respectively).")}`
 
 ```{r doc-plot-indicators, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
@@ -365,7 +365,7 @@ points(k.best,
 
 ```
   
-Indicator species analysis is a method for identifying indicator species and species assemblages that characterize a group of plots (Dufrene & Legendre, 1997; Legendre & Legendre, 2012). An indicator value index (IndVal) is calculated for each species within each group based on the relative abundance of the species (i.e. how high its cover is in Group 1 vs. Group 2 vs. Group n) and the relative frequency of the species (i.e. how many plots it is present in for Group 1 vs. Group 2 vs. Group n). IndVal is based on within-species comparisons - its value for one species is not affected by the presence or abundance of other species. Higher values of IndVal indicate that a species has greater specificity and fidelity for the given group (i.e. it is likely to be present and abundant in a plot that falls within the given group). Note that when we talk about "species" here, we really mean any variable representing the plot (e.g. gaps > 100 cm are treated as a "species").
+Indicator species analysis is a method for identifying indicator species and species assemblages that characterize a group of plots (Dufrene & Legendre, 1997; Legendre & Legendre, 2012). An indicator value index (IndVal) is calculated for each species within each group based on the relative abundance of the species (i.e. how high its cover is in Group 1 vs. Group 2 vs. Group n) and the relative frequency of the species (i.e. how many plots it is present in for Group 1 vs. Group 2 vs. Group n). IndVal is based on within-species comparisons - its value for one species is not affected by the presence or abundance of other species. Higher values of IndVal indicate that a species has greater specificity and fidelity for the given group (i.e. it is likely to be present and abundant in a plot that falls within the given group). **Note that when we talk about "species" here, we really mean any variable representing the plot** (e.g. gaps > 100 cm are treated as a "species").
 
 ```{r indicatorsp, echo=FALSE, message=FALSE, warning=FALSE, fig.height = 5, fig.width=10, fig.cap="Mean p-value of indicator species (left) and number of significant species (right, α = 0.05) for 2 to 12 possible plant communities."}
 
@@ -490,7 +490,7 @@ nbmetrics <- NbClust::NbClust(data = ord.df_LoamyUplands,
 ```
 
 
-```{r k_groups, echo=FALSE, message=FALSE, warning=FALSE}
+```{r k-groups, echo=FALSE, message=FALSE, warning=FALSE}
 
 k_groups_LoamyUplands <- 5 
 
@@ -600,7 +600,7 @@ rect.dendrogram(hclust1_LoamyUplands_dend, # put boxes around each group
 #plot(ape::as.phylo(hclust1_LoamyUplands), tip.color = pal_veg[grp], direction = "downwards")
 ```
 
-```{r silhouette-results, echo=FALSE, warning=FALSE, message=FALSE, fig.width=5, fig.height=5, fig.cap="Silhouette plot of the final groupings."}
+```{r silhouette-results, echo=FALSE, warning=FALSE, message=FALSE, fig.width=5, fig.height=5, fig.cap="Silhouette plot of the final groupings. Higher values indicate more distinct groups."}
 
 sil <- silhouette(cutree(hclust1_LoamyUplands, k=k_groups_LoamyUplands), dist.df_LoamyUplands)
 # 
@@ -708,7 +708,7 @@ par(mfrow=c(1,1))
 
 ```
 
-```{r ordination-spplots, echo=FALSE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of plot indicator data with plant species overlayed."}
+```{r ordination-spplots, eval=FALSE, echo=FALSE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of plot indicator data with plant species overlayed."}
 
 spec_scores1 <- scores(ord_LoamyUplands, display = "species") %>%
   as.data.frame()
@@ -938,9 +938,7 @@ par(mfrow= c(1,1))
 ```
 
 
-I modified the NbClust code to make it work for fanny.
-
-I pared down the list of cluster validation indices calculated by NbClust to those that either performed best in Milligan and Cooper's (1985) test or are commonly used to evaluate fuzzy clustering results. Indices also had to be computationally efficient (i.e. don't take forever to run) and applicable to non-hierarchical clustering methods (Charrad et al. 2014). These indices were: Calinski and Harabasz (1974), C-index (Hubert and Levin, 1976), cubic clustering criteria (Sarle, 1983), point-biserial correlation (Milligan 1980, 1981), Davies and Bouldin (1979), silhouette width (Rousseeuw 1987), and Dunn's index (1974).
+I modified the NbClust code to make it work for fanny. I pared down the list of cluster validation indices calculated by NbClust to those that either performed best in Milligan and Cooper's (1985) test or are commonly used to evaluate fuzzy clustering results. Indices also had to be computationally efficient (i.e. don't take forever to run) and applicable to non-hierarchical clustering methods (Charrad et al. 2014). These indices were: Calinski and Harabasz (1974), C-index (Hubert and Levin, 1976), cubic clustering criteria (Sarle, 1983), point-biserial correlation (Milligan 1980, 1981), Davies and Bouldin (1979), silhouette width (Rousseeuw 1987), and Dunn's index (1974).
 
 I then tested out combinations of number of clusters (2 - 12) and membership exponent values (1.1 to 2.0). I scored each combination of cluster number and membership exponent value by calculating the percent difference from the best score of each index (0% difference indicates the best score; numbers greater than 0 indicate increasingly worse performance), then summing the percent differences. I used the values of cluster number and membership exponent with the lowest summed percent difference for the final clustering results. 
 
@@ -1344,7 +1342,9 @@ kbl(x = indvalsummary_disp_filt, format = "html", row.names = F, align = "c",
 clust_membership_df <- as.data.frame(clust_fuzz$membership[,1:clust_fuzz$k.crisp]) %>%
   tibble::rownames_to_column() %>%
   setNames(c("PlotCode", "Group1memb", "Group2memb"#, "Group3memb"
-             ))
+             )) %>%
+  select(PlotCode, Group1memb, Group2memb#, "Group3memb"
+         )
 
 plot_data_first_LoamyUplands2 <- left_join(plot_data_first_LoamyUplands2, clust_membership_df)
 
@@ -1370,10 +1370,10 @@ plot_data_first_LoamyUplands2 <- left_join(plot_data_first_LoamyUplands2, clust_
 #   col.segments = pal_veg2[1:(k_groups_fuzzy)]
 # )
 
-leaflet.minicharts::addMinicharts(map = EDIT_map(target_ESG = target_ESG, user = user),
-                                  lng = plot_data_first$Longitude_NAD83,
-                                    lat = plot_data_first$Latitude_NAD83,
-                                    chartdata = plot_data_first[ , c("Group1memb", "Group2memb"#, "Group3memb"
+leaflet.minicharts::addMinicharts(map = EDIT_map(target_ESG = target_ESG, user = user, maxZoomStyle = "developer"),
+                                  lng = plot_data_first_LoamyUplands2$Longitude_NAD83,
+                                    lat = plot_data_first_LoamyUplands2$Latitude_NAD83,
+                                    chartdata = plot_data_first_LoamyUplands2[ , c("Group1memb", "Group2memb"#, "Group3memb"
                                                                      )],
                                     type = "pie",
                                     colorPalette = pal_veg2[1:(k_groups_fuzzy)],
@@ -1453,6 +1453,6 @@ summary(aov(UCRB_SGUs_ProbMax~PlantCommunity_fuzzy, data = plot_data_first_Loamy
 
 ```{r echo=FALSE}
 # TO MAKE THE 3D PLOT WORK, DON'T USE THE KNIT BUTTON! COPY AND PASTE THE CODE BELOW INTO THE CONSOLE!!
-#rmarkdown::render(input = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Scripts/STMdevelopment/R/ordination_clustering_workflow_development_imputeNAs.Rmd", output_format = "html_document", output_file = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Analyses/ordination_clustering_workflow_development_imputeNAs_20220131.html")
+#rmarkdown::render(input = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Scripts/STMdevelopment/R/ordination_clustering_workflow_development_LoamyUplands.Rmd", output_format = "html_document", output_file = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Analyses/ordination_clustering_workflow_development_LoamyUplands_allspp_20220210.html")
 ```
 

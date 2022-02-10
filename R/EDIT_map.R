@@ -22,7 +22,7 @@ EDIT_map <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands",
 
   # choose max zoom
   if(maxZoomStyle=="public"){maxZ <- 11}
-  if(maxZoomStyle=="developer"){maxZ <- 13}
+  if(maxZoomStyle=="developer"){maxZ <- 14}
 
   # Create leaflet map
   map_figure <- leaflet::leaflet(options = leaflet::leafletOptions(zoomControl = TRUE,

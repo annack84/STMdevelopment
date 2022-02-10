@@ -1,5 +1,5 @@
 ---
-title: "Draft Clustering and Ordination for Sandy Uplands only in the Semiarid Warm Sandy and Sandy Uplands ESG (all plants by species)"
+title: "Draft Clustering and Ordination for Sandy Uplands only in the Semiarid Warm Sandy and Sandy Uplands ESG (by plant functional groups)"
 author: "Anna Knight"
 date: "2/9/2022"
 output: 
@@ -66,48 +66,17 @@ library(labdsv) # indicator species analysis
 ```
 
 ```{r load-plot-indicators, include=FALSE, message=FALSE, warning=FALSE}
-# by species cover
-indicators <- c(#"AH_C3NativePerenGrassCover",
-                #"AH_C3IntroducedPerenGrassCover",
-                #"AH_C4NativePerenGrassCover",
-                #"AH_C4IntroducedPerenGrassCover",
-                #"AH_NativePerenForbCover", # Native perennial forbs
-                #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
-                #"AH_NativeAnnGrassCover", # Native annual grasses
-                #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
-                #"AH_NativeAnnForbCover", # Native annual forbs
-                #"AH_IntroducedAnnForbCover", # Non-native annual forbs
-                "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
-                "BareSoilCover", # Bare soil
-                "FH_TotalLitterCover", # Litter
-                "CA_percent_100plus", # Canopy gaps > 100 cm
-                "CA_percent_200plus",
-                "FH_LichenCover", # Lichen + moss combined cover
-                "FH_MossCover",
-                "SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
-                )
-
-ann_grass_by_spp <- T #F
-ann_forb_by_spp <- T #F
-per_grass_by_spp <- T #F
-per_forb_by_spp <- T #F
-succulent_by_spp <- T #F
-shrub_by_spp <- T # All shrubs and sub-shrubs by species
-subshrub_by_spp <- T
-tree_by_spp <- T # All trees by species
-opuntia_combined <- F
-
-# # by functional group cover
-# indicators <- c("AH_C3NativePerenGrassCover",
-#                 "AH_C3IntroducedPerenGrassCover",
-#                 "AH_C4NativePerenGrassCover",
-#                 "AH_C4IntroducedPerenGrassCover",
-#                 "AH_NativePerenForbCover", # Native perennial forbs
-#                 "AH_IntroducedPerenForbCover", # Non-native perennial forbs
-#                 "AH_NativeAnnGrassCover", # Native annual grasses
-#                 "AH_IntroducedAnnGrassCover", # Non-native annual grasses
-#                 "AH_NativeAnnForbCover", # Native annual forbs
-#                 "AH_IntroducedAnnForbCover", # Non-native annual forbs
+# # by species cover
+# indicators <- c(#"AH_C3NativePerenGrassCover",
+#                 #"AH_C3IntroducedPerenGrassCover",
+#                 #"AH_C4NativePerenGrassCover",
+#                 #"AH_C4IntroducedPerenGrassCover",
+#                 #"AH_NativePerenForbCover", # Native perennial forbs
+#                 #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
+#                 #"AH_NativeAnnGrassCover", # Native annual grasses
+#                 #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
+#                 #"AH_NativeAnnForbCover", # Native annual forbs
+#                 #"AH_IntroducedAnnForbCover", # Non-native annual forbs
 #                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
 #                 "BareSoilCover", # Bare soil
 #                 "FH_TotalLitterCover", # Litter
@@ -117,15 +86,46 @@ opuntia_combined <- F
 #                 "FH_MossCover",
 #                 "SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
 #                 )
-# ann_grass_by_spp <- F
-# ann_forb_by_spp <- F
-# per_grass_by_spp <- F
-# per_forb_by_spp <- F
-# succulent_by_spp <- F
+# 
+# ann_grass_by_spp <- T #F
+# ann_forb_by_spp <- T #F
+# per_grass_by_spp <- T #F
+# per_forb_by_spp <- T #F
+# succulent_by_spp <- T #F
 # shrub_by_spp <- T # All shrubs and sub-shrubs by species
 # subshrub_by_spp <- T
 # tree_by_spp <- T # All trees by species
-# opuntia_combined <- T
+# opuntia_combined <- F
+
+# by functional group cover
+indicators <- c("AH_C3NativePerenGrassCover",
+                "AH_C3IntroducedPerenGrassCover",
+                "AH_C4NativePerenGrassCover",
+                "AH_C4IntroducedPerenGrassCover",
+                "AH_NativePerenForbCover", # Native perennial forbs
+                "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+                "AH_NativeAnnGrassCover", # Native annual grasses
+                "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+                "AH_NativeAnnForbCover", # Native annual forbs
+                "AH_IntroducedAnnForbCover", # Non-native annual forbs
+                "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
+                "BareSoilCover", # Bare soil
+                "FH_TotalLitterCover", # Litter
+                "CA_percent_100plus", # Canopy gaps > 100 cm
+                "CA_percent_200plus",
+                "FH_LichenCover", # Lichen + moss combined cover
+                "FH_MossCover",
+                "SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+                )
+ann_grass_by_spp <- F
+ann_forb_by_spp <- F
+per_grass_by_spp <- F
+per_forb_by_spp <- F
+succulent_by_spp <- F
+shrub_by_spp <- T # All shrubs and sub-shrubs by species
+subshrub_by_spp <- T
+tree_by_spp <- T # All trees by species
+opuntia_combined <- T
 
 
 
@@ -200,11 +200,13 @@ SGU_raster <- raster::raster("C:/Users/aknight/Desktop/Telework_Backups/V_drive/
 file_paths <- data_file_paths(user)
 
 plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
-                                layer = "all_plot-years_2021-09-30") 
+                                layer = "all_plot-years_2021-09-30",
+                              quiet=TRUE) 
 
 if("NRI" %in% data_sources){
   nri_locations <- sf::st_read(dsn = file_paths$nri,
-                               layer = "NRI_UCRB_plot-years_2021-11-01")
+                               layer = "NRI_UCRB_plot-years_2021-11-01",
+                               quiet = TRUE)
   
   plot_locations <- dplyr::filter(plot_locations, !grepl(pattern = "^NRI_",
                                                          x=PlotCode)) %>%
@@ -483,6 +485,117 @@ nbmetrics <- NbClust::NbClust(data = ord.df_SandyUplands,
                               method = "ward.D2",
                               index = "all",
                               alphaBeale = 0.1)
+
+```
+
+```{r NbClust-ack, echo=FALSE, message=FALSE, warning=FALSE}
+# Using method "ward.D2" here because Ward's method generally give similar results to the flexible beta=-0.25 method that I'm using here
+
+# Per Charrad et al. (2014), NOT pseudot2 nor frey (only for hierarchical)
+# check elsewhere for Hartigan, Scott, Marriot, Trcovw - unclear if it is only for hierarchical methods
+# Not all metrics are created equal! Milligan and Cooper (1985) tested the NbClust ones on hierarchial methods and found that these were the best:
+# 1. Calinski and Harabasz "ch" 90% right
+# 2. Duda and Hart "duda" 90% right
+# 3. C-index "cindex" 80% right (worst with 2 clusters)
+# 4. Gamma "gamma" 78% right (worst with 2 clusters)
+# 5. Beale "beale" 77% right (worst with 2 clusters)
+# 6. Cubic clustering criteria "ccc" 74% right
+# 7. Point biserial "ptbiserial" 71% right
+# 8. G+ "gpluts" 69% right
+# 9. Mojena, not included in NbClust
+# 10. Davies and Bouldin "db" 66% right
+# 11. Stepsize not included? 63% right
+# 12. Likelihood ratio? 62% right
+# 13. Log(p) (scott? sort of) not included? 55% right
+# 14. Sneath not included? maybe matrix correlation?? 54% right
+# 15. Frey and Van Groenewoud, "frey" 54% right but only use for hierarchical
+# Wrong more that right: Tau "tau", Ball & Hall "ball", Trace Cov W "trcovw", Trace W "tracew", McClain & Rao "mcclain"
+# M&C didn't test these, but they seem to be widely used:
+# silhouette width "silhouette"
+# Dunn "dunn"
+# Gap "gap"
+
+# get index values for all combos of membership exponent and number of clusters
+
+indices_arg <- c("ch", "duda",
+                 "pseudot2",
+                 "cindex",
+             #"gamma", # takes a long time
+             "beale", # unclear how this one works
+             "ccc", "ptbiserial",
+             #"gplus", # takes a long time
+             "db", "frey", "silhouette", "dunn" #,
+             #"gap" # takes a long time 
+             ) 
+
+indices_name <- c("CH", "Duda",
+                  "Pseudo_t2",
+                  "Cindex",
+             #"gamma", # takes a long time
+             "Beale",
+             "CCC", "Ptbiserial",
+             #"gplus", # takes a long time
+             "DB", "Frey", "Silhouette", "Dunn" #,
+             #"gap" # takes a long time 
+             )
+
+
+nbmetrics <- NbClust::NbClust(data = ord.df_SandyUplands,
+                              diss = dist.df_SandyUplands,
+                              distance = NULL,
+                              min.nc = 2,
+                              max.nc = 12,
+                              method = "ward.D2",
+                              index = "all",
+                              alphaBeale = 0.1)
+
+cluster_eval <- nbmetrics$All.index %>%
+  as.data.frame() %>%
+  mutate(Number_clusters = rownames(.))
+
+
+
+cluster_eval_indices <- select(cluster_eval, any_of(c("Number_clusters", indices_name)))
+
+# calculate percent worst than best value for each memb. exp. X num. clusters combo for each index
+
+pct_off_best_higher <- function(x, all_vals){
+  best <- max(all_vals)
+  pct_off <- ((best-x)/best)*100
+  return(pct_off)
+}
+
+pct_off_best_lower <- function(x, all_vals){ 
+  best <- min(all_vals)
+  pct_off <- ((x-best)/best)*100
+  return(pct_off)
+}
+
+cluster_eval_indices_rank <- cluster_eval_indices %>%
+  rowwise() %>%
+  mutate(CH_rank = pct_off_best_higher(CH, cluster_eval_indices$CH),
+         Duda = ,
+         Pseudo_t2 = ,
+         Cindex_rank = pct_off_best_lower(Cindex, cluster_eval_indices$Cindex),
+         Beale = ,
+         CCC_rank = pct_off_best_higher(CCC, cluster_eval_indices$CCC),
+         Ptbiserial_rank = pct_off_best_higher(Ptbiserial, cluster_eval_indices$Ptbiserial),
+         DB_rank = pct_off_best_lower(DB, cluster_eval_indices$DB),
+         Frey_rank = ,
+         Silhouette_rank = pct_off_best_higher(Silhouette, cluster_eval_indices$Silhouette),
+         Dunn_rank = pct_off_best_higher(Dunn, cluster_eval_indices$Dunn)
+         ) %>%
+  mutate(overall_rank = sum(CH_rank, # lowest overall rank wins!
+                            Cindex_rank,
+                            CCC_rank,
+                            Ptbiserial_rank,
+                            DB_rank,
+                            Silhouette_rank,
+                            Dunn_rank,
+                            na.rm = T))
+
+best_n_clust <- as.numeric(cluster_eval_indices_rank[[which.min(cluster_eval_indices_rank$overall_rank), "Number_clusters"]])
+best_memb_exp <- as.numeric(cluster_eval_indices_rank[[which.min(cluster_eval_indices_rank$overall_rank), "Memb_exp"]])
 
 ```
 
@@ -1290,7 +1403,7 @@ plot_data_first_SandyUplands2 <- left_join(plot_data_first_SandyUplands2, clust_
 #   col.segments = pal_veg2[1:(k_groups_fuzzy)]
 # )
 
-leaflet.minicharts::addMinicharts(map = EDIT_map(target_ESG = target_ESG, user = user),
+leaflet.minicharts::addMinicharts(map = EDIT_map(target_ESG = target_ESG, user = user, maxZoomStyle="developer"),
                                   lng = plot_data_first_SandyUplands2$Longitude_NAD83,
                                     lat = plot_data_first_SandyUplands2$Latitude_NAD83,
                                     chartdata = plot_data_first_SandyUplands2[ , c("Group1memb", "Group2memb"#, "Group3memb"
