@@ -1,6 +1,6 @@
 #' @export
 ESG_table <- dplyr::tribble(
-  ~ESGs_final, ~ESGs_text,
+  ~ESGid, ~ESGs_text,
   1,      "Outcrops",
   2,      "Arid_Warm_Breaks",
   3,      "Arid_Warm_SalineHills",
@@ -19,7 +19,7 @@ ESG_table <- dplyr::tribble(
   16,     "Semiarid_Warm_VeryShallow",
   17,     "Semiarid_Warm_SalineUplands",
   18,     "Semiarid_Warm_Shallow_DeepRocky",
-  19,     "Semiarid_Warm_SandyUplands_LoamyUplands",
+  19,     "Semiarid_Warm_LoamyUplands",
   20,     "Semiarid_Warm_FinerUplands",
   21,     "Semiarid_Warm_ClayUplands",
   22,     "Semiarid_Warm_SandyBottoms_Bottoms",
@@ -35,7 +35,8 @@ ESG_table <- dplyr::tribble(
   32,     "Semiarid_Cool_SandyBottoms",
   33,     "Semiarid_Cool_SalineBottoms",
   34,     "Semiarid_Cool_Bottoms",
-  35,     "Riparian"
+  35,     "Riparian",
+  36,     "Semiarid_Warm_SandyUplands"
 )
 
 #' @export
@@ -61,5 +62,22 @@ SGU_definitions_replace <- c(
   "DR" = "Deep Rocky",
   "CU" = "Clay Uplands",
   "Bks" = "Breaks"
+)
+
+#' @export
+texture_table <- dplyr::tribble(
+  ~textabbr, ~textname,
+  "Cl", "clay",
+  "SiCl", "silty clay",
+  "SaCl", "sandy clay",
+  "ClLo", "clay loam",
+  "SiClLo", "silty clay loam",
+  "SaClLo", "sandy clay loam",
+  "Lo", "loam",
+  "SiLo", "silty loam",
+  "SaLo", "sandy loam",
+  "Si", "silt",
+  "LoSa", "loamy sand",
+  "Sa", "sand"
 )
 

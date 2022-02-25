@@ -12,7 +12,7 @@ make_mappable_raster <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyU
                                  user = "Anna"){
   all_ESGs <- raster::raster(data_file_paths(user)$ESG_map)
 
-  ESG_number <-ESG_table$ESGs_final[which(ESG_table$ESGs_text==target_ESG)]
+  ESG_number <-ESG_table$ESGid[which(ESG_table$ESGs_text==target_ESG)]
 
   target_ESG_raster <- all_ESGs
   target_ESG_raster[target_ESG_raster!=ESG_number] <- 0

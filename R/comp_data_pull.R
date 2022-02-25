@@ -1,7 +1,7 @@
 
 #' Compile soil components for ecological site group of interest
 #'
-#' @param file_paths_user Character. User name to generate input data file paths.
+#' @param user Character. User name to generate input data file paths.
 #'   Options are "Anna", "Travis", and "VPN".
 #' @param target_ESG The ecological site group to pull data for.
 #'
@@ -9,10 +9,10 @@
 #' @export
 
 comp_data_pull <- function(
-  file_paths_user = "Travis",
+  user = "Travis",
   target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands"
 ){
-  file_paths <- data_file_paths(file_paths_user)
+  file_paths <- data_file_paths(user)
   ## Pull ESD, component, and horizon data
   esds <- readRDS(paste(file_paths$ssurgo_result_fldr,"/esd_final.rds",sep=""))
   comps <- readRDS(paste(file_paths$ssurgo_result_fldr,"/compdf_ucrb.rds",sep=""))
@@ -46,7 +46,7 @@ comp_data_pull <- function(
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="VeryShallow",16,esds$ESGid)  # semiarid warm very shallow
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="SalineUplands",17,esds$ESGid)  # semiarid warm saline uplands
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&(esds$sgu=="Shallow"|esds$sgu=="DeepRocky"),18,esds$ESGid)  # semiarid warm shallow and deep rocky
-  esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&(esds$sgu=="SandyUplands"|esds$sgu=="LoamyUplands"),19,esds$ESGid)  # semiarid warm sandy uplands and loamy uplands
+  esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="LoamyUplands",19,esds$ESGid)  # semiarid warm loamy uplands
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="FinerUplands",20,esds$ESGid)  # semiarid warm finer uplands
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="ClayUplands",21,esds$ESGid)  # semiarid warm clay uplands
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&(esds$sgu=="SandyBottoms"|esds$sgu=="Bottoms"),22,esds$ESGid)  # semiarid warm sandy bottoms and bottoms
@@ -63,52 +63,16 @@ comp_data_pull <- function(
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Cool"&esds$sgu=="SalineBottoms",33,esds$ESGid)  # semiarid cool saline bottoms
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Cool"&esds$sgu=="Bottoms",34,esds$ESGid)  # semiarid cool bottoms
   esds$ESGid <- ifelse(esds$sgu=="Riparian",35,esds$ESGid) # Riparian
+  esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="SandyUplands",36,esds$ESGid)  # semiarid warm sandy uplands uplands
 
   ## ESG Lookup table
-  lookup_table <- dplyr::tribble(
-    ~ESGid, ~ESG,
-    1,      "Outcrops",
-    2,      "Arid_Warm_Breaks",
-    3,      "Arid_Warm_SalineHills",
-    4,      "Arid_Warm_Gypsum",
-    5,      "Arid_Warm_VeryShallow",
-    6,      "Arid_Warm_SalineUplands",
-    7,      "Arid_Warm_Shallow",
-    8,      "Arid_Warm_DeepRocky",
-    9,      "Arid_Warm_SandyUplands_LoamyUplands",
-    10,     "Arid_Warm_FinerUplands_ClayUplands",
-    11,     "Arid_Warm_SandyBottoms",
-    12,     "Arid_Warm_SalineBottoms_Bottoms",
-    13,     "Semiarid_Warm_Breaks",
-    14,     "Semiarid_Warm_SalineHills",
-    15,     "Semiarid_Warm_Gypsum",
-    16,     "Semiarid_Warm_VeryShallow",
-    17,     "Semiarid_Warm_SalineUplands",
-    18,     "Semiarid_Warm_Shallow_DeepRocky",
-    19,     "Semiarid_Warm_SandyUplands_LoamyUplands",
-    20,     "Semiarid_Warm_FinerUplands",
-    21,     "Semiarid_Warm_ClayUplands",
-    22,     "Semiarid_Warm_SandyBottoms_Bottoms",
-    23,     "Semiarid_Warm_SalineBottoms",
-    24,     "Semiarid_Cool_Breaks",
-    25,     "Semiarid_Cool_SalineHills",
-    26,     "Semiarid_Cool_Gypsum",
-    27,     "Semiarid_Cool_VeryShallow",
-    28,     "Semiarid_Cool_SalineUplands_SandyUplands_LoamyUplands_FinerUplands",
-    29,     "Semiarid_Cool_Shallow",
-    30,     "Semiarid_Cool_DeepRocky",
-    31,     "Semiarid_Cool_ClayUplands",
-    32,     "Semiarid_Cool_SandyBottoms",
-    33,     "Semiarid_Cool_SalineBottoms",
-    34,     "Semiarid_Cool_Bottoms",
-    35,     "Riparian"
-  )
+  lookup_table <- ESG_table
 
   ## Join ESG names to esds
   esds <- dplyr::left_join(esds,lookup_table,by="ESGid")
 
   ## Join esds to comp
-  comp_jn <- dplyr::inner_join(esd_comps,esds[,c("ecoclassid","sgu","ESG")],by="ecoclassid")
+  comp_jn <- dplyr::inner_join(esd_comps,esds[,c("ecoclassid","sgu","ESGs_text")],by="ecoclassid")
   comp_jn <- dplyr::left_join(comp_jn,comps,by="cokey")
   comp_jn <- dplyr::left_join(comp_jn,depth_comps[,c("cokey","reskind","resdept_l","resdept_r","resdept_h")],by="cokey")
   comp_jn <- dplyr::left_join(comp_jn,comps_surf,by="cokey")

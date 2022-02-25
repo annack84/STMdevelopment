@@ -5,12 +5,12 @@
 \title{Ecological site group species production query}
 \usage{
 esg_production_pull(
-  file_paths_user = "Travis",
+  user = "Travis",
   target_ESG = "Semiarid_Warm_SandyUplands_LoamyUplands"
 )
 }
 \arguments{
-\item{file_paths_user}{Character. User name to generate input data file paths.
+\item{user}{Character. User name to generate input data file paths.
 Options are "Anna", "Travis", and "VPN".}
 
 \item{target_ESG}{The ecological site group to pull data for.}
