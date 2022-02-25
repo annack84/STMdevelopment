@@ -114,8 +114,8 @@ indicators <- c("AH_C3NativePerenGrassCover",
                 "CA_percent_100plus", # Canopy gaps > 100 cm
                 "CA_percent_200plus",
                 "FH_LichenCover", # Lichen + moss combined cover
-                "FH_MossCover",
-                "SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+                "FH_MossCover"#,
+                #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
                 )
 ann_grass_by_spp <- F
 ann_forb_by_spp <- F
@@ -488,6 +488,8 @@ nbmetrics <- NbClust::NbClust(data = ord.df_SandyUplands,
 
 ```
 
+Some of the metrics used by NbClust performed poorly in a validation study that compared cluster number selection metrics to a data set with a known clustering structure (Milligan and Cooper, 1985). Limiting the NbClust metrics to only those that had greater than 55% accuracy in Milligan and Cooper (1985) yields the following results:
+
 ```{r NbClust-ack, echo=FALSE, message=FALSE, warning=FALSE}
 # Using method "ward.D2" here because Ward's method generally give similar results to the flexible beta=-0.25 method that I'm using here
 
@@ -518,36 +520,38 @@ nbmetrics <- NbClust::NbClust(data = ord.df_SandyUplands,
 # get index values for all combos of membership exponent and number of clusters
 
 indices_arg <- c("ch", "duda",
-                 "pseudot2",
+                 "Pseudot2",
                  "cindex",
              #"gamma", # takes a long time
              "beale", # unclear how this one works
              "ccc", "ptbiserial",
              #"gplus", # takes a long time
-             "db", "frey", "silhouette", "dunn" #,
+             "db", 
+             "silhouette", "dunn" #,
              #"gap" # takes a long time 
              ) 
 
 indices_name <- c("CH", "Duda",
-                  "Pseudo_t2",
+                  "Pseudot2",
                   "Cindex",
              #"gamma", # takes a long time
              "Beale",
              "CCC", "Ptbiserial",
              #"gplus", # takes a long time
-             "DB", "Frey", "Silhouette", "Dunn" #,
+             "DB", 
+             "Silhouette", "Dunn" #,
              #"gap" # takes a long time 
              )
 
 
-nbmetrics <- NbClust::NbClust(data = ord.df_SandyUplands,
-                              diss = dist.df_SandyUplands,
-                              distance = NULL,
-                              min.nc = 2,
-                              max.nc = 12,
-                              method = "ward.D2",
-                              index = "all",
-                              alphaBeale = 0.1)
+# nbmetrics <- NbClust::NbClust(data = ord.df_SandyUplands,
+#                               diss = dist.df_SandyUplands,
+#                               distance = NULL,
+#                               min.nc = 2,
+#                               max.nc = 12,
+#                               method = "ward.D2",
+#                               index = "all",
+#                               alphaBeale = 0.1)
 
 cluster_eval <- nbmetrics$All.index %>%
   as.data.frame() %>%
@@ -573,36 +577,62 @@ pct_off_best_lower <- function(x, all_vals){
 
 cluster_eval_indices_rank <- cluster_eval_indices %>%
   rowwise() %>%
-  mutate(CH_rank = pct_off_best_higher(CH, cluster_eval_indices$CH),
-         Duda = ,
-         Pseudo_t2 = ,
-         Cindex_rank = pct_off_best_lower(Cindex, cluster_eval_indices$Cindex),
-         Beale = ,
-         CCC_rank = pct_off_best_higher(CCC, cluster_eval_indices$CCC),
-         Ptbiserial_rank = pct_off_best_higher(Ptbiserial, cluster_eval_indices$Ptbiserial),
-         DB_rank = pct_off_best_lower(DB, cluster_eval_indices$DB),
-         Frey_rank = ,
-         Silhouette_rank = pct_off_best_higher(Silhouette, cluster_eval_indices$Silhouette),
-         Dunn_rank = pct_off_best_higher(Dunn, cluster_eval_indices$Dunn)
+  mutate(CH_rank_pct = pct_off_best_higher(CH, cluster_eval_indices$CH),
+         #Duda = ,
+         #Pseudo_t2 = ,
+         Cindex_rank_pct = pct_off_best_lower(Cindex, cluster_eval_indices$Cindex),
+         #Beale = ,
+         CCC_rank_pct = pct_off_best_higher(CCC, cluster_eval_indices$CCC),
+         Ptbiserial_rank_pct = pct_off_best_higher(Ptbiserial, cluster_eval_indices$Ptbiserial),
+         DB_rank_pct = pct_off_best_lower(DB, cluster_eval_indices$DB),
+         Silhouette_rank_pct = pct_off_best_higher(Silhouette, cluster_eval_indices$Silhouette),
+         Dunn_rank_pct = pct_off_best_higher(Dunn, cluster_eval_indices$Dunn)
          ) %>%
-  mutate(overall_rank = sum(CH_rank, # lowest overall rank wins!
-                            Cindex_rank,
-                            CCC_rank,
-                            Ptbiserial_rank,
-                            DB_rank,
-                            Silhouette_rank,
-                            Dunn_rank,
+  mutate(overall_rank_pct = sum(CH_rank_pct, # lowest overall rank wins!
+                            Cindex_rank_pct,
+                            CCC_rank_pct,
+                            Ptbiserial_rank_pct,
+                            DB_rank_pct,
+                            Silhouette_rank_pct,
+                            Dunn_rank_pct,
                             na.rm = T))
 
-best_n_clust <- as.numeric(cluster_eval_indices_rank[[which.min(cluster_eval_indices_rank$overall_rank), "Number_clusters"]])
-best_memb_exp <- as.numeric(cluster_eval_indices_rank[[which.min(cluster_eval_indices_rank$overall_rank), "Memb_exp"]])
+best_n_clust <- as.numeric(cluster_eval_indices_rank[[which.min(cluster_eval_indices_rank$overall_rank_pct), "Number_clusters"]])
+
+show_rank_pct <- select(cluster_eval_indices_rank, Number_clusters, overall_rank_pct) %>%
+  arrange(overall_rank_pct) %>%
+  setNames(c("Number of clusters", "Summed percent off best index value"))
+
+kbl(x = show_rank_pct, format = "html", row.names = F, align = "c",
+    caption = "Best number of clusters (k) for hierarchical clustering based on the best metrics in Milligan and Cooper (1985). Ranked by percent off best index value (lower is better). Indices used for ranking were Calinski and Harabasz, C-index, cubic clustering criteria, point biserial correlation, Davies and Bouldin, average silhouette width, and Dunn's index.") %>%
+   kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(show_rank_pct), background = "lightsteelblue") %>%
+  collapse_rows(columns = 1, valign = "top")
 
 ```
 
 
+
+```{r NbClust-ack-rank, echo=FALSE, message=FALSE, warning=FALSE}
+best_n_clust_rank <- as.data.frame(nbmetrics$Best.nc) %>%
+  select(any_of(c("Number_clusters", indices_name, "PseudoT2", "PtBiserial"))) %>%
+  t() %>%
+  as.data.frame() %>%
+  count(Number_clusters) %>%
+  arrange(desc(n)) %>%
+  setNames(c("Number of clusters", "Number of indices"))
+
+kbl(x = best_n_clust_rank, format = "html", row.names = F, align = "c",
+    caption = "Best number of clusters (k) for hierarchical clustering based on the best metrics in Milligan and Cooper (1985). Ranked by the number of indices that indicated that the given value of k was best. Indices used for ranking were Calinski and Harabasz, C-index, cubic clustering criteria, point biserial correlation, Davies and Bouldin, average silhouette width, Dunn's index, Duda and Hart, pseudo-t2, and Beale's index.") %>%
+   kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(best_n_clust_rank), background = "lightsteelblue") %>%
+  collapse_rows(columns = 1, valign = "top")
+
+```
+
 ```{r k-groups, echo=FALSE, message=FALSE, warning=FALSE}
 
-k_groups_SandyUplands <- 3 #6
+k_groups_SandyUplands <- 8 #6
 
 ```
 
@@ -672,7 +702,7 @@ indvalsummary_disp <- indvalsummary_disp %>%
   group_by(group) %>%
   arrange(desc(indval), .by_group=T)
 
-indvalsummary_disp_filt <- filter(indvalsummary_disp, pvalue<=0.05) %>%
+indvalsummary_disp_filt <- filter(indvalsummary_disp, pvalue<=0.1) %>%
   mutate(indval=round(indval, 2),
          pvalue=round(pvalue, 3),
          RelAbund=round(RelAbund, 2),
@@ -695,7 +725,7 @@ Going back to our clustering dendrogram, here's what it looks like when we cut t
 hclust1_SandyUplands_dend <- as.dendrogram(hclust1_SandyUplands)
 
 # veg group color palette
-pal_veg <- RColorBrewer::brewer.pal(n=k_groups_SandyUplands, name = "Set1")
+pal_veg <- RColorBrewer::brewer.pal(n=k_groups_SandyUplands, name = "Set3")
 
 plot(hclust1_SandyUplands_dend, leaflab= "none")
 rect.dendrogram(hclust1_SandyUplands_dend, # put boxes around each group 

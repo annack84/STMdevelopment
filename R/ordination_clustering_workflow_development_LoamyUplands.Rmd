@@ -66,66 +66,66 @@ library(labdsv) # indicator species analysis
 ```
 
 ```{r load-plot-indicators, include=FALSE}
-# by species cover
-indicators <- c(#"AH_C3NativePerenGrassCover",
-                #"AH_C3IntroducedPerenGrassCover",
-                #"AH_C4NativePerenGrassCover",
-                #"AH_C4IntroducedPerenGrassCover",
-                #"AH_NativePerenForbCover", # Native perennial forbs
-                #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
-                #"AH_NativeAnnGrassCover", # Native annual grasses
-                #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
-                #"AH_NativeAnnForbCover", # Native annual forbs
-                #"AH_IntroducedAnnForbCover", # Non-native annual forbs
-                "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
-                "BareSoilCover", # Bare soil
-                "FH_TotalLitterCover", # Litter
-                "CA_percent_100plus", # Canopy gaps > 100 cm 
-                "CA_percent_200plus",
-                "FH_LichenCover", # Lichen + moss combined cover
-                "FH_MossCover"#,
-                #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
-                )
-
-ann_grass_by_spp <- T #F
-ann_forb_by_spp <- T #F
-per_grass_by_spp <- T #F
-per_forb_by_spp <- T #F
-succulent_by_spp <- T #F
-shrub_by_spp <- T # All shrubs and sub-shrubs by species
-subshrub_by_spp <- T
-tree_by_spp <- T # All trees by species
-opuntia_combined <- F
-
-# # by functional group cover
-# indicators <- c("AH_C3NativePerenGrassCover",
-#                 "AH_C3IntroducedPerenGrassCover",
-#                 "AH_C4NativePerenGrassCover",
-#                 "AH_C4IntroducedPerenGrassCover",
-#                 "AH_NativePerenForbCover", # Native perennial forbs
-#                 "AH_IntroducedPerenForbCover", # Non-native perennial forbs
-#                 "AH_NativeAnnGrassCover", # Native annual grasses
-#                 "AH_IntroducedAnnGrassCover", # Non-native annual grasses
-#                 "AH_NativeAnnForbCover", # Native annual forbs
-#                 "AH_IntroducedAnnForbCover", # Non-native annual forbs
+# # by species cover
+# indicators <- c(#"AH_C3NativePerenGrassCover",
+#                 #"AH_C3IntroducedPerenGrassCover",
+#                 #"AH_C4NativePerenGrassCover",
+#                 #"AH_C4IntroducedPerenGrassCover",
+#                 #"AH_NativePerenForbCover", # Native perennial forbs
+#                 #"AH_IntroducedPerenForbCover", # Non-native perennial forbs
+#                 #"AH_NativeAnnGrassCover", # Native annual grasses
+#                 #"AH_IntroducedAnnGrassCover", # Non-native annual grasses
+#                 #"AH_NativeAnnForbCover", # Native annual forbs
+#                 #"AH_IntroducedAnnForbCover", # Non-native annual forbs
 #                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
 #                 "BareSoilCover", # Bare soil
 #                 "FH_TotalLitterCover", # Litter
 #                 "CA_percent_100plus", # Canopy gaps > 100 cm 
 #                 "CA_percent_200plus",
 #                 "FH_LichenCover", # Lichen + moss combined cover
-#                 "FH_MossCover",
-#                 "SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+#                 "FH_MossCover"#,
+#                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
 #                 )
-# ann_grass_by_spp <- F
-# ann_forb_by_spp <- F
-# per_grass_by_spp <- F
-# per_forb_by_spp <- F
-# succulent_by_spp <- F
+# 
+# ann_grass_by_spp <- T #F
+# ann_forb_by_spp <- T #F
+# per_grass_by_spp <- T #F
+# per_forb_by_spp <- T #F
+# succulent_by_spp <- T #F
 # shrub_by_spp <- T # All shrubs and sub-shrubs by species
 # subshrub_by_spp <- T
 # tree_by_spp <- T # All trees by species
-# opuntia_combined <- T
+# opuntia_combined <- F
+
+# by functional group cover
+indicators <- c("AH_C3NativePerenGrassCover",
+                "AH_C3IntroducedPerenGrassCover",
+                "AH_C4NativePerenGrassCover",
+                "AH_C4IntroducedPerenGrassCover",
+                "AH_NativePerenForbCover", # Native perennial forbs
+                "AH_IntroducedPerenForbCover", # Non-native perennial forbs
+                "AH_NativeAnnGrassCover", # Native annual grasses
+                "AH_IntroducedAnnGrassCover", # Non-native annual grasses
+                "AH_NativeAnnForbCover", # Native annual forbs
+                "AH_IntroducedAnnForbCover", # Non-native annual forbs
+                "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
+                "BareSoilCover", # Bare soil
+                "FH_TotalLitterCover", # Litter
+                "CA_percent_100plus", # Canopy gaps > 100 cm
+                "CA_percent_200plus",
+                "FH_LichenCover", # Lichen + moss combined cover
+                "FH_MossCover"#,
+                #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
+                )
+ann_grass_by_spp <- F
+ann_forb_by_spp <- F
+per_grass_by_spp <- F
+per_forb_by_spp <- F
+succulent_by_spp <- F
+shrub_by_spp <- T # All shrubs and sub-shrubs by species
+subshrub_by_spp <- T
+tree_by_spp <- T # All trees by species
+opuntia_combined <- T
 
 
 
@@ -225,13 +225,26 @@ plot_data_first_sgu <- left_join(plot_data_first, select(plot_SGUs, PlotCode, SG
 plot_data_first_LoamyUplands <- filter(plot_data_first_sgu, SGU=="LoamyUplands") %>%
   select(-SGU)
 
-plot_data_first_SandyUplands <- filter(plot_data_first_sgu, SGU=="SandyUplands") %>%
-  select(-SGU)
+# remove plots with SGU probability (i.e. certainty of prediction) in the 10th percentile
+SGU_prob_raster <- raster::raster("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/UCRB_SGUs_ProbMax/UCRB_SGUs_ProbMax.tif")
+
+plot_SGU_prob <- sf::st_as_sf(raster::extract(x = SGU_prob_raster,
+                               y = plot_locations,
+                               sp = T))
+
+plot_data_first_LoamyUplands <- left_join(plot_data_first_LoamyUplands, select(plot_SGU_prob, PlotCode, UCRB_SGUs_ProbMax)) %>%
+  distinct() 
+
+certainty_cutoff <- quantile(plot_data_first_LoamyUplands$UCRB_SGUs_ProbMax, probs = 0.1)
+
+plot_data_first_LoamyUplands <- filter(plot_data_first_LoamyUplands, UCRB_SGUs_ProbMax > certainty_cutoff)
 
 # make the clustering and ordination data frame - can't include ANY columns except the actual variables!
 ord.df_LoamyUplands <- dplyr::select(plot_data_first_LoamyUplands, -SourceKey, -PlotID, -SiteName, -PlotName,
                         -Year, -Longitude_NAD83, -Latitude_NAD83,
-                        -Month, -Day) %>%
+                        -Month, -Day,
+                        -UCRB_SGUs_ProbMax, -geometry
+                        ) %>%
   tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
 
 # If using soil stability, standardize variables to make units more similar
@@ -489,6 +502,148 @@ nbmetrics <- NbClust::NbClust(data = ord.df_LoamyUplands,
 
 ```
 
+Some of the metrics used by NbClust performed poorly in a validation study that compared cluster number selection metrics to a data set with a known clustering structure (Milligan and Cooper, 1985). Limiting the NbClust metrics to only those that had greater than 55% accuracy in Milligan and Cooper (1985) yields the following results:
+
+```{r NbClust-ack, echo=FALSE, message=FALSE, warning=FALSE}
+# Using method "ward.D2" here because Ward's method generally give similar results to the flexible beta=-0.25 method that I'm using here
+
+# Per Charrad et al. (2014), NOT pseudot2 nor frey (only for hierarchical)
+# check elsewhere for Hartigan, Scott, Marriot, Trcovw - unclear if it is only for hierarchical methods
+# Not all metrics are created equal! Milligan and Cooper (1985) tested the NbClust ones on hierarchial methods and found that these were the best:
+# 1. Calinski and Harabasz "ch" 90% right
+# 2. Duda and Hart "duda" 90% right
+# 3. C-index "cindex" 80% right (worst with 2 clusters)
+# 4. Gamma "gamma" 78% right (worst with 2 clusters)
+# 5. Beale "beale" 77% right (worst with 2 clusters)
+# 6. Cubic clustering criteria "ccc" 74% right
+# 7. Point biserial "ptbiserial" 71% right
+# 8. G+ "gpluts" 69% right
+# 9. Mojena, not included in NbClust
+# 10. Davies and Bouldin "db" 66% right
+# 11. Stepsize not included? 63% right
+# 12. Likelihood ratio? 62% right
+# 13. Log(p) (scott? sort of) not included? 55% right
+# 14. Sneath not included? maybe matrix correlation?? 54% right
+# 15. Frey and Van Groenewoud, "frey" 54% right but only use for hierarchical
+# Wrong more that right: Tau "tau", Ball & Hall "ball", Trace Cov W "trcovw", Trace W "tracew", McClain & Rao "mcclain"
+# M&C didn't test these, but they seem to be widely used:
+# silhouette width "silhouette"
+# Dunn "dunn"
+# Gap "gap"
+
+# get index values for all combos of membership exponent and number of clusters
+
+indices_arg <- c("ch", "duda",
+                 "Pseudot2",
+                 "cindex",
+             #"gamma", # takes a long time
+             "beale", # unclear how this one works
+             "ccc", "ptbiserial",
+             #"gplus", # takes a long time
+             "db", 
+             "silhouette", "dunn" #,
+             #"gap" # takes a long time 
+             ) 
+
+indices_name <- c("CH", "Duda",
+                  "Pseudot2",
+                  "Cindex",
+             #"gamma", # takes a long time
+             "Beale",
+             "CCC", "Ptbiserial",
+             #"gplus", # takes a long time
+             "DB", 
+             "Silhouette", "Dunn" #,
+             #"gap" # takes a long time 
+             )
+
+
+# nbmetrics <- NbClust::NbClust(data = ord.df_SandyUplands,
+#                               diss = dist.df_SandyUplands,
+#                               distance = NULL,
+#                               min.nc = 2,
+#                               max.nc = 12,
+#                               method = "ward.D2",
+#                               index = "all",
+#                               alphaBeale = 0.1)
+
+cluster_eval <- nbmetrics$All.index %>%
+  as.data.frame() %>%
+  mutate(Number_clusters = rownames(.))
+
+
+
+cluster_eval_indices <- select(cluster_eval, any_of(c("Number_clusters", indices_name)))
+
+# calculate percent worst than best value for each memb. exp. X num. clusters combo for each index
+
+pct_off_best_higher <- function(x, all_vals){
+  best <- max(all_vals)
+  pct_off <- ((best-x)/best)*100
+  return(pct_off)
+}
+
+pct_off_best_lower <- function(x, all_vals){ 
+  best <- min(all_vals)
+  pct_off <- ((x-best)/best)*100
+  return(pct_off)
+}
+
+cluster_eval_indices_rank <- cluster_eval_indices %>%
+  rowwise() %>%
+  mutate(CH_rank_pct = pct_off_best_higher(CH, cluster_eval_indices$CH),
+         #Duda = ,
+         #Pseudo_t2 = ,
+         Cindex_rank_pct = pct_off_best_lower(Cindex, cluster_eval_indices$Cindex),
+         #Beale = ,
+         CCC_rank_pct = pct_off_best_higher(CCC, cluster_eval_indices$CCC),
+         Ptbiserial_rank_pct = pct_off_best_higher(Ptbiserial, cluster_eval_indices$Ptbiserial),
+         DB_rank_pct = pct_off_best_lower(DB, cluster_eval_indices$DB),
+         Silhouette_rank_pct = pct_off_best_higher(Silhouette, cluster_eval_indices$Silhouette),
+         Dunn_rank_pct = pct_off_best_higher(Dunn, cluster_eval_indices$Dunn)
+         ) %>%
+  mutate(overall_rank_pct = sum(CH_rank_pct, # lowest overall rank wins!
+                            Cindex_rank_pct,
+                            CCC_rank_pct,
+                            Ptbiserial_rank_pct,
+                            DB_rank_pct,
+                            Silhouette_rank_pct,
+                            Dunn_rank_pct,
+                            na.rm = T))
+
+best_n_clust <- as.numeric(cluster_eval_indices_rank[[which.min(cluster_eval_indices_rank$overall_rank_pct), "Number_clusters"]])
+
+show_rank_pct <- select(cluster_eval_indices_rank, Number_clusters, overall_rank_pct) %>%
+  arrange(overall_rank_pct) %>%
+  setNames(c("Number of clusters", "Summed percent off best index value"))
+
+kbl(x = show_rank_pct, format = "html", row.names = F, align = "c",
+    caption = "Best number of clusters (k) for hierarchical clustering based on the best metrics in Milligan and Cooper (1985). Ranked by percent off best index value (lower is better). Indices used for ranking were Calinski and Harabasz, C-index, cubic clustering criteria, point biserial correlation, Davies and Bouldin, average silhouette width, and Dunn's index.") %>%
+   kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(show_rank_pct), background = "lightsteelblue") %>%
+  collapse_rows(columns = 1, valign = "top")
+
+```
+
+
+
+```{r NbClust-ack-rank, echo=FALSE, message=FALSE, warning=FALSE}
+best_n_clust_rank <- as.data.frame(nbmetrics$Best.nc) %>%
+  select(any_of(c("Number_clusters", indices_name, "PseudoT2", "PtBiserial"))) %>%
+  t() %>%
+  as.data.frame() %>%
+  count(Number_clusters) %>%
+  arrange(desc(n)) %>%
+  setNames(c("Number of clusters", "Number of indices"))
+
+kbl(x = best_n_clust_rank, format = "html", row.names = F, align = "c",
+    caption = "Best number of clusters (k) for hierarchical clustering based on the best metrics in Milligan and Cooper (1985). Ranked by the number of indices that indicated that the given value of k was best. 'NA' indicates that there was no clear winner for an index. Indices used for ranking were Calinski and Harabasz, C-index, cubic clustering criteria, point biserial correlation, Davies and Bouldin, average silhouette width, Dunn's index, Duda and Hart, pseudo-t2, and Beale's index.") %>%
+   kable_styling(bootstrap_options = "bordered") %>%
+  row_spec(kable_input=., row = 0:nrow(best_n_clust_rank), background = "lightsteelblue") %>%
+  collapse_rows(columns = 1, valign = "top")
+
+```
+
 
 ```{r k-groups, echo=FALSE, message=FALSE, warning=FALSE}
 
@@ -652,14 +807,14 @@ Based on Figure \@ref(fig:ordination-scree), ordination stress is acceptable wit
 plot_data_first_LoamyUplands$PlantCommunity <- as.factor(grp)
 
 # manually update based on indicator species
-group_labels_LoamyUplands <- c("1 - C3 perennial grassland with sagebrush",
-                    "2 - Bare soil/juniper woodland",
-                    "3 - C4 perennial grassland",
-                    "4 - Gambel oak shrubland",
-                    "5 - Introduced annuals"
-)
+# group_labels_LoamyUplands <- c("1 - Native C3 perennial grassland",
+#                     "2 - Pinyon-juniper woodland",
+#                     "3 - Gambel oak shrubland",
+#                     "4 - Native C4/introduced C3 perennial grassland",
+#                     "5 - Introduced annuals"
+# )
 
-#group_labels_LoamyUplands <- as.character(1:k_groups_LoamyUplands)
+group_labels_LoamyUplands <- as.character(1:k_groups_LoamyUplands)
 
 par(mfrow=c(2,2))
 # Axes 1x2
@@ -826,48 +981,7 @@ orglellipse(ord_LoamyUplands, groups = plot_data_first_LoamyUplands$PlantCommuni
 rgl::rglwidget() # this embeds the 3D plot in the HTML doc (and it's zoomable! Ooooooooh, aaaaaaaah!)
 ```
 
-## Fitting environmental variables
-TODO when we decide what to include here...
 
-```{r env-plots, eval=FALSE, echo=FALSE, fig.height=5, fig.width=10, fig.cap="Arrow diagrams for environmental variables"}
-ord.full <- read.csv("path_to_some_environmental_data")
-
-ord.fit <- envfit(ord ~ Elevation_ft,
-                  data = ord.full,
-                  na.rm=T,
-                  choices=c(1:3)) # "choices" indicates number of dimensions
-
-par(mfrow=c(1,2))
-# Axes 1x2
-plot(ord, choices = c(1,2), type = "n", # plot the axes. "choices" indicates which pair of axes to plot.
-     xlim = c(-1.25, 1.25),
-     ylim = c(-1, 1))
-points(ord, choices = c(1,2), display = "sites", # plot points - can choose "sites" or "species"
-       col=pal_veg[plot_data_first_LoamyUplands$PlantCommunity],
-       pch = 21, cex = .6, bg=pal_veg[plot_data_first_LoamyUplands$PlantCommunity])
-ordiellipse(ord, plot_data_first_LoamyUplands$PlantCommunity, col=pal_veg, lwd = 2, label = T) # plot your groups
-plot(ord.fit, add=T)
-
-# Legend
-plot(ord, type = "n", axes=FALSE,
-     display = "sites",
-     col=pal_veg[plot_data_first_LoamyUplands$PlantCommunity],
-     xlab = "",
-     ylab = "")
-legend(x="center",
-       legend = group_labels_LoamyUpland,
-       fill = pal_veg,
-       title = "Plant communities")
-
-par(mfrow=c(1,1))
-
-```
-
-```{r env-plots2, eval=FALSE, echo=FALSE, fig.height=5, fig.width=10, fig.cap="Surface diagrams for environmental variables"}
-plot(ord, choices=c(1,3))
-ordisurf(ord~Elevation_ft, ord.full, labcex=1, choices=c(1,3)) # non-linear
-plot(ord.fit_Elev, choices=c(1,3))
-```
 
 # Fuzzy clustering
 
@@ -1080,7 +1194,7 @@ best_memb_exp <- as.numeric(cluster_eval_fanny_indices_rank[[which.min(cluster_e
 Based on a suite of cluster validation indices, the best number of clusters is `r best_n_clust` with membership exponent of `r best_memb_exp`.  
 
 ```{r fuzzy-cluster, echo=FALSE}
-k_groups_fuzzy <- best_n_clust
+k_groups_fuzzy <- 5 #best_n_clust
 
 clust_fuzz <- fanny(x=dist.df_LoamyUplands,
                     k = k_groups_fuzzy, # 2
@@ -1120,7 +1234,8 @@ Since we used Bray-Curtis distance for the fuzzy clustering analysis, we can use
 
 
 ```{r ordination2, eval=TRUE, include=FALSE}
-ord_dims2 <- 3 # change manually based on the plot results
+if(!exists("ord_LoamyUplands")){
+  ord_dims2 <- 3 # change manually based on the plot results
 #run NMS ordination 
 set.seed(1) # always set a seed if you want to be able to rerun your code and get the exact same ordination results!
 ord2 <- metaMDS(ord.df_LoamyUplands, #norm.df,
@@ -1128,6 +1243,11 @@ ord2 <- metaMDS(ord.df_LoamyUplands, #norm.df,
                trymax = 50, # can increase this number if you're having convergence problems
                distance = "bray" #"euclidean" # you have to use the same distance metric as you did for you clustering technique (https://www.davidzeleny.net/anadat-r/doku.php/en:hier-agglom_examples)
                )  
+}else{
+  ord2 <- ord_LoamyUplands
+}
+
+
 
 ```
 
@@ -1341,10 +1461,10 @@ kbl(x = indvalsummary_disp_filt, format = "html", row.names = F, align = "c",
 
 clust_membership_df <- as.data.frame(clust_fuzz$membership[,1:clust_fuzz$k.crisp]) %>%
   tibble::rownames_to_column() %>%
-  setNames(c("PlotCode", "Group1memb", "Group2memb"#, "Group3memb"
-             )) %>%
-  select(PlotCode, Group1memb, Group2memb#, "Group3memb"
-         )
+  setNames(c("PlotCode", paste0("Group", 1:(ncol(as.data.frame(clust_fuzz$membership[,1:clust_fuzz$k.crisp]))), "memb")
+             )) #%>%
+  #select(PlotCode, Group1memb, Group2memb#, "Group3memb"
+  #       )
 
 plot_data_first_LoamyUplands2 <- left_join(plot_data_first_LoamyUplands2, clust_membership_df)
 
@@ -1373,8 +1493,7 @@ plot_data_first_LoamyUplands2 <- left_join(plot_data_first_LoamyUplands2, clust_
 leaflet.minicharts::addMinicharts(map = EDIT_map(target_ESG = target_ESG, user = user, maxZoomStyle = "developer"),
                                   lng = plot_data_first_LoamyUplands2$Longitude_NAD83,
                                     lat = plot_data_first_LoamyUplands2$Latitude_NAD83,
-                                    chartdata = plot_data_first_LoamyUplands2[ , c("Group1memb", "Group2memb"#, "Group3memb"
-                                                                     )],
+                                    chartdata = plot_data_first_LoamyUplands2[ , paste0("Group", 1:(ncol(as.data.frame(clust_fuzz$membership[,1:clust_fuzz$k.crisp]))), "memb")],
                                     type = "pie",
                                     colorPalette = pal_veg2[1:(k_groups_fuzzy)],
                                   width = 20)
@@ -1385,9 +1504,11 @@ leaflet.minicharts::addMinicharts(map = EDIT_map(target_ESG = target_ESG, user =
 
 ```{r clusters-by-datasource, echo=FALSE, fig.height=5, fig.width=5, fig.cap="Group membership by data source"}
 
-plot_memb_by_source <- select(plot_data_first_LoamyUplands2, SourceKey, PlotCode, Group1memb, Group2memb#, Group3memb
+plot_memb_by_source <- select(plot_data_first_LoamyUplands2,
+                              "SourceKey",
+                              paste0("Group", 1:(ncol(as.data.frame(clust_fuzz$membership[,1:clust_fuzz$k.crisp]))), "memb")
                               ) %>%
-  tidyr::pivot_longer(cols = c(Group1memb, Group2memb#, Group3memb
+  tidyr::pivot_longer(cols = c(paste0("Group", 1:(ncol(as.data.frame(clust_fuzz$membership[,1:clust_fuzz$k.crisp]))), "memb")
                                ), names_to = "Group")
 
 ggplot(data = plot_memb_by_source, aes(x=SourceKey, y=value, fill = Group)) +
@@ -1425,9 +1546,12 @@ plot_SGU_prob <- sf::st_as_sf(raster::extract(x = SGU_prob_raster,
 plot_data_first_LoamyUplands3 <- left_join(plot_data_first_LoamyUplands2, select(plot_SGU_prob, PlotCode, UCRB_SGUs_ProbMax)) %>%
   distinct() 
 
-plot_memb_by_sgu <- select(plot_data_first_LoamyUplands3, UCRB_SGUs_ProbMax, PlotCode, Group1memb, Group2memb#, Group3memb
+plot_memb_by_sgu <- select(plot_data_first_LoamyUplands3,
+                           "UCRB_SGUs_ProbMax", 
+                           "PlotCode",
+                           paste0("Group", 1:(ncol(as.data.frame(clust_fuzz$membership[,1:clust_fuzz$k.crisp]))), "memb")
                               ) %>%
-  tidyr::pivot_longer(cols = c(Group1memb, Group2memb#, Group3memb
+  tidyr::pivot_longer(cols = c(paste0("Group", 1:(ncol(as.data.frame(clust_fuzz$membership[,1:clust_fuzz$k.crisp]))), "memb")
                                ), names_to = "Group")
 
 
@@ -1450,9 +1574,207 @@ summary(aov(UCRB_SGUs_ProbMax~PlantCommunity_fuzzy, data = plot_data_first_Loamy
 
 ```
 
+## Describing the groups
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=7, fig.width=10, fig.cap="Plant cover by clustering group"}
+plot_data_first_LoamyUplands3_tall <- select(plot_data_first_LoamyUplands3,
+                                             SourceKey, PlotID, SiteName,
+                                             PlotName, Year, PlotCode,
+                                             PlantCommunity,
+                                             PlantCommunity_fuzzy,
+                                             AH_C3IntroducedPerenGrassCover, 
+                                             AH_C3NativePerenGrassCover,     
+                                             AH_C4NativePerenGrassCover,
+                                             AH_IntroducedAnnForbCover,
+                                             AH_IntroducedAnnGrassCover,
+                                             #AH_IntroducedPerenForbCover,    
+                                             AH_NativeAnnForbCover, 
+                                             AH_NativeAnnGrassCover,
+                                             AH_NativePerenForbCover, 
+                                             BareSoilCover,                  
+                                             #FH_TotalLitterCover, 
+                                             AH_ArtemisiaTridentataCover,
+                                             CA_percent_200plus, 
+                                             #AH_C4IntroducedPerenGrassCover, 
+                                             FH_LichenMossCover,
+                                             CA_percent_100plus, 
+                                             JUOS, 
+                                             JUSC2,
+                                             PIED, 
+                                             QUGA,
+                                             #SYRO,
+                                             SAVE4,
+                                             GUSA2) %>%
+  tidyr::pivot_longer(cols = c(AH_C3IntroducedPerenGrassCover, 
+                                             AH_C3NativePerenGrassCover,     
+                                             AH_C4NativePerenGrassCover,
+                                             AH_IntroducedAnnForbCover,
+                                             AH_IntroducedAnnGrassCover,
+                                             #AH_IntroducedPerenForbCover,    
+                                             AH_NativeAnnForbCover, 
+                                             AH_NativeAnnGrassCover,
+                                             AH_NativePerenForbCover, 
+                                             BareSoilCover,                  
+                                             #FH_TotalLitterCover, 
+                                             AH_ArtemisiaTridentataCover,
+                                             CA_percent_200plus, 
+                                             #AH_C4IntroducedPerenGrassCover, 
+                                             FH_LichenMossCover,
+                                             CA_percent_100plus, 
+                                             JUOS, 
+                               JUSC2,
+                                             PIED, 
+                                             QUGA,
+                                             #SYRO,
+                                             SAVE4,
+                                             GUSA2),
+                      names_to = "CoverType",
+                      values_to = "PctCover")
+
+ggplot(data = plot_data_first_LoamyUplands3_tall, aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
+  geom_boxplot() +
+  xlab("Plant community (fuzzy clusters)") +
+  ylab("Cover (%)") +
+  theme_bw()
+```
+
+```{r pull-env-vars, eval=FALSE, echo=FALSE}
+AI_raster <- raster::raster("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ANNA_KNIGHT/GIS/Climate/GlobalAIandPET/global-ai_et0/ai_et0/ai_et0_WesternUSEcoregions.tif")
+
+plot_AI <- sf::st_as_sf(raster::extract(x = AI_raster,
+                               y = plot_locations,
+                               sp = T)) %>%
+  mutate(AI = ai_et0_WesternUSEcoregions*0.0001 # AI rasters are actually AI*10,000 so that they
+                  #can be stored as integers - need to put back into standard AI units
+                  ) %>%
+  sf::st_drop_geometry()
+
+rm(AI_raster)
+
+climate_rasters <- raster::stack("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_annual_asc/PRISM_ppt_30yr_normal_800mM2_annual_asc.asc",
+                         "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmean_30yr_normal_800mM2_annual_asc/PRISM_tmean_30yr_normal_800mM2_annual_asc.asc",
+                         "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmax_30yr_normal_800mM2_annual_asc/PRISM_tmax_30yr_normal_800mM2_annual_asc.asc",
+                         "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc"
+                         #"G:/Base Layers/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_annual_asc/PRISM_ppt_30yr_normal_800mM2_annual_asc.asc",
+                         #"G:/Base Layers/Climate/PRISM/tmean/PRISM_tmean_30yr_normal_800mM2_annual_asc/PRISM_tmean_30yr_normal_800mM2_annual_asc.asc",
+                         #"G:/Base Layers/Climate/PRISM/tmin/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc",
+                         #"G:/Base Layers/Climate/PRISM/tmax/PRISM_tmax_30yr_normal_800mM2_annual_asc/PRISM_tmax_30yr_normal_800mM2_annual_asc.asc"
+)
+
+
+prism_vals <- raster::extract(x=climate_rasters,
+                              y=plot_locations,
+                              sp = T) %>%
+  as(., "sf")
+
+sf::st_geometry(prism_vals) <- NULL
+
+colnames(prism_vals)[which(colnames(prism_vals) %in% c("PRISM_ppt_30yr_normal_800mM2_annual_asc",
+                                                       "PRISM_tmean_30yr_normal_800mM2_annual_asc",
+                                                       "PRISM_tmax_30yr_normal_800mM2_annual_asc",
+                                                       "PRISM_tmin_30yr_normal_800mM2_annual_asc"
+                                                       
+))] <- c("Ann_ppt_mm",
+         "Ann_tmean",
+         "Ann_tmax",
+         "Ann_tmin"
+         )
+
+rm(climate_rasters)
+
+# other variables to assess:
+# species diversity (need either spp inventory or all lpi species)
+# sp_IM$sp_diversity <- vegan::diversity(x=dplyr::select(sp_IM, -PlotID) %>% mutate_all(as.numeric), index = "shannon")
+# Species richness (need either spp inventory or all lpi species)
+# sp_IM$sp_rich <- vegan::specnumber(x=dplyr::select(sp_IM, -PlotID) %>% mutate_all(as.numeric))
+# soil stability
+# RHEM
+# AERO
+# elevation
+# soil pit variables??
+
+plot_data_environ <- left_join(plot_data_first_LoamyUplands3,
+                               select(plot_AI,
+                                      PlotCode,
+                                      Year,
+                                      AI)) %>%
+  left_join(., 
+            select(prism_vals,
+                   PlotCode, Year, Ann_ppt_mm, Ann_tmean, Ann_tmax, Ann_tmin))
+
+```
+
+
+```{r env-plots, eval=FALSE, echo=FALSE, fig.height=10, fig.width=10, fig.cap="Arrow diagrams for environmental variables"}
+
+group_labels_fuzzy <- c("1 - thinned C4 perennial grassland",
+                        "2 - Bare ground",
+                        "3 - sagebrush/C3 perennial grass savanna",
+                        "4 - Gambel oak shrubland",
+                        "5 - Non-native annual grassland")
+
+ord.fit <- envfit(ord2 ~ AI + Ann_ppt_mm + Ann_tmean + Ann_tmax + Ann_tmin + UCRB_SGUs_ProbMax,
+                  data = plot_data_environ,
+                  na.rm=T,
+                  choices=c(1:3)) # "choices" indicates number of dimensions
+
+par(mfrow=c(2,2))
+# Axes 1x2
+plot(ord2, choices = c(1,2), type = "n", # plot the axes. "choices" indicates which pair of axes to plot.
+     xlim = c(-1.25, 1.25),
+     ylim = c(-1, 1))
+points(ord2, choices = c(1,2), display = "sites", # plot points - can choose "sites" or "species"
+       col=pal_veg[plot_data_first_LoamyUplands3$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg[plot_data_first_LoamyUplands3$PlantCommunity_fuzzy])
+ordiellipse(ord2, plot_data_first_LoamyUplands3$PlantCommunity_fuzzy, col=pal_veg, lwd = 2, label = T) # plot your groups
+plot(ord.fit, add=T)
+
+# Axes 3x2
+plot(ord2, choices = c(3,2), type = "n", # plot the axes. "choices" indicates which pair of axes to plot.
+     xlim = c(-1.25, 1.25),
+     ylim = c(-1, 1))
+points(ord2, choices = c(3,2), display = "sites", # plot points - can choose "sites" or "species"
+       col=pal_veg[plot_data_first_LoamyUplands3$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg[plot_data_first_LoamyUplands3$PlantCommunity_fuzzy])
+ordiellipse(ord2, choices = c(3,2), plot_data_first_LoamyUplands3$PlantCommunity_fuzzy, col=pal_veg, lwd = 2, label = T) # plot your groups
+plot(ord.fit, choices = c(3,2), add=T)
+
+# Axes 1x3
+plot(ord2, choices = c(1,3), type = "n", # plot the axes. "choices" indicates which pair of axes to plot.
+     xlim = c(-1.25, 1.25),
+     ylim = c(-1, 1))
+points(ord2, choices = c(1,3), display = "sites", # plot points - can choose "sites" or "species"
+       col=pal_veg[plot_data_first_LoamyUplands3$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg[plot_data_first_LoamyUplands3$PlantCommunity_fuzzy])
+ordiellipse(ord2, choices = c(1,3), plot_data_first_LoamyUplands3$PlantCommunity_fuzzy, col=pal_veg, lwd = 2, label = T) # plot your groups
+plot(ord.fit, choices = c(1,3), add=T)
+
+# Legend
+plot(ord2, type = "n", axes=FALSE,
+     display = "sites",
+     col=pal_veg[plot_data_first_LoamyUplands3$PlantCommunity_fuzzy],
+     xlab = "",
+     ylab = "")
+legend(x="center",
+       legend = group_labels_fuzzy,
+       fill = pal_veg,
+       title = "Plant communities")
+
+par(mfrow=c(1,1))
+
+```
+
+```{r env-plots2, eval=FALSE, echo=FALSE, fig.height=5, fig.width=10, fig.cap="Surface diagrams for environmental variables"}
+plot(ord2, choices=c(1,2))
+ordisurf(ord2~UCRB_SGUs_ProbMax, plot_data_environ, labcex=1, choices=c(1,2)) # non-linear
+plot(ord.fit, choices=c(1,2))
+```
+
+
+
+
 
 ```{r echo=FALSE}
 # TO MAKE THE 3D PLOT WORK, DON'T USE THE KNIT BUTTON! COPY AND PASTE THE CODE BELOW INTO THE CONSOLE!!
-#rmarkdown::render(input = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Scripts/STMdevelopment/R/ordination_clustering_workflow_development_LoamyUplands.Rmd", output_format = "html_document", output_file = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Analyses/ordination_clustering_workflow_development_LoamyUplands_allspp_20220210.html")
+#rmarkdown::render(input = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Scripts/STMdevelopment/R/ordination_clustering_workflow_development_LoamyUplands.Rmd", output_format = "html_document", output_file = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Analyses/ordination_clustering_workflow_development_LoamyUplands_funcgrp_20220214.html")
 ```
 
