@@ -179,10 +179,15 @@ plot_data_pull <- function(user = "Anna",
   indicator_data_target_wide <- indicator_data_target %>%
     #dplyr::filter(variable!="CP_percent_100to200" & variable!="CP_percent_200plus") %>%
     tidyr::pivot_wider(data = ., names_from = variable, values_from = value,
-                       values_fill = NA) %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(FH_LichenMossCover = sum(FH_LichenCover, FH_MossCover, na.rm = T)) %>%
-    dplyr::select(-FH_LichenCover, -FH_MossCover)
+                       values_fill = NA)
+
+  if("FH_LichenCover" %in% indicators){
+    indicator_data_target_wide <- indicator_data_target_wide %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(FH_LichenMossCover = sum(FH_LichenCover, FH_MossCover, na.rm = T)) %>%
+      dplyr::select(-FH_LichenCover, -FH_MossCover)
+  }
+
 
   # Missing values for LPI measure mean that functional group wasn't present at
   # a plot. These should be changed to 0. For soil stability and canopy gap,
@@ -194,7 +199,8 @@ plot_data_pull <- function(user = "Anna",
   indicator_data_target_wide <- indicator_data_target_wide %>%
     mutate(across(.cols = starts_with("AH_"), .fns = replaceNA)) %>%
     mutate(across(.cols = starts_with("FH_"), .fns = replaceNA)) %>%
-    mutate(BareSoilCover = replaceNA(BareSoilCover))
+    mutate(across(.cols = any_of(c("BareSoilCover", "TotalFoliarCover")), .fns = replaceNA))
+    #mutate(BareSoilCover = replaceNA(BareSoilCover))
 
   # calculate canopy gap >100 - doing this one separately because we don't want to autofill with 0s
   # like we do for LPI

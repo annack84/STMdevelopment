@@ -14,9 +14,12 @@ make_mappable_raster <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyU
 
   ESG_number <-ESG_table$ESGid[which(ESG_table$ESGs_text==target_ESG)]
 
-  target_ESG_raster <- all_ESGs
-  target_ESG_raster[target_ESG_raster!=ESG_number] <- 0
-  target_ESG_raster[target_ESG_raster==ESG_number] <- 1
+  reclass_matrix <- as.matrix(data.frame(is = c(which(1:36 != ESG_number), ESG_number),
+                                         becomes = c(rep(0, length(which(1:36 != ESG_number))), 1)))
+
+  target_ESG_raster <- raster::reclassify(x=all_ESGs,
+                                          rcl = reclass_matrix)
+
 
   target_ESG_raster <- raster::aggregate(x=target_ESG_raster, fact=3, fun=raster_mode,
                                          na.rm=T)

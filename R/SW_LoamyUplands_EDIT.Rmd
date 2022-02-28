@@ -241,8 +241,8 @@ TODO narrative about key types of transitions and disturbances
 
 ## State and transition model development 
 
-```{r apriori-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO pull in table of Ecological Site STMs for this ESG
+```{r apriori-stm, eval=FALSE, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# SET EVAL TO TRUE WHEN THIS TABLE GETS UPDATED!
 apriori_stms <- read.csv(data_file_paths(user)$apriori_stms, stringsAsFactors = F,
                          na.strings = c("NA", "", " "), header = F)
 
@@ -364,6 +364,20 @@ plot_data_first <- plot_data_clean %>% #plot_data_clean %>%
 # remove plots with SGU probability (i.e. certainty of prediction) in the 10th percentile
 SGU_prob_raster <- raster::raster("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/UCRB_SGUs_ProbMax/UCRB_SGUs_ProbMax.tif")
 
+file_paths <- data_file_paths(user)
+plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
+                              layer = "all_plot-years_2021-09-30",
+                              quiet=TRUE)
+if("NRI" %in% data_sources){
+  nri_locations <- sf::st_read(dsn = file_paths$nri,
+                               layer = "NRI_UCRB_plot-years_2021-11-01",
+                               quiet = TRUE)
+  
+  plot_locations <- dplyr::filter(plot_locations, !grepl(pattern = "^NRI_",
+                                                         x=PlotCode)) %>%
+    dplyr::bind_rows(., nri_locations)
+}
+
 plot_SGU_prob <- sf::st_as_sf(raster::extract(x = SGU_prob_raster,
                                y = plot_locations,
                                sp = T))
@@ -399,7 +413,7 @@ ord.df <- select(ord.df, all_of(sp_keep))
 
 # remove unknown species if present
 ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
-
+rm(plot_data_clean, plot_data)
 ```
 
 ```{r hopkinsstat, eval=FALSE}
@@ -545,7 +559,87 @@ Field data from were collected by field crews with the Natural Resource Conserva
 
 Plots were clustered into ecological communities using the FANNY fuzzy clustering algorithm (Kaufman and Rousseeuw, 1990) in the "cluster" R package (Maechler et al., 2021) with Bray-Curtis distance ("vegan" package; Oksanen et al., 2020). A suite of clustering indices were used to determine the most appropriate number of clusters and degree of fuzziness (i.e. membership exponent), including Calinski and Harabasz (1974), C-index (Hubert and Levin, 1976), cubic clustering criteria (Sarle, 1983), point-biserial correlation (Milligan 1980, 1981), Davies and Bouldin (1979), silhouette width (Rousseeuw 1987), and Dunn's index (1974). Values between 1 and 12 possible clusters and 1.1 to 1.3 membership exponents were tested. The final clustering solution used `r k_groups_fuzzy` clusters with a membership exponent of `r memb_exp`. 
 
-```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Plant cover by clustering group"}
+```{r ordination-scree, eval=FALSE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', cache=FALSE, fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
+# another slow chunk - run before knitting and then don't evaluate in the knit step.
+NMDS_scree(ord.df)
+```
+
+```{r ordination, eval=TRUE, include=FALSE}
+ord_dims <- 3 # change manually based on the plot results
+
+#run NMS ordination 
+set.seed(1)
+ord <- metaMDS(ord.df,
+               k=ord_dims, # number of dimensions
+               trymax = 30) 
+
+```
+
+The clustering results were visualized in ordination spaced, using non-metric multidimensional scaling (NMDS) with Bray-Curtis distance ("vegan" package in R). Based on testing ordination stress for 1 to 5 dimensions, ordination stress is acceptable with `r ord_dims` dimensions, and stress reduction is minimal with additional dimensions. The stress for the ordination with `r ord_dims` dimensions is `r round(ord$stress, 3)`.
+
+```{r ordination-plots, echo=FALSE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of plot indicator data. Points represent plots; ellipses represent plant communities identified by the hierarchical clustering and indicator species analysis."}
+# 2D plotting
+pal_veg2 <- RColorBrewer::brewer.pal(n=k_groups_fuzzy, name = "Dark2")
+# manually update based on indicator species
+group_labels_fuzzy <- c("1 - Depauperate C4
+perennial grassland",
+                        "2 - Bare ground",
+                        "3 - Sagebrush/C3 perennial
+grass savanna",
+                        "4 - Gambel oak shrubland",
+                        "5 - Non-native annual
+grassland")
+
+#group_labels <- as.character(1:clust_fuzz$k.crisp)
+
+par(mfrow=c(2,2))
+# Axes 1x2
+plot(ord, choices = c(1,2), type = "n", # plot the axes
+     xlim = c(-1, 1),
+     ylim = c(-1, 1))
+points(ord, choices = c(1,2), display = "sites", # plot points - can choose "sites" or "species"
+       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
+ordiellipse(ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
+            choices = c(1,2)) # plot your groups
+# can use oriellipse, orihull, or ordispider to plot groups, depending on your needs
+
+# Axes 3x2
+plot(ord, choices = c(3,2), type = "n", 
+     xlim = c(-1, 1),
+     ylim = c(-1, 1))
+points(ord, choices = c(3,2), display = "sites", 
+       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
+ordiellipse(ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
+            choices = c(3,2)) 
+
+# Axes 1x3
+plot(ord, choices = c(1,3), type = "n",
+     xlim = c(-1, 1),
+     ylim = c(-1, 1))
+points(ord, choices = c(1,3), display = "sites",
+       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
+ordiellipse(ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
+            choices = c(1,3)) 
+
+# Legend
+plot(ord, type = "n", axes=FALSE,
+     display = "sites",
+     col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+     xlab = "",
+     ylab = "")
+legend(x="center",
+       legend = group_labels_fuzzy,
+       fill = pal_veg2,
+       title = "Plant communities")
+
+par(mfrow=c(1,1))
+
+```
+
+```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=14, fig.width=10, fig.cap="Plant cover by state"}
 # consider including species present in >10% of plots:
 names(colSums(sp_pa)[which(colSums(sp_pa)>(nrow(plot_data_first)*0.10))])
 # also consider including species with high mean cover across all plots:
@@ -618,138 +712,117 @@ plot_data_first_tall <- select(plot_data_first,
                       names_to = "CoverType",
                       values_to = "PctCover")
 
-# TODO add in legible plant names, label plots by functional group, fix color palettes and y axis ranges, and arrange in a grid with cowplot
-woody_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% c("AH_ArtemisiaTridentataCover",
-                                                                                  "CHVI8",
-                                                                                  "SYRO",
-                                                                                  "ERNA10",
-                                                                                  "SAVE4",
-                                                                                  "PUTR2",
-                                                                                  "GUSA2",
-                                                                                  "PIED",
-                                                                                  "JUOS",
-                                                                                  "QUGA",
-                                                                                  "AMUT",
-                                                                                  "AMAL2")),
+
+spp_list <- read.csv(file_paths$species_list)
+
+cover_funcgrps <- sort(c("AH_C3IntroducedPerenGrassCover", 
+                 "AH_C3NativePerenGrassCover",     
+                 "AH_C4NativePerenGrassCover",
+                 "AH_IntroducedAnnForbCover",
+                 "AH_IntroducedAnnGrassCover",
+                 "AH_IntroducedPerenForbCover",    
+                 "AH_NativeAnnForbCover", 
+                 "AH_NativeAnnGrassCover",
+                 "AH_NativePerenForbCover", 
+                 "BareSoilCover",                  
+                 "FH_TotalLitterCover", 
+                 "AH_ArtemisiaTridentataCover",
+                 "CA_percent_200plus", 
+                 "AH_C4IntroducedPerenGrassCover", 
+                 "FH_LichenMossCover",
+                 "CA_percent_100plus"))
+funcgrps_names <- arrange(filter(indicator_descriptions, Indicator_code %in% cover_funcgrps), Indicator_code)$Indicator
+names(cover_funcgrps) <- funcgrps_names
+
+cover_spp <- sort(c("CHVI8",
+                    "SYRO",
+                    "ERNA10",
+                    "SAVE4",
+                    "PUTR2",
+                    "GUSA2",
+                    "PIED",
+                    "JUOS",
+                    "QUGA",
+                    "AMUT",
+                    "AMAL2"))
+spp_names <- paste0( filter(spp_list, SpeciesCode %in% cover_spp & SpeciesState=="AIM")$ScientificName,
+                    " (", filter(spp_list, SpeciesCode %in% cover_spp & SpeciesState=="AIM")$CommonName, ")")
+names(cover_spp) <- spp_names
+
+cover_labels <- sort(c(cover_funcgrps, cover_spp))
+
+woody_grps <- c("AH_ArtemisiaTridentataCover", "CHVI8", "SYRO", "ERNA10", "SAVE4",
+                "PUTR2", "GUSA2", "PIED", "JUOS", "QUGA", "AMUT", "AMAL2")
+woody_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% woody_grps),
                              aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
   geom_boxplot() +
-  xlab("Plant community") +
+  scale_fill_brewer(type = "qual", palette = "Set3",
+                    name = "Species",
+                    labels = names(cover_labels[which(cover_labels %in% woody_grps)])) +
+  xlab(NULL) +
   ylab("Cover (%)") +
+  ggtitle("Woody plants") +
   theme_bw()
+woody_legend <- cowplot::get_legend(woody_cover_states)
 
-perenherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% c("AH_C3IntroducedPerenGrassCover", 
-                                             "AH_C3NativePerenGrassCover", 
-                                             "AH_C4IntroducedPerenGrassCover",
-                                             "AH_C4NativePerenGrassCover",
-                                             "AH_IntroducedPerenForbCover",    
-                                             "AH_NativePerenForbCover" 
-                                             )),
-                             aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
+perenherb_grps <- c("AH_C3IntroducedPerenGrassCover", "AH_C3NativePerenGrassCover", 
+                    "AH_C4IntroducedPerenGrassCover", "AH_C4NativePerenGrassCover",
+                    "AH_IntroducedPerenForbCover", "AH_NativePerenForbCover")
+perenherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% perenherb_grps),
+                                 aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
   geom_boxplot() +
-  xlab("Plant community") +
+  scale_fill_brewer(type = "qual", palette = "Set3",
+                    name = "Functional group",
+                    labels = names(cover_labels[which(cover_labels %in% perenherb_grps)])) +
+  xlab(NULL) +
   ylab("Cover (%)") +
+  ggtitle("Perennial herbaceous plants") +
   theme_bw()
+perenherb_legend <- cowplot::get_legend(perenherb_cover_states)
 
-annherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% c("AH_IntroducedAnnForbCover",
-                                             "AH_IntroducedAnnGrassCover",
-                                             "AH_NativeAnnForbCover", 
-                                             "AH_NativeAnnGrassCover" 
-                                             )),
-                             aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
+annherb_grps <- c("AH_IntroducedAnnForbCover", "AH_IntroducedAnnGrassCover",
+                  "AH_NativeAnnForbCover", "AH_NativeAnnGrassCover")
+annherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% annherb_grps),
+                               aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
   geom_boxplot() +
-  xlab("Plant community") +
+  scale_fill_brewer(type = "qual", palette = "Set3",
+                    name = "Functional group",
+                    labels = names(cover_labels[which(cover_labels %in% annherb_grps)])) +
+  xlab(NULL) +
   ylab("Cover (%)") +
+  ggtitle("Annual herbaceous plants") +
   theme_bw()
+annherb_legend <- cowplot::get_legend(annherb_cover_states)
 
-ground_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% c("BareSoilCover",                  
-                                             "FH_TotalLitterCover", 
-                                             "CA_percent_200plus", 
-                                             "FH_LichenMossCover",
-                                             "CA_percent_100plus"
-                                             )),
-                             aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
+ground_grps <- c("BareSoilCover", "FH_TotalLitterCover", "CA_percent_200plus",
+                 "FH_LichenMossCover", "CA_percent_100plus")
+ground_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% ground_grps),
+                              aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
   geom_boxplot() +
+  scale_fill_brewer(type = "qual", palette = "Set3",
+                    name = "Functional group",
+                    labels = names(cover_labels[which(cover_labels %in% ground_grps)])) +
+  scale_x_discrete(labels=group_labels_fuzzy) +
   xlab("Plant community") +
   ylab("Cover (%)") +
-  theme_bw()
-```
+  ggtitle("Ground cover") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ground_legend <- cowplot::get_legend(ground_cover_states)
 
+cover_states <- cowplot::plot_grid(woody_cover_states + theme(legend.position = "none"),
+                   perenherb_cover_states + theme(legend.position = "none"),
+                   annherb_cover_states + theme(legend.position = "none"),
+                   ground_cover_states + theme(legend.position = "none"),
+                   ncol = 1, axis = "lr", rel_heights = c(1,1,1,1.45))
 
-```{r ordination-scree, eval=FALSE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', cache=FALSE, fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
-# another slow chunk - run before knitting and then don't evaluate in the knit step.
-NMDS_scree(ord.df)
-```
+cover_axes <- cowplot::plot_grid(woody_legend,
+                   perenherb_legend,
+                   annherb_legend,
+                   ground_legend,
+                   ncol = 1, rel_heights = c(1,1,1,1.45))
 
-```{r ordination, eval=TRUE, include=FALSE}
-ord_dims <- 3 # change manually based on the plot results
-
-#run NMS ordination 
-set.seed(1)
-ord <- metaMDS(ord.df,
-               k=ord_dims, # number of dimensions
-               trymax = 30) 
-
-```
-
-The clustering results were visualized in ordination spaced, using non-metric multidimensional scaling (NMDS) with Bray-Curtis distance ("vegan" package in R). Based on testing ordination stress for 1 to 5 dimensions, ordination stress is acceptable with `r ord_dims` dimensions, and stress reduction is minimal with additional dimensions. The stress for the ordination with `r ord_dims` dimensions is `r round(ord$stress, 3)`.
-
-```{r ordination-plots, echo=FALSE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of plot indicator data. Points represent plots; ellipses represent plant communities identified by the hierarchical clustering and indicator species analysis."}
-# 2D plotting
-pal_veg2 <- RColorBrewer::brewer.pal(n=k_groups_fuzzy, name = "Dark2")
-# manually update based on indicator species
-group_labels_fuzzy <- c("1 - Depauperate C4 perennial grassland",
-                        "2 - Bare ground",
-                        "3 - sagebrush/C3 perennial grass savanna",
-                        "4 - Gambel oak shrubland",
-                        "5 - Non-native annual grassland")
-
-#group_labels <- as.character(1:clust_fuzz$k.crisp)
-
-par(mfrow=c(2,2))
-# Axes 1x2
-plot(ord, choices = c(1,2), type = "n", # plot the axes
-     xlim = c(-1, 1),
-     ylim = c(-1, 1))
-points(ord, choices = c(1,2), display = "sites", # plot points - can choose "sites" or "species"
-       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
-       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
-ordiellipse(ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
-            choices = c(1,2)) # plot your groups
-# can use oriellipse, orihull, or ordispider to plot groups, depending on your needs
-
-# Axes 3x2
-plot(ord, choices = c(3,2), type = "n", 
-     xlim = c(-1, 1),
-     ylim = c(-1, 1))
-points(ord, choices = c(3,2), display = "sites", 
-       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
-       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
-ordiellipse(ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
-            choices = c(3,2)) 
-
-# Axes 1x3
-plot(ord, choices = c(1,3), type = "n",
-     xlim = c(-1, 1),
-     ylim = c(-1, 1))
-points(ord, choices = c(1,3), display = "sites",
-       col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
-       pch = 21, cex = .6, bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy])
-ordiellipse(ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = T,
-            choices = c(1,3)) 
-
-# Legend
-plot(ord, type = "n", axes=FALSE,
-     display = "sites",
-     col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
-     xlab = "",
-     ylab = "")
-legend(x="center",
-       legend = group_labels_fuzzy,
-       fill = pal_veg2,
-       title = "Plant communities")
-
-par(mfrow=c(1,1))
-
+cowplot::plot_grid(cover_states, cover_axes, ncol = 2, rel_widths = c(1, 0.6))
 ```
 
 ## State and transition model {.tabset}
@@ -758,7 +831,7 @@ par(mfrow=c(1,1))
 
 ```{r custom-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM", fig.height=8, fig.width=10}
 # TODO create custom diagram of states
-knitr::include_graphics("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/SW_SandyLoamyUplands_boxandarrow_DRAFT.JPG")
+#knitr::include_graphics("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/SW_SandyLoamyUplands_boxandarrow_DRAFT.JPG")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
@@ -771,18 +844,97 @@ Click on state and transition labels to scroll to the respective text.
 
 TODO create boxes for each state that link to the state description below
 
+## State descriptive figures
+
+```{r load-descriptive-indicators, include=FALSE}
+# load descriptive data
+plot_data_descriptive <- plot_data_pull(user=user,
+                                        target_ESG = target_ESG,
+                                        data_sources = data_sources,
+                                        indicators = c("TotalFoliarCover",
+                                                       "SoilStab_all"),
+                                        ann_grass_by_spp = T,
+                                        ann_forb_by_spp = T,
+                                        per_grass_by_spp = T,
+                                        per_forb_by_spp = T,
+                                        succulent_by_spp = T,
+                                        shrub_by_spp = T,
+                                        subshrub_by_spp = T,
+                                        tree_by_spp = T,
+                                        opuntia_combined = F
+) %>%
+  filter(!is.na(Month)) %>%
+  left_join(select(plot_data_first, PlotCode, Year, PlantCommunity_fuzzy) , .)
+
+# summarize species occurrance
+descriptive.df <- dplyr::select(plot_data_descriptive, -SourceKey, -PlotID, -SiteName, -PlotName,
+                        -Year, -Longitude_NAD83, -Latitude_NAD83,
+                        -Month, -Day, -PlantCommunity_fuzzy, -TotalFoliarCover,
+                        -SoilStab_all
+                        ) %>%
+  tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
+
+sp_pa_desc <- mutate(rowwise(descriptive.df), across(everything(), function(x){if(x>0){1}else{0}})) # make a presence/absence data frame
+sp_keep_desc <- names(colSums(sp_pa_desc)[which(colSums(sp_pa_desc)>0)]) 
+descriptive.df <- select(descriptive.df, all_of(sp_keep_desc))
+
+plot_data_descriptive <- select(plot_data_descriptive, SourceKey, PlotID, SiteName, PlotName,
+                        Year, Longitude_NAD83, Latitude_NAD83,
+                        Month, Day, PlantCommunity_fuzzy, TotalFoliarCover,
+                        SoilStab_all, all_of(sp_keep_desc))
+
+#ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
+```
+
+```{r groups-soilstab, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Soil stability by state"}
+ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=SoilStab_all)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=group_labels_fuzzy) +
+  ylim(c(0, 6)) +
+  xlab("Plant community") +
+  ylab("Mean soil stability rating") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r groups-totalfoliar, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Total foliar cover by state"}
+ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=TotalFoliarCover)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=group_labels_fuzzy) +
+  xlab("Plant community") +
+  ylab("Total foliar cover (%)") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
 ## State 1
 ## Reference State
 
 TODO write state description
 
 ## Community 1.1
-## Reference State
+## Reference State: sagebrush/C3 perennial grass savanna
 
 TODO write state description
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Annual production by plant type (representative values) or group (midpoint values)"}
 # TODO create pie charts of community composition by functional group. May need to change "production" to "percent cover" to fit with our data
+
+grp3_desc_data <- filter(plot_data_descriptive, PlantCommunity_fuzzy==3)
+
+# consider including species present in >10% of plots:
+names(colSums(sp_pa_desc)[which(colSums(sp_pa_desc)>(nrow(plot_data_descriptive)*0.10))])
+# also consider including species with high mean cover across all plots:
+mean_cover <- summarise(plot_data_descriptive, across(.cols = BRTE:QUERC, .fns = mean)) %>%
+  select(-any_of(c("Longitude_NAD83", "Latitude_NAD83", "Year", "Month", "Day"))) %>%
+  t() %>%
+  as.data.frame()
+
+row.names(mean_cover)[which(mean_cover$V1>=0.5)]
+
+
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
