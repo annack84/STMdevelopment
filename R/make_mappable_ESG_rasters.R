@@ -14,8 +14,8 @@ make_mappable_raster <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyU
 
   ESG_number <-ESG_table$ESGid[which(ESG_table$ESGs_text==target_ESG)]
 
-  reclass_matrix <- as.matrix(data.frame(is = c(which(1:36 != ESG_number), ESG_number),
-                                         becomes = c(rep(0, length(which(1:36 != ESG_number))), 1)))
+  reclass_matrix <- as.matrix(data.frame(is = c(which(1:36 != ESG_number), ESG_number, 128, NA),
+                                         becomes = c(rep(0, length(which(1:36 != ESG_number))), 1, 0, 0)))
 
   target_ESG_raster <- raster::reclassify(x=all_ESGs,
                                           rcl = reclass_matrix)
@@ -31,7 +31,7 @@ make_mappable_raster <- function(target_ESG = "Semiarid_Warm_SandyUplands_LoamyU
                       filename = file.path(data_file_paths(user)$target_ESG_map_folder,
                                            paste0(target_ESG, ".tif")),
                       format = "GTiff",
-                      datatype = "LOG1S",
+                      datatype = "INT1U",
                       overwrite = T)
   return(target_ESG_raster_proj)
 }

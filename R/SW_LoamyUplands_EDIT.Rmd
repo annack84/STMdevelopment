@@ -1,7 +1,7 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Loamy Uplands'
-author: "Travis Nauman and Anna Knight"
-date: "2/25/2022"
+author: "Anna Knight and Travis Nauman"
+date: "2/28/2022"
 output: 
   bookdown::html_document2:
     toc: true
@@ -60,7 +60,7 @@ library(STMdevelopment)
 # status input
 ```
 
-```{r map, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Mapped extent", fig.width=5, fig.height=5}
+```{r map, eval=TRUE, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Mapped extent", fig.width=5, fig.height=5}
 EDIT_map(target_ESG = target_ESG, user = user)
 ```
 
@@ -68,7 +68,7 @@ Areas shown in blue indicate the maximum mapped extent of this ecological site. 
 
 ## Associated ecological site concepts
 
-This ecological site group includes a variety of upland ecological sites that have deeper sandy soils without significant rock content. The group was defined by placing ecological sites into groups by separating soils, climate, and geomorphic features to best differentiate reference vegetation production values and documented ecological states as documented ny Nauman et al., (In Review).
+This ecological site group includes a variety of upland ecological sites that have deeper sandy soils without significant rock content. The group was defined by placing ecological sites into groups by separating soils, climate, and geomorphic features to best differentiate reference vegetation production values and documented ecological states as documented by Nauman et al. (2022).
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 esds <- esd_data_pull(user=user, target_ESG = target_ESG)
@@ -340,10 +340,9 @@ indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
                                                       tree_by_spp = tree_by_spp,
                                                       opuntia_combined = opuntia_combined)
 
-kbl(x = indicator_descriptions[,-1], format = "html", row.names = F, align = "c",
-    caption = "Indicators used in ordination and clustering analysis to develop plant communities") %>%
-  kable_styling(bootstrap_options = "bordered") %>%
-  row_spec(kable_input=., row = 0:nrow(indicator_descriptions), background = "lightsteelblue") %>%
+
+format_tables_EDIT_style(data = indicator_descriptions[,-1],
+                         caption = "Indicators used in ordination and clustering analysis to develop plant communities") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
 
@@ -416,7 +415,7 @@ ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG
 rm(plot_data_clean, plot_data)
 ```
 
-```{r hopkinsstat, eval=FALSE}
+```{r hopkinsstat, eval=FALSE, echo=FALSE}
 # are the data clusterable? Use the Hopkin's statistic (Lawson, Richard, and Jurs, 1990; see https://www.datanovia.com/en/lessons/assessing-clustering-tendency/ for explanation)
 # H values > 0.5 indicate clustering tendency (i.e. if H is below 0.5, the data set is uniformly distributed and clusters are not meaningful)
 
@@ -438,7 +437,7 @@ dist.df <- vegan::vegdist(ord.df, method = "bray", na.rm = T) # creates Bray-Cur
 
 ```
 
-```{r nbclust-fanny-loop, eval=FALSE, warning=FALSE}
+```{r nbclust-fanny-loop, eval=FALSE, echo=FALSE, warning=FALSE}
 # This chunk determines the best combination of number of clusters and fuzziness for the data. It is SLOOOOWWW so better to run it before knitting to get the right clustering parameters and then not run it when knitting the descriptive document.
 
 # get index values for all combos of membership exponent and number of clusters
@@ -559,7 +558,7 @@ Field data from were collected by field crews with the Natural Resource Conserva
 
 Plots were clustered into ecological communities using the FANNY fuzzy clustering algorithm (Kaufman and Rousseeuw, 1990) in the "cluster" R package (Maechler et al., 2021) with Bray-Curtis distance ("vegan" package; Oksanen et al., 2020). A suite of clustering indices were used to determine the most appropriate number of clusters and degree of fuzziness (i.e. membership exponent), including Calinski and Harabasz (1974), C-index (Hubert and Levin, 1976), cubic clustering criteria (Sarle, 1983), point-biserial correlation (Milligan 1980, 1981), Davies and Bouldin (1979), silhouette width (Rousseeuw 1987), and Dunn's index (1974). Values between 1 and 12 possible clusters and 1.1 to 1.3 membership exponents were tested. The final clustering solution used `r k_groups_fuzzy` clusters with a membership exponent of `r memb_exp`. 
 
-```{r ordination-scree, eval=FALSE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', cache=FALSE, fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
+```{r ordination-scree, eval=FALSE, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, results='hide', fig.keep='all', cache=FALSE, fig.cap="NMDS ordination scree plot comparing number of dimensions in the solution to stress."}
 # another slow chunk - run before knitting and then don't evaluate in the knit step.
 NMDS_scree(ord.df)
 ```
@@ -640,15 +639,15 @@ par(mfrow=c(1,1))
 ```
 
 ```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=14, fig.width=10, fig.cap="Plant cover by state"}
-# consider including species present in >10% of plots:
-names(colSums(sp_pa)[which(colSums(sp_pa)>(nrow(plot_data_first)*0.10))])
-# also consider including species with high mean cover across all plots:
-mean_cover <- summarise(plot_data_first, across(.cols = AH_C3IntroducedPerenGrassCover:AH_OpuntiaCover, .fns = mean)) %>%
-  select(-any_of(c("Longitude_NAD83", "Latitude_NAD83", "Year", "Month", "Day"))) %>%
-  t() %>%
-  as.data.frame()
+## consider including species present in >10% of plots:
+#names(colSums(sp_pa)[which(colSums(sp_pa)>(nrow(plot_data_first)*0.10))])
+## also consider including species with high mean cover across all plots:
+#mean_cover <- summarise(plot_data_first, across(.cols = AH_C3IntroducedPerenGrassCover:AH_OpuntiaCover, .fns = mean)) %>%
+#  select(-any_of(c("Longitude_NAD83", "Latitude_NAD83", "Year", "Month", "Day"))) %>%
+#  t() %>%
+#  as.data.frame()
 
-row.names(mean_cover)[which(mean_cover$V1>=0.5)]
+#row.names(mean_cover)[which(mean_cover$V1>=0.5)]
 
 plot_data_first_tall <- select(plot_data_first,
                                              SourceKey, PlotID, SiteName,
@@ -852,7 +851,8 @@ plot_data_descriptive <- plot_data_pull(user=user,
                                         target_ESG = target_ESG,
                                         data_sources = data_sources,
                                         indicators = c("TotalFoliarCover",
-                                                       "SoilStab_all"),
+                                                       "SoilStab_all",
+                                                       "AH_ArtemisiaTridentataCover"),
                                         ann_grass_by_spp = T,
                                         ann_forb_by_spp = T,
                                         per_grass_by_spp = T,
@@ -865,6 +865,8 @@ plot_data_descriptive <- plot_data_pull(user=user,
 ) %>%
   filter(!is.na(Month)) %>%
   left_join(select(plot_data_first, PlotCode, Year, PlantCommunity_fuzzy) , .)
+
+colnames(plot_data_descriptive)[which(colnames(plot_data_descriptive)=="AH_ArtemisiaTridentataCover")] <- "ARTR2"
 
 # summarize species occurrance
 descriptive.df <- dplyr::select(plot_data_descriptive, -SourceKey, -PlotID, -SiteName, -PlotName,
@@ -919,22 +921,26 @@ TODO write state description
 
 TODO write state description
 
+```{r comm1-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+dom_spp_grp3 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==3),
+                                   species_cols = colnames(descriptive.df),
+                                   user = user)
+
+dom_spp_grp3_pub <- filter(
+  select(dom_spp_grp3, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+               pct_plots >=10) %>%
+  mutate(MeanCover = round(MeanCover, 2),
+         pct_plots = round(pct_plots, 2)) %>%
+  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
+
+
+format_tables_EDIT_style(data = dom_spp_grp3_pub,
+                         caption = "Community 1.1 plant community composition") %>%
+  collapse_rows(columns = 1, valign = "top")
+```
+
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Annual production by plant type (representative values) or group (midpoint values)"}
 # TODO create pie charts of community composition by functional group. May need to change "production" to "percent cover" to fit with our data
-
-grp3_desc_data <- filter(plot_data_descriptive, PlantCommunity_fuzzy==3)
-
-# consider including species present in >10% of plots:
-names(colSums(sp_pa_desc)[which(colSums(sp_pa_desc)>(nrow(plot_data_descriptive)*0.10))])
-# also consider including species with high mean cover across all plots:
-mean_cover <- summarise(plot_data_descriptive, across(.cols = BRTE:QUERC, .fns = mean)) %>%
-  select(-any_of(c("Longitude_NAD83", "Latitude_NAD83", "Year", "Month", "Day"))) %>%
-  t() %>%
-  as.data.frame()
-
-row.names(mean_cover)[which(mean_cover$V1>=0.5)]
-
-
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
@@ -953,6 +959,108 @@ row.names(mean_cover)[which(mean_cover$V1>=0.5)]
 # TODO create table of func type percent cover at different heights
 
 # knitr::kable(x = dom_plant_spp_tab, caption = "Table 7. Canopy structure (% cover)")
+```
+
+## Community 1.2
+## Reference State: gambel oak shrubland
+
+TODO write state description
+
+```{r comm1-2-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+dom_spp_grp4 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==4),
+                                   species_cols = colnames(descriptive.df),
+                                   user = user)
+
+dom_spp_grp4_pub <- filter(
+  select(dom_spp_grp4, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+               pct_plots >=10) %>%
+    mutate(MeanCover = round(MeanCover, 2),
+         pct_plots = round(pct_plots, 2)) %>%
+  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
+
+
+format_tables_EDIT_style(data = dom_spp_grp4_pub,
+                         caption = "Community 1.2 plant community composition") %>%
+  collapse_rows(columns = 1, valign = "top")
+```
+
+## State 2
+## Alternative state
+
+TODO write state description
+
+## Community 2.1
+## Alternative State: Depauperate C4 perennial grassland
+
+TODO write state description
+
+```{r comm2-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+dom_spp_grp1 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==1),
+                                   species_cols = colnames(descriptive.df),
+                                   user = user)
+
+dom_spp_grp1_pub <- filter(
+  select(dom_spp_grp1, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+               pct_plots >=10) %>%
+  mutate(MeanCover = round(MeanCover, 2),
+         pct_plots = round(pct_plots, 2)) %>%
+  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
+
+
+format_tables_EDIT_style(data = dom_spp_grp1_pub,
+                         caption = "Community 2.1 plant community composition") %>%
+  collapse_rows(columns = 1, valign = "top")
+```
+
+## State 3
+## Annualized/bare state
+
+TODO write state description
+
+## Community 3.1
+## Annualized/bare state: Bare ground
+
+TODO write state description
+
+```{r comm3-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+dom_spp_grp2 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==2),
+                                   species_cols = colnames(descriptive.df),
+                                   user = user)
+
+dom_spp_grp2_pub <- filter(
+  select(dom_spp_grp2, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+               pct_plots >=10) %>%
+  mutate(MeanCover = round(MeanCover, 2),
+         pct_plots = round(pct_plots, 2)) %>%
+  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
+
+
+format_tables_EDIT_style(data = dom_spp_grp2_pub,
+                         caption = "Community 3.1 plant community composition") %>%
+  collapse_rows(columns = 1, valign = "top")
+```
+
+## Community 3.2
+## Annualized/bare state: Non-native annual grassland
+
+TODO write state description
+
+```{r comm3-2-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+dom_spp_grp5 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==5),
+                                   species_cols = colnames(descriptive.df),
+                                   user = user)
+
+dom_spp_grp5_pub <- filter(
+  select(dom_spp_grp5, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+               pct_plots >=10) %>%
+  mutate(MeanCover = round(MeanCover, 2),
+         pct_plots = round(pct_plots, 2)) %>%
+  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
+
+
+format_tables_EDIT_style(data = dom_spp_grp5_pub,
+                         caption = "Community 3.2 plant community composition") %>%
+  collapse_rows(columns = 1, valign = "top")
 ```
 
 ### Additional community tables
