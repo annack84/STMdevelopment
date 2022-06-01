@@ -1,7 +1,7 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Loamy Uplands'
-author: "Anna Knight and Travis Nauman"
-date: "2/28/2022"
+author: "Anna Knight, Travis Nauman, and Mike Duniway"
+date: "05/02/2022"
 output: 
   bookdown::html_document2:
     toc: true
@@ -59,7 +59,7 @@ library(STMdevelopment)
 ```
 
 ```{r map, eval=TRUE, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Mapped extent", fig.width=5, fig.height=5}
-EDIT_map(target_ESG = target_ESG, user = user)
+EDIT_map(target_ESG = target_ESG, user = user, maxZoomStyle = "public")
 ```
 
 Areas shown in blue indicate the maximum mapped extent of this ecological site. Other ecological sites likely occur within the highlighted areas. It is also possible for this ecological site to occur outside of highlighted areas if detailed soil survey has not been completed or recently updated.
@@ -211,9 +211,10 @@ format_tables_EDIT_style(data = soil.df, caption = "Representative soil features
 
 ## Soil Component data
 
-Soil types correlated to this group include `r length(unique(comps@site$cokey))` different components mapped in SSURGO.Soil taxonomic units include:
-
-`r print(unique(comps@site$compname))`
+Soil types correlated to this group include `r length(unique(comps@site$cokey))` different components mapped in SSURGO. Soil taxonomic units include: 
+```{r soil-tax-units, echo=FALSE, results = 'asis'}
+cat(sort(unique(comps@site$compname)), sep = ", ")
+``` 
 
 ### Component level soil property depth plots
 ```{r soil-lattice, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Soil properties by depth"}
@@ -254,7 +255,7 @@ format_tables_EDIT_style(data = apriori_stms_target[-nrow(apriori_stms_target),]
 ```
 
 ### Reference state production indicators
-```{r ref-production, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Reference state production by plant functional group"}
+```{r ref-production, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Reference state production by plant functional group (based on reference states from Ecological Site Descriptions within this ESG)"}
 ## Plot of reference production indicators used in paper
 resp_vars <- colnames(esds)[1:21]
 resp_vars <- resp_vars[!resp_vars %in% c("ecoclassid","Ponderosa","Aspen")]
@@ -326,20 +327,6 @@ plot_data <- plot_data_pull(user=user,
 
 ```
 
-
-```{r doc-plot-indicators, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
-                                                      shrub_by_spp = shrub_by_spp,
-                                                      subshrub_by_spp = subshrub_by_spp,
-                                                      tree_by_spp = tree_by_spp,
-                                                      opuntia_combined = opuntia_combined)
-
-
-format_tables_EDIT_style(data = indicator_descriptions[,-1],
-                         caption = "Indicators used in ordination and clustering analysis to develop plant communities") %>%
-  collapse_rows(columns = 1, valign = "top")
-```
-
 ```{r ordination-data, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 # TODO update I&M species codes to match current USDA Plants codes! probably a step for the plot_data_pull function?
 
@@ -407,6 +394,21 @@ ord.df <- select(ord.df, all_of(sp_keep))
 # remove unknown species if present
 ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
 rm(plot_data_clean, plot_data)
+```
+
+Field data from were collected by field crews with the Natural Resource Conservation Service's (NRCS) National Resource Inventory (NRI) program, the Bureau of Land Management's (BLM) Assessment, Inventory, and Monitoring (AIM) and Landscape Monitoring Framework (LMF) programs, and the Nationa Park Service's (NPS) Inventory and Monitoring Northern Colorado Plateau Network (NCPN) program between `r min(plot_data_first$Year)` and `r max(plot_data_first$Year)`. Plots within the target ESG with SGU classification probability less than or equal to the 10th percentile were excluded, resulting in a total of `r nrow(ord.df)` plots for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (in development, McCord & Stauffer, 2020). When plots were sampled in multiple years, only the first sampling year was used in STM development. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.86 and 0.85 for 100-cm and 200-cm gap predictions, respectively).")}`
+
+```{r doc-plot-indicators, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
+                                                      shrub_by_spp = shrub_by_spp,
+                                                      subshrub_by_spp = subshrub_by_spp,
+                                                      tree_by_spp = tree_by_spp,
+                                                      opuntia_combined = opuntia_combined)
+
+
+format_tables_EDIT_style(data = indicator_descriptions[,-1],
+                         caption = "Indicators used in ordination and clustering analysis to develop plant communities") %>%
+  collapse_rows(columns = 1, valign = "top")
 ```
 
 ```{r hopkinsstat, eval=FALSE, echo=FALSE}
@@ -534,6 +536,7 @@ best_memb_exp <- as.numeric(cluster_eval_fanny_indices_rank[[which.min(cluster_e
 k_groups_fuzzy <- 5 
 memb_exp <- 1.1
 
+set.seed(1)
 clust_fuzz <- fanny(x=dist.df,
                     k = k_groups_fuzzy, # 2
                     diss = T,
@@ -547,8 +550,6 @@ grp_fuzz <- clust_fuzz$clustering
 plot_data_first$PlantCommunity_fuzzy <- as.factor(grp_fuzz)
 
 ```
-
-Field data from were collected by field crews with the Natural Resource Conservation Service's (NRCS) National Resource Inventory (NRI) program, the Bureau of Land Management's (BLM) Assessment, Inventory, and Monitoring (AIM) and Landscape Monitoring Framework (LMF) programs, and the Nationa Park Service's (NPS) Inventory and Monitoring Northern Colorado Plateau Network (NCPN) program between `r min(plot_data_first$Year)` and `r max(plot_data_first$Year)`. `r nrow(ord.df)` plots were included for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (in development, McCord & Stauffer, 2020). When plots were sampled in multiple years, only the first sampling year was used in STM development. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.86 and 0.85 for 100-cm and 200-cm gap predictions, respectively).")}`
 
 Plots were clustered into ecological communities using the FANNY fuzzy clustering algorithm (Kaufman and Rousseeuw, 1990) in the "cluster" R package (Maechler et al., 2021) with Bray-Curtis distance ("vegan" package; Oksanen et al., 2020). A suite of clustering indices were used to determine the most appropriate number of clusters and degree of fuzziness (i.e. membership exponent), including Calinski and Harabasz (1974), C-index (Hubert and Levin, 1976), cubic clustering criteria (Sarle, 1983), point-biserial correlation (Milligan 1980, 1981), Davies and Bouldin (1979), silhouette width (Rousseeuw 1987), and Dunn's index (1974). Values between 1 and 12 possible clusters and 1.1 to 1.3 membership exponents were tested. The final clustering solution used `r k_groups_fuzzy` clusters with a membership exponent of `r memb_exp`. 
 
@@ -574,11 +575,12 @@ The clustering results were visualized in ordination spaced, using non-metric mu
 # 2D plotting
 pal_veg2 <- RColorBrewer::brewer.pal(n=k_groups_fuzzy, name = "Dark2")
 # manually update based on indicator species
-group_labels_fuzzy <- c(paste0("Depauperate C4 perennial
+group_labels_fuzzy <- c(paste0("C4 & C3 perennial
 grassland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)), ")"),
-                        paste0("Bare ground (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)), ")"),
-                        paste0("Sagebrush/C3 perennial
-grass savanna (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")"),
+                        paste0("Depauperate grassland
+(n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)), ")"),
+                        paste0("Sagebrush & C3 perennial
+grass shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")"),
                         paste0("Gambel oak
 shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)), ")"),
                         paste0("Non-native annual
@@ -628,13 +630,172 @@ legend(x="center",
        legend = group_labels_fuzzy,
        fill = pal_veg2,
        title = "Plant communities",
-       bty = "n")
+       bty = "n",
+       y.intersp = 1.5)
 
 par(mfrow=c(1,1))
 
 ```
 
-```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=14, fig.width=12, fig.cap="Plant cover by community"}
+```{r save-fuzzy-cluster, echo=FALSE, eval=FALSE}
+# save clustering results
+fuzzy_cluster_membership <- as.data.frame(clust_fuzz$membership)
+fuzzy_cluster_membership$PlotCode <- row.names(clust_fuzz$membership)
+fuzzy_cluster_membership$best_group <- clust_fuzz$clustering
+
+colnames(fuzzy_cluster_membership) <- c(paste0("Group_", 1:5, "_membership"), "PlotCode", "Best_group")
+
+group_names <- data.frame(Best_group = 1:5,
+                          Best_group_name = c("C4 & C3 perennial grassland",
+                                         "Depauperate grassland",                   
+                                         "Sagebrush & C3 perennial grass shrubland",
+                                         "Gambel oak shrubland",                     
+                                         "Non-native annual grassland"))
+fuzzy_cluster_membership <- left_join(fuzzy_cluster_membership, group_names)
+
+# get the plot location and date sampled (use first date)
+plot_locations_first <- plot_locations %>%
+  mutate(DateSampled = as.Date(paste(Year, Month, Day, sep = "-"))) %>%
+  arrange(DateSampled) %>%
+  group_by(PlotCode) %>%
+  summarise(DateSampled = first(DateSampled))
+
+fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_first)
+
+sf::st_write(fuzzy_cluster_memb_sf,
+             dsn = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps",
+             layer = paste0("SW_LoamyUplands_fuzzyclusters_", Sys.Date(), ".shp"),
+             driver = "ESRI Shapefile")
+
+fuzzy_cluster_memb_sf_shareable <- filter(fuzzy_cluster_memb_sf, !grepl(pattern = "NRI|IM_NCPN", x=PlotCode))
+
+sf::st_write(fuzzy_cluster_memb_sf_shareable,
+             dsn = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps",
+             layer = paste0("SW_LoamyUplands_fuzzyclust_share_", Sys.Date(), ".shp"),
+             driver = "ESRI Shapefile")
+
+```
+
+## State and transition model {.tabset}
+
+### CUSTOM DIAGRAM
+
+```{r custom-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM", fig.height=8, fig.width=10}
+# TODO create custom diagram of states
+knitr::include_graphics("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Analyses/Semiarid_Warm_LoamyUplands_boxandarrow_DRAFT.JPG")
+```
+
+```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
+# TODO legend for custom diagram if needed
+```
+
+The data used to develop this STM were sourced from large monitoring data sets designed to sample landscapes with a variety of current and historic land use. The model does not describe reference communities because these data do not include targeted sampling of relict plant communities with histories of little alteration to disturbance regimes. All states described here contain some introduced species (e.g. *Bromus tectorum, Alyssum desertorum, Agropyron cristatum*; see Tables \@ref(tab:comm1-1-dominant-spp), \@ref(tab:comm2-1-dominant-spp), \@ref(tab:comm3-1-dominant-spp), \@ref(tab:comm4-1-dominant-spp), and \@ref(tab:comm5-1-dominant-spp) for details).
+
+For furthur information on reference states as well as drivers of transitions, see the Ecological Site Descriptions for the sites listed in Table \@ref(tab:assoc-eco-sites).
+
+### STANDARD DIAGRAM
+
+Click on state and transition labels to scroll to the respective text.
+
+TODO create boxes for each state that link to the state description below
+
+## State descriptive figures
+
+```{r load-descriptive-indicators, include=FALSE}
+# load descriptive data
+plot_data_descriptive <- plot_data_pull(user=user,
+                                        target_ESG = target_ESG,
+                                        data_sources = data_sources,
+                                        indicators = c("TotalFoliarCover",
+                                                       "AH_WoodyCover",
+                                                       "AH_ShrubCover",
+                                                       # TODO what to do about subshrubs??
+                                                       "AH_TreeCover",
+                                                       "AH_ForbGrassCover",
+                                                       "AH_PerenForbGrassCover",
+                                                       "AH_AnnForbGrassCover",
+                                                       "SoilStab_all",
+                                                       "AH_ArtemisiaTridentataCover"),
+                                        ann_grass_by_spp = T,
+                                        ann_forb_by_spp = T,
+                                        per_grass_by_spp = T,
+                                        per_forb_by_spp = T,
+                                        succulent_by_spp = T,
+                                        shrub_by_spp = T,
+                                        subshrub_by_spp = T,
+                                        tree_by_spp = T,
+                                        opuntia_combined = F
+) %>%
+  filter(!is.na(Month)) %>%
+  left_join(select(plot_data_first, PlotCode, Year, PlantCommunity_fuzzy) , .)
+
+colnames(plot_data_descriptive)[which(colnames(plot_data_descriptive)=="AH_ArtemisiaTridentataCover")] <- "ARTR2"
+
+# summarize species occurrance
+descriptive.df <- dplyr::select(plot_data_descriptive, -SourceKey, -PlotID, -SiteName, -PlotName,
+                        -Year, -Longitude_NAD83, -Latitude_NAD83,
+                        -Month, -Day, -PlantCommunity_fuzzy, -TotalFoliarCover,
+                        -AH_WoodyCover, -AH_ShrubCover, -AH_TreeCover, -AH_ForbGrassCover, 
+                        -AH_PerenForbGrassCover, -AH_AnnForbGrassCover,
+                        -SoilStab_all
+                        ) %>%
+  tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
+
+sp_pa_desc <- mutate(rowwise(descriptive.df), across(everything(), function(x){if(x>0){1}else{0}})) # make a presence/absence data frame
+sp_keep_desc <- names(colSums(sp_pa_desc)[which(colSums(sp_pa_desc)>0)]) 
+descriptive.df <- select(descriptive.df, all_of(sp_keep_desc))
+
+plot_data_descriptive <- select(plot_data_descriptive, SourceKey, PlotID, SiteName, PlotName,
+                        Year, PlotCode, Longitude_NAD83, Latitude_NAD83,
+                        Month, Day, PlantCommunity_fuzzy, TotalFoliarCover,
+                        AH_WoodyCover, AH_ShrubCover, AH_TreeCover, AH_ForbGrassCover, 
+                        AH_PerenForbGrassCover, AH_AnnForbGrassCover,
+                        SoilStab_all, all_of(sp_keep_desc))
+
+#ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
+
+## load climate data
+AI_raster <- raster::raster(file_paths$ai_raster)
+plot_AI <- sf::st_as_sf(raster::extract(x = AI_raster,
+                               y = plot_locations,
+                               sp = T)) %>%
+  mutate(AI = ai_et0_WesternUSEcoregions*0.0001 # AI rasters are actually AI*10,000 so that they
+                  #can be stored as integers - need to put back into standard AI units
+                  ) %>%
+  sf::st_drop_geometry()
+rm(AI_raster)
+
+climate_rasters <- raster::stack(file_paths$prism_rasters)
+prism_vals <- raster::extract(x=climate_rasters,
+                              y=plot_locations,
+                              sp = T) %>%
+  as(., "sf")
+sf::st_geometry(prism_vals) <- NULL
+colnames(prism_vals)[which(colnames(prism_vals) %in% c("PRISM_ppt_30yr_normal_800mM2_annual_asc",
+                                                       "PRISM_tmean_30yr_normal_800mM2_annual_asc",
+                                                       "PRISM_tmax_30yr_normal_800mM2_annual_asc",
+                                                       "PRISM_tmin_30yr_normal_800mM2_annual_asc"
+                                                       ))] <- c("Ann_ppt_mm", "Ann_tmean",
+                                                                "Ann_tmax", "Ann_tmin")
+rm(climate_rasters)
+
+plot_data_descriptive <- left_join(plot_data_descriptive,
+                               select(plot_AI, PlotCode, Year, AI)) %>%
+  left_join(., 
+            select(prism_vals, PlotCode, Year, Ann_ppt_mm, Ann_tmean, Ann_tmax, Ann_tmin))
+
+## species richness and diversity
+plot_data_descriptive$shannon_diversity <- vegan::diversity(x=descriptive.df, index = "shannon")
+plot_data_descriptive$sp_richness <- vegan::specnumber(x=descriptive.df)
+
+# other variables to assess:
+# RHEM
+# AERO
+# elevation
+# soil pit variables??
+```
+
+```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=20, fig.width=12, fig.cap="Plant cover by community"}
 ## consider including species present in >10% of plots:
 #names(colSums(sp_pa)[which(colSums(sp_pa)>(nrow(plot_data_first)*0.10))])
 ## also consider including species with high mean cover across all plots:
@@ -749,6 +910,32 @@ names(cover_spp) <- spp_names
 
 cover_labels <- sort(c(cover_funcgrps, cover_spp))
 
+functypes_grps <- c("TotalFoliarCover", #"AH_WoodyCover", #AH_ForbGrassCover, 
+                    "AH_ShrubCover", "AH_TreeCover",
+                        "AH_PerenForbGrassCover", "AH_AnnForbGrassCover"
+                )
+functypes_cover_states <- ggplot(data = select(plot_data_descriptive, 
+                                             any_of(c("PlantCommunity_fuzzy", functypes_grps))) %>%
+                                   tidyr::pivot_longer(cols = all_of(functypes_grps),
+                      names_to = "CoverType",
+                      values_to = "PctCover"),
+                             aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
+  geom_boxplot() +
+  scale_fill_brewer(type = "qual", palette = "Set3",
+                    name = "Functional type",
+                    labels = c("Annual herbaceous", "Perennial herbaceous",
+                               #"Woody",
+                               "Shrub", "Tree",
+                               "Total foliar cover")
+                    ) +
+  scale_x_discrete(labels=group_labels_fuzzy) +
+  xlab(NULL) +
+  ylab("Cover (%)") +
+  ggtitle("Plant functional groups") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+        axis.text.y = element_text(color = "black"))
+
 woody_grps <- c("AH_ArtemisiaTridentataCover", "CHVI8", "SYRO",
                 #"ERNA10", "SAVE4", "PUTR2", "GUSA2",
                 "PIED", "JUOS", "QUGA"#,
@@ -765,7 +952,8 @@ woody_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% 
   ylab("Cover (%)") +
   ggtitle("Woody plants") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+        axis.text.y = element_text(color = "black"))
 
 perenherb_grps <- c("AH_C3IntroducedPerenGrassCover", "AH_C3NativePerenGrassCover", 
                     "AH_C4IntroducedPerenGrassCover", "AH_C4NativePerenGrassCover",
@@ -781,7 +969,8 @@ perenherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %
   ylab("Cover (%)") +
   ggtitle("Perennial herbaceous plants") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+        axis.text.y = element_text(color = "black"))
 
 annherb_grps <- c("AH_IntroducedAnnForbCover", "AH_IntroducedAnnGrassCover",
                   "AH_NativeAnnForbCover", "AH_NativeAnnGrassCover")
@@ -796,7 +985,8 @@ annherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in
   ylab("Cover (%)") +
   ggtitle("Annual herbaceous plants") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+        axis.text.y = element_text(color = "black"))
 
 ground_grps <- c("BareSoilCover", "FH_TotalLitterCover", "CA_percent_200plus",
                  "FH_LichenMossCover", "CA_percent_100plus")
@@ -811,126 +1001,27 @@ ground_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in%
   ylab("Cover (%)") +
   ggtitle("Ground cover") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+        axis.text.y = element_text(color = "black"))
 
-cover_states <- cowplot::plot_grid(woody_cover_states + theme(legend.position = "none"),
+cover_states <- cowplot::plot_grid(functypes_cover_states + theme(legend.position = "none"),
+                                   woody_cover_states + theme(legend.position = "none"),
                    perenherb_cover_states + theme(legend.position = "none"),
                    annherb_cover_states + theme(legend.position = "none"),
                    ground_cover_states + theme(legend.position = "none"),
-                   ncol = 1, axis = "lr")
+                   ncol = 1, axis = "lr", labels = "auto")
 
-cover_axes <- cowplot::plot_grid(cowplot::get_legend(woody_legend),
-                   cowplot::get_legend(perenherb_legend),
-                   cowplot::get_legend(annherb_legend),
+cover_axes <- cowplot::plot_grid(cowplot::get_legend(functypes_cover_states),
+                                 cowplot::get_legend(woody_cover_states),
+                   cowplot::get_legend(perenherb_cover_states),
+                   cowplot::get_legend(annherb_cover_states),
                    cowplot::get_legend(ground_cover_states),
                    ncol = 1)
 
-cowplot::plot_grid(cover_states, cover_axes, ncol = 2, rel_widths = c(1, 0.6))
+cowplot::plot_grid(cover_states, cover_axes, ncol = 2, rel_widths = c(1, 0.5))
 ```
 
-## State and transition model {.tabset}
 
-### CUSTOM DIAGRAM
-
-```{r custom-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM", fig.height=8, fig.width=10}
-# TODO create custom diagram of states
-#knitr::include_graphics("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/SW_SandyLoamyUplands_boxandarrow_DRAFT.JPG")
-```
-
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
-# TODO legend for custom diagram if needed
-```
-
-### STANDARD DIAGRAM
-
-Click on state and transition labels to scroll to the respective text.
-
-TODO create boxes for each state that link to the state description below
-
-## State descriptive figures
-
-```{r load-descriptive-indicators, include=FALSE}
-# load descriptive data
-plot_data_descriptive <- plot_data_pull(user=user,
-                                        target_ESG = target_ESG,
-                                        data_sources = data_sources,
-                                        indicators = c("TotalFoliarCover",
-                                                       "SoilStab_all",
-                                                       "AH_ArtemisiaTridentataCover"),
-                                        ann_grass_by_spp = T,
-                                        ann_forb_by_spp = T,
-                                        per_grass_by_spp = T,
-                                        per_forb_by_spp = T,
-                                        succulent_by_spp = T,
-                                        shrub_by_spp = T,
-                                        subshrub_by_spp = T,
-                                        tree_by_spp = T,
-                                        opuntia_combined = F
-) %>%
-  filter(!is.na(Month)) %>%
-  left_join(select(plot_data_first, PlotCode, Year, PlantCommunity_fuzzy) , .)
-
-colnames(plot_data_descriptive)[which(colnames(plot_data_descriptive)=="AH_ArtemisiaTridentataCover")] <- "ARTR2"
-
-# summarize species occurrance
-descriptive.df <- dplyr::select(plot_data_descriptive, -SourceKey, -PlotID, -SiteName, -PlotName,
-                        -Year, -Longitude_NAD83, -Latitude_NAD83,
-                        -Month, -Day, -PlantCommunity_fuzzy, -TotalFoliarCover,
-                        -SoilStab_all
-                        ) %>%
-  tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
-
-sp_pa_desc <- mutate(rowwise(descriptive.df), across(everything(), function(x){if(x>0){1}else{0}})) # make a presence/absence data frame
-sp_keep_desc <- names(colSums(sp_pa_desc)[which(colSums(sp_pa_desc)>0)]) 
-descriptive.df <- select(descriptive.df, all_of(sp_keep_desc))
-
-plot_data_descriptive <- select(plot_data_descriptive, SourceKey, PlotID, SiteName, PlotName,
-                        Year, PlotCode, Longitude_NAD83, Latitude_NAD83,
-                        Month, Day, PlantCommunity_fuzzy, TotalFoliarCover,
-                        SoilStab_all, all_of(sp_keep_desc))
-
-#ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
-
-## load climate data
-AI_raster <- raster::raster(file_paths$ai_raster)
-plot_AI <- sf::st_as_sf(raster::extract(x = AI_raster,
-                               y = plot_locations,
-                               sp = T)) %>%
-  mutate(AI = ai_et0_WesternUSEcoregions*0.0001 # AI rasters are actually AI*10,000 so that they
-                  #can be stored as integers - need to put back into standard AI units
-                  ) %>%
-  sf::st_drop_geometry()
-rm(AI_raster)
-
-climate_rasters <- raster::stack(file_paths$prism_rasters)
-prism_vals <- raster::extract(x=climate_rasters,
-                              y=plot_locations,
-                              sp = T) %>%
-  as(., "sf")
-sf::st_geometry(prism_vals) <- NULL
-colnames(prism_vals)[which(colnames(prism_vals) %in% c("PRISM_ppt_30yr_normal_800mM2_annual_asc",
-                                                       "PRISM_tmean_30yr_normal_800mM2_annual_asc",
-                                                       "PRISM_tmax_30yr_normal_800mM2_annual_asc",
-                                                       "PRISM_tmin_30yr_normal_800mM2_annual_asc"
-                                                       ))] <- c("Ann_ppt_mm", "Ann_tmean",
-                                                                "Ann_tmax", "Ann_tmin")
-rm(climate_rasters)
-
-plot_data_descriptive <- left_join(plot_data_descriptive,
-                               select(plot_AI, PlotCode, Year, AI)) %>%
-  left_join(., 
-            select(prism_vals, PlotCode, Year, Ann_ppt_mm, Ann_tmean, Ann_tmax, Ann_tmin))
-
-## species richness and diversity
-plot_data_descriptive$shannon_diversity <- vegan::diversity(x=descriptive.df, index = "shannon")
-plot_data_descriptive$sp_richness <- vegan::specnumber(x=descriptive.df)
-
-# other variables to assess:
-# RHEM
-# AERO
-# elevation
-# soil pit variables??
-```
 
 ```{r groups-climate, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Climate gradients by plant community. Larger aridity index values indicate a LESS arid condition."}
 cowplot::plot_grid(
@@ -967,6 +1058,8 @@ ggplot(data = select(plot_data_descriptive, PlantCommunity_fuzzy, Ann_tmean, Ann
 nrow = 2, labels = c(NA, "c"))
 ```
 
+
+
 ```{r groups-soilstab, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Soil stability by plant community"}
 ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=SoilStab_all)) +
@@ -979,46 +1072,36 @@ ggplot(data = plot_data_descriptive,
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-```{r groups-totalfoliar, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Total foliar cover by plant community"}
-ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=TotalFoliarCover)) +
-  geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
-  xlab("Plant community") +
-  ylab("Total foliar cover (%)") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
 
-```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Species diversity (Shannon diversity index) by plant community. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher values indicate greater diversity (0 indicates a plot that has only one species)."}
-ggplot(data = plot_data_descriptive,
+
+```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="(a) Species diversity (Shannon diversity index) and (b) species richness by plant community. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher diversity values indicate greater diversity (0 indicates a plot that has only one species)."}
+cowplot::plot_grid(ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=shannon_diversity)) +
   geom_boxplot() +
   scale_x_discrete(labels=group_labels_fuzzy) +
   xlab("Plant community") +
   ylab("Shannon diversity index") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-```{r groups-richness, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Species richness by plant community. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory."}
-ggplot(data = plot_data_descriptive,
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=sp_richness)) +
   geom_boxplot() +
   scale_x_discrete(labels=group_labels_fuzzy) +
   xlab("Plant community") +
   ylab("Number of species") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  nrow = 1, labels = "auto")
 ```
 
+
 ## State 1
-## Reference State
+## Shrubland State
 
 TODO write state description
 
 ## Community 1.1
-## Reference State: sagebrush/C3 perennial grass savanna
+## Shrubland State: sagebrush and C3 perennial grass shrubland
 
 TODO write state description
 
@@ -1063,10 +1146,10 @@ format_tables_EDIT_style(data = dom_spp_grp3_pub,
 ```
 
 ## State 2
-## Reference State
+## Mesic Shrubland State
 
 ## Community 2.1
-## Reference State: gambel oak shrubland
+## Mesic Shrubland State: gambel oak shrubland
 
 TODO write state description
 
@@ -1089,12 +1172,12 @@ format_tables_EDIT_style(data = dom_spp_grp4_pub,
 ```
 
 ## State 3
-## Alternative state
+## Grassland State
 
 TODO write state description
 
 ## Community 3.1
-## Alternative State: Depauperate C4 perennial grassland
+## Grassland State: C4 and C3 perennial grassland
 
 TODO write state description
 
@@ -1117,12 +1200,12 @@ format_tables_EDIT_style(data = dom_spp_grp1_pub,
 ```
 
 ## State 4
-## Annualized/bare state
+## Perennial Grass Loss State
 
 TODO write state description
 
 ## Community 4.1
-## Annualized/bare state: Bare ground
+## Perennial Grass Loss State: Depauperate grassland
 
 TODO write state description
 
@@ -1144,12 +1227,17 @@ format_tables_EDIT_style(data = dom_spp_grp2_pub,
   collapse_rows(columns = 1, valign = "top")
 ```
 
-## Community 4.2
-## Annualized/bare state: Non-native annual grassland
+## State 5
+## Invaded State
 
 TODO write state description
 
-```{r comm4-2-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+## Community 5.1
+## Invaded State: Non-native annual grassland
+
+TODO write state description
+
+```{r comm5-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 dom_spp_grp5 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==5),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
@@ -1163,7 +1251,7 @@ dom_spp_grp5_pub <- filter(
 
 
 format_tables_EDIT_style(data = dom_spp_grp5_pub,
-                         caption = "Community 4.2 plant community composition") %>%
+                         caption = "Community 5.1 plant community composition") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
 
@@ -1201,11 +1289,21 @@ TODO grazing narrative could go here
 
 ## Other references
 
+Herrick, J. E., Van Zee, J. W., McCord, S. E., Courtright, E. M., Karl, J. W., & Burkett, L. M. (2017). Monitoring Manual for Grassland, Shrubland, and Savanna Ecosystems (Second ed. Vol. 1: Core Methods). Las Cruces, New Mexico: USDA-ARS Jornada Experimental Range.
+
+Maechler, M., Rousseeuw, P., Struyf, A., Hubert, M., Hornik, K.(2021).  cluster: Cluster Analysis Basics and Extensions. R package version 2.1.2.
+
+McCord, S.E., N.G. Stauffer. terradactyl: an example of modularity and ontologies to ensure the sustainability of open source software. Society for Range Management  73rd Annual Meeting. February 16-20, 2020. Denver, Colorado.
+
+Nauman, T. W., Burch, S. S., Humphries, J. T., Knight, A. C., & Duniway, M. C. (2022). A Quantitative Soil-Geomorphic Framework for Developing and Mapping Ecological Site Groups. Rangeland Ecology & Management, 81, 9-33. doi:10.1016/j.rama.2021.11.003
+
+Oksanen, J., F. Guillaume Blanchet, Michael Friendly, Roeland Kindt, Pierre Legendre, Dan McGlinn, Peter R. Minchin, R. B. O'Hara, Gavin L. Simpson, Peter Solymos, M. Henry H. Stevens, Eduard Szoecs and Helene Wagner (2020). vegan: Community Ecology Package. R package version 2.5-7. https://CRAN.R-project.org/package=vegan
+
 ## Contributors
 
++ Anna Knight
 + Travis Nauman
 + Samuel Burch
-+ Anna Knight
 + Mike Duniway
 
 # Reference sheet
