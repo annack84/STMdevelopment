@@ -2,7 +2,7 @@
 % Please edit documentation in R/esd_esg_pull.R
 \name{esd_data_pull}
 \alias{esd_data_pull}
-\title{Pull ecological site data for the ecological site group of interest}
+\title{ull ecological site data for the ecological site group of interest}
 \usage{
 esd_data_pull(
   user = "Travis",
@@ -10,14 +10,15 @@ esd_data_pull(
 )
 }
 \arguments{
-\item{user}{Character. User name to generate input data file paths.
-Options are "Anna", "Travis", and "VPN".}
+\item{user}{Character. User name to generate input data file paths. Options
+are "Anna", "Travis", and "VPN".}
 
 \item{target_ESG}{The ecological site group to pull data for.}
 }
 \value{
-
+Returns a list of attributes for the target ESG based on the
+component Ecological Site Descriptions
 }
 \description{
-Pull ecological site data for the ecological site group of interest
+ull ecological site data for the ecological site group of interest
 }

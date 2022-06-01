@@ -8,7 +8,7 @@
 #'   (zooming limited to match ESG resampled map resolution). Use "developer" to
 #'   allow zooming in farther.
 #'
-#' @return
+#' @return Returns a leaflet map  of the target ESG, formatted for EDIT
 #' @export
 #'
 #'

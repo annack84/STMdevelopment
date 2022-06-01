@@ -1,10 +1,11 @@
-#'Pull ecological site data for the ecological site group of interest
+#' ull ecological site data for the ecological site group of interest
 #'
-#' @param user Character. User name to generate input data file paths.
-#'   Options are "Anna", "Travis", and "VPN".
+#' @param user Character. User name to generate input data file paths. Options
+#'   are "Anna", "Travis", and "VPN".
 #' @param target_ESG The ecological site group to pull data for.
 #'
-#' @return
+#' @return Returns a list of attributes for the target ESG based on the
+#'   component Ecological Site Descriptions
 #' @export
 #'
 esd_data_pull <- function(

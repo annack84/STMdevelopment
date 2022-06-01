@@ -342,7 +342,7 @@ plot_data_first <- plot_data_clean %>% #plot_data_clean %>%
 
 
 # remove plots with SGU probability (i.e. certainty of prediction) in the 10th percentile
-SGU_prob_raster <- raster::raster("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps/UCRB_SGUs_ProbMax/UCRB_SGUs_ProbMax.tif")
+SGU_prob_raster <- raster::raster("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/UCRB_SGUs_ProbMax/UCRB_SGUs_ProbMax.tif")
 
 file_paths <- data_file_paths(user)
 plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
@@ -663,14 +663,14 @@ plot_locations_first <- plot_locations %>%
 fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_first)
 
 sf::st_write(fuzzy_cluster_memb_sf,
-             dsn = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps",
+             dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps",
              layer = paste0("SW_LoamyUplands_fuzzyclusters_", Sys.Date(), ".shp"),
              driver = "ESRI Shapefile")
 
-fuzzy_cluster_memb_sf_shareable <- filter(fuzzy_cluster_memb_sf, !grepl(pattern = "NRI|IM_NCPN", x=PlotCode))
+fuzzy_cluster_memb_sf_shareable <- filter(fuzzy_cluster_memb_sf, !grepl(pattern = "NRI", x=PlotCode))
 
 sf::st_write(fuzzy_cluster_memb_sf_shareable,
-             dsn = "C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/Maps",
+             dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps",
              layer = paste0("SW_LoamyUplands_fuzzyclust_share_", Sys.Date(), ".shp"),
              driver = "ESRI Shapefile")
 
@@ -682,7 +682,7 @@ sf::st_write(fuzzy_cluster_memb_sf_shareable,
 
 ```{r custom-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM", fig.height=8, fig.width=10}
 # TODO create custom diagram of states
-knitr::include_graphics("C:/Users/aknight/Desktop/Telework_Backups/V_drive/PROJECTS/ESG/STM/Analyses/Semiarid_Warm_LoamyUplands_boxandarrow_DRAFT.JPG")
+knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_LoamyUplands_boxandarrow_DRAFT.JPG")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}

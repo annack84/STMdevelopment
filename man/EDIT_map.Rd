@@ -22,7 +22,7 @@ are "Anna", "Travis", and "VPN".}
 allow zooming in farther.}
 }
 \value{
-
+Returns a leaflet map  of the target ESG, formatted for EDIT
 }
 \description{
 Create leaflet map of the target ESG
