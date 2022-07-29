@@ -788,11 +788,17 @@ plot_data_descriptive <- left_join(plot_data_descriptive,
 plot_data_descriptive$shannon_diversity <- vegan::diversity(x=descriptive.df, index = "shannon")
 plot_data_descriptive$sp_richness <- vegan::specnumber(x=descriptive.df)
 
+# AERO
+aero <- read.csv(file_paths$aero)
+plot_aero <- aero %>% 
+  select(ProjectName, PlotID, horizontal_flux_total_MN, horizontal_flux_total_LPI, horizontal_flux_total_UPI) %>%
+  setNames(c("SiteName", "PlotName", "horizontal_flux_total_MN", "horizontal_flux_total_LPI", "horizontal_flux_total_UPI"))
+
+plot_data_descriptive <- left_join(plot_data_descriptive, plot_aero)
+
 # other variables to assess:
 # RHEM
-# AERO
-# elevation
-# soil pit variables??
+# NPP from Allred lab
 ```
 
 ```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=20, fig.width=12, fig.cap="Plant cover by community"}
@@ -1094,6 +1100,23 @@ cowplot::plot_grid(ggplot(data = plot_data_descriptive,
   nrow = 1, labels = "auto")
 ```
 
+```{r groups-aero, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Wind erosion potential by plant community, based on AERO models. Data only available for AIM and LMF plots."}
+# dust_tall <- plot_data_descriptive %>%
+#   select(PlotID, PlantCommunity_fuzzy, horizontal_flux_total_MN, horizontal_flux_total_LPI, horizontal_flux_total_UPI) %>%
+#   tidyr::pivot_longer(cols = c(horizontal_flux_total_MN, horizontal_flux_total_LPI, horizontal_flux_total_UPI),
+#                       names_to = "dust_statistic",
+#                       values_to = "dust_flux")
+
+ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=horizontal_flux_total_MN)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=group_labels_fuzzy) +
+  #ylim(c(0, 12)) +
+  xlab("Plant community") +
+  ylab("Total horizontal dust flux") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
 
 ## State 1
 ## Shrubland State

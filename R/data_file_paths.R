@@ -31,8 +31,9 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
                                           "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmean_30yr_normal_800mM2_annual_asc/PRISM_tmean_30yr_normal_800mM2_annual_asc.asc",
                                           "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmax_30yr_normal_800mM2_annual_asc/PRISM_tmax_30yr_normal_800mM2_annual_asc.asc",
                                           "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc"
-                                         )
-                        )
+                        ),
+                        aero = "V:/PROJECTS/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv"
+  )
 
   if(user=="Anna"){
     file_list <- network_files
@@ -45,6 +46,7 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
     file_list$plotnet_splist_location <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/SWDesertRangelandMonitoring/Data"
     file_list$aimlmf_splist <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/SWDesertRangelandMonitoring/Data/ProcessedData/AIM/Terrestrial AIM Data Spring 2020/PlotNet_style_AIMLMF_calcs/SpeciesList_AIM2020UCRBStates.csv"
     file_list$nri <- "C:/Users/aknight/Documents/Telework_Backups/U_drive/Projects/NRI_US_limitaccess/NRI/NRI_USGS_formats/NRI_UCRB/Indicators"
+    file_list$aero <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv"
   }
 
   if(user=="Travis"){
