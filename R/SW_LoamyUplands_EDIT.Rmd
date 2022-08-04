@@ -662,17 +662,40 @@ plot_locations_first <- plot_locations %>%
 
 fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_first)
 
-sf::st_write(fuzzy_cluster_memb_sf,
-             dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps",
-             layer = paste0("SW_LoamyUplands_fuzzyclusters_", Sys.Date(), ".shp"),
-             driver = "ESRI Shapefile")
+# sf::st_write(fuzzy_cluster_memb_sf,
+#              dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps",
+#              layer = paste0("SW_LoamyUplands_fuzzyclusters_", Sys.Date(), ".shp"),
+#              driver = "ESRI Shapefile")
 
-fuzzy_cluster_memb_sf_shareable <- filter(fuzzy_cluster_memb_sf, !grepl(pattern = "NRI", x=PlotCode))
+# fuzzy_cluster_memb_sf_shareable <- filter(fuzzy_cluster_memb_sf, !grepl(pattern = "NRI", x=PlotCode))
+# 
+# sf::st_write(fuzzy_cluster_memb_sf_shareable,
+#              dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps",
+#              layer = paste0("SW_LoamyUplands_fuzzyclust_share_", Sys.Date(), ".shp"),
+#              driver = "ESRI Shapefile")
 
-sf::st_write(fuzzy_cluster_memb_sf_shareable,
-             dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps",
-             layer = paste0("SW_LoamyUplands_fuzzyclust_share_", Sys.Date(), ".shp"),
-             driver = "ESRI Shapefile")
+# states <- sf::st_read("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Political boundaries/cb_2018_us_state_5m/cb_2018_us_state_5m.shp")
+# fourcorners <- filter(states, NAME %in% c("Utah", "Colorado", "Arizona", "New Mexico"))
+# 
+# fuzzy_cluster_memb_sf_mike <- sf::st_filter(sf::st_as_sf(fuzzy_cluster_memb_sf, crs=sf::st_crs(plot_locations)),
+#                                             sf::st_transform(fourcorners, crs=sf::st_crs(plot_locations))) %>%
+#   mutate(Source = ifelse(test = grepl(x=PlotCode, pattern = "^AIM"),
+#                          yes = "AIM",
+#                          no = NA)) %>%
+#   mutate(Source = ifelse(test = grepl(x=PlotCode, pattern = "^LMF"),
+#                          yes = "LMF",
+#                          no = Source)) %>%
+#   mutate(Source = ifelse(test = grepl(x=PlotCode, pattern = "^IM_NCPN"),
+#                          yes = "NPS",
+#                          no = Source)) %>%
+#   mutate(Source = ifelse(test = grepl(x=PlotCode, pattern = "^NRI"),
+#                          yes = "NRI",
+#                          no = Source))
+# 
+# sf::st_write(fuzzy_cluster_memb_sf_mike,
+#              dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps",
+#              layer = paste0("SW_LoamyUplands_fuzzyclust_mike_", Sys.Date(), ".shp"),
+#              driver = "ESRI Shapefile")
 
 ```
 
@@ -796,9 +819,6 @@ plot_aero <- aero %>%
 
 plot_data_descriptive <- left_join(plot_data_descriptive, plot_aero)
 
-# other variables to assess:
-# RHEM
-# NPP from Allred lab
 ```
 
 ```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=20, fig.width=12, fig.cap="Plant cover by community"}
@@ -811,6 +831,12 @@ plot_data_descriptive <- left_join(plot_data_descriptive, plot_aero)
 #  as.data.frame()
 
 #row.names(mean_cover)[which(mean_cover$V1>=0.9)]
+
+# Consider switching to plotly to allow users to hover and see exact quantile and outlier values, e.g.:
+# plotly::plot_ly(x=plot_data_descriptive$PlantCommunity_fuzzy,
+#                 y=plot_data_descriptive$horizontal_flux_total_UPI,
+#                 split=plot_data_descriptive$PlantCommunity_fuzzy,
+#                 type='box')
 
 plot_data_first_tall <- select(plot_data_first,
                                              SourceKey, PlotID, SiteName,
@@ -1113,7 +1139,7 @@ ggplot(data = plot_data_descriptive,
   scale_x_discrete(labels=group_labels_fuzzy) +
   #ylim(c(0, 12)) +
   xlab("Plant community") +
-  ylab("Total horizontal dust flux") +
+  ylab("Mean horizontal dust flux") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -1349,4 +1375,338 @@ TODO link to PDF of the reference sheet
 
 TODO look into options for printing from the RMarkdown HTML format
 
+```{r ESAfigures, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+# 1. plant functional group join plot with ordination
+# 2. lattice of abiotic gradients that distinguish the states
+# aero
+# rhem if available
+# soil stability
+# climate?
+# 3. NPP
+# 4. biodiversity
+# 5 remote sensing variance
 
+# 1. plant functional group join plot with ordination
+species_scores <- as.data.frame(scores(ord, choices = 1:3, display = "species")) # get axis scores for each response type
+plot_scores <- as.data.frame(scores(ord, choices = 1:3, display = "sites")) # get the axis scores for each site
+plot_scores$PlotCode <- rownames(plot_scores)
+plot_scores <- left_join(plot_scores, select(plot_data_descriptive, PlotCode, PlantCommunity_fuzzy))
+
+# this bit gets the arrow length and direction info
+ord.fit <- envfit(ord ~ AH_PerenForbGrassCover + 
+                    AH_AnnForbGrassCover +
+                    AH_ShrubCover +
+                    AH_TreeCover +
+                    TotalFoliarCover,
+                  data = plot_data_descriptive,
+                  na.rm=T,
+                  choices=1:3)
+
+vect_functypes <- as.data.frame(ord.fit$vectors$arrows*sqrt(ord.fit$vectors$r))
+vect_functypes$var <- rownames(vect_functypes)
+vect_functypes$r <- ord.fit$vectors$r
+
+vect_functypes$varnames <- c("Perennial herbaceous",
+                             "Annual herbaceous",
+                             "Shrub",
+                             "Tree",
+                             "Total foliar")
+
+# # since I have 3 ordination axes, I'm filtering just to axis 1 and 2 for this plot
+vect_functypes_12 <- filter(vect_functypes, abs(NMDS3)<abs(NMDS1)|abs(NMDS3)<abs(NMDS2))
+vect_functypes_32 <- filter(vect_functypes, abs(NMDS1)<abs(NMDS3)|abs(NMDS1)<abs(NMDS2))
+vect_functypes_13 <- filter(vect_functypes, abs(NMDS2)<abs(NMDS1)|abs(NMDS2)<abs(NMDS3))
+
+# make pretty plot ggplot!
+ord_pretty_plot <- function(points = plot_scores,
+                            vectors = vect_functypes,
+                            x_axis = "NMDS1",
+                            y_axis = "NMDS2",
+                            palette = pal_veg2,
+                            group_labels = group_labels_fuzzy){
+  ord_plot <- ggplot(data = points, aes_string(x=x_axis, y=y_axis)) +
+    #geom_point(data = points, aes_string(x=x_axis, y=y_axis, color="PlantCommunity_fuzzy"), size=1) +
+    stat_ellipse(data=points, aes_string(x=x_axis, y=y_axis, color="PlantCommunity_fuzzy"),
+                 level = 0.5, lwd = 1) +
+    scale_color_manual(values =palette, name="Plant community", # set custom colors for ellipses
+                       labels=group_labels) +
+    geom_segment(data = vectors, # make the arrows with environmental vars
+                 aes_string(x="0", xend=x_axis, y="0", yend=y_axis),
+                 arrow = arrow(length = unit(0.25, "cm")), lwd=1, colour="black", inherit.aes = F) +
+    ggrepel::geom_label_repel(data = vectors, # put labels on the arrows
+                              aes_string(x=x_axis, y=y_axis, label="varnames"), size=3, colour="black") +
+    coord_fixed() +
+    lims(x=c(-1.25,1.25), y=c(-1.25,1.25)) +
+    theme_bw() +
+    theme(axis.text = element_text(size = 10, color = "black"),
+          axis.title = element_text(size = 12),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+  
+  return(ord_plot)
+}
+
+ord_plot12 <- ord_pretty_plot(x_axis = "NMDS1", y_axis = "NMDS2", vectors = vect_functypes_12)
+ord_plot32 <- ord_pretty_plot(x_axis = "NMDS3", y_axis = "NMDS2", vectors = vect_functypes_32)
+ord_plot13 <- ord_pretty_plot(x_axis = "NMDS1", y_axis = "NMDS3", vectors = vect_functypes_13)
+ord_plot_legend <- cowplot::get_legend(ord_plot12)
+
+ord_plot_all <- cowplot::plot_grid(ord_plot12 + theme(legend.position = "none"), ord_plot32 + theme(legend.position = "none"),
+                   ord_plot13 + theme(legend.position = "none"), ord_plot_legend,
+                   nrow = 2, labels = c("a", "b", "c"))
+
+highrestiff(plot_obj = ord_plot_all,
+            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Ordination/SW_LoamyUplands_NMDS_ellipses_functypes.tif",
+            width_in = 6,
+            height_in = 6,
+            resolution_dpi = 300)
+
+# 2. lattice of abiotic gradients that distinguish the states
+violin_pretty_plot <- function(dat = plot_data_descriptive,
+                               y_var = "horizontal_flux_total_MN",
+                               y_lab = "Total horizontal dust flux",
+                               scaling = "area"){
+  violin_plot <- ggplot(data = dat,
+       aes_string(x="PlantCommunity_fuzzy", y=y_var)) +
+  geom_violin(scale = scaling, trim = F, na.rm = T) +
+  geom_boxplot(width=0.05) +
+  scale_x_discrete(labels=group_labels_fuzzy) +
+  #ylim(c(0, 12)) +
+  xlab("Plant community") +
+  ylab(y_lab) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+          axis.title = element_text(size = 12),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+
+  return(violin_plot)
+}
+# aero
+aero_plot <- violin_pretty_plot(dat = filter(plot_data_descriptive, !is.na(horizontal_flux_total_MN)),
+                                y_var = "horizontal_flux_total_MN",
+                                y_lab = "Horizontal dust flux",
+                                scaling = "width")
+aero_plot
+
+# soil stability
+soilstab_plot <- violin_pretty_plot(dat = plot_data_descriptive,
+                                    y_var = "SoilStab_all",
+                                    y_lab = "Soil stability")
+soilstab_plot
+
+# climate?
+AI_plot <- violin_pretty_plot(dat = plot_data_descriptive,
+                              y_var = "AI",
+                              y_lab = "Aridity index")
+AI_plot
+
+ppt_plot <- violin_pretty_plot(dat = plot_data_descriptive,
+                               y_var = "Ann_ppt_mm",
+                               y_lab = "Mean ann. ppt. (mm)")
+ppt_plot
+
+tmean_plot <- violin_pretty_plot(dat = plot_data_descriptive,
+                               y_var = "Ann_tmean",
+                               y_lab = "Mean ann. temp. (C)")
+tmean_plot
+
+# rhem if available
+
+# put them all together
+abiotic_plots <- cowplot::plot_grid(aero_plot + xlab(NULL) + scale_x_discrete(labels=NULL), soilstab_plot + xlab(NULL) + scale_x_discrete(labels=NULL),
+                                    ppt_plot, tmean_plot,
+                                    nrow = 2, rel_heights = c(0.6, 1), align = "v",
+                                    labels = "auto")
+abiotic_plots
+
+highrestiff(plot_obj = abiotic_plots,
+            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Violin/SW_LoamyUplands_abiotic_violin.tif",
+            width_in = 6,
+            height_in = 6,
+            resolution_dpi = 300)
+
+# 3. NPP
+# NPP data is from the RAP 3.0 partitioned NPP data set (Robinson et al., 2019). I downloaded the predicted NPP values within a 35-m radius of the AIM, LMF, NRI, and NCPN plot centers using a Google Earth Engine script. If we continue using NPP for other ESGs, we will probably need to continue downloading point values for RAP products through GEE - the raster file sizes are enormous!
+
+# Robinson, N. P., Allred, B. W., Naugle, D. E., & Jones, M. O. (2019). Patterns of rangeland productivity and land ownership: Implications for conservation and management. Ecologial Applications, 23(3), e01862. 
+
+NPP_files <- list.files("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_SWLoamyUplands/NPP",
+                        full.names = T)
+npp <- read.csv(NPP_files[1])
+npp$Year <- as.numeric(substr(NPP_files[1], 124, 127))
+
+for(file in NPP_files[-1]){
+  npp_temp <- read.csv(file)
+  npp_temp$Year <- as.numeric(substr(file, 124, 127))
+  npp <- bind_rows(npp, npp_temp)
+  rm(npp_temp)
+}
+
+npp <- select(npp, PlotCod, Year, afgNPP, pfgNPP, shrNPP, treNPP) %>%
+  setNames(c("PlotCode", "Year", "afgNPP", "pfgNPP", "shrNPP", "treNPP"))
+
+plot_data_descriptive <- left_join(plot_data_descriptive, npp)
+
+afg_npp_plot <- violin_pretty_plot(dat = plot_data_descriptive, 
+                               y_var = "afgNPP",
+                               y_lab = "Ann. herb. NPP (g C/m2)")
+afg_npp_plot
+
+pfg_npp_plot <- violin_pretty_plot(dat = plot_data_descriptive, 
+                               y_var = "pfgNPP",
+                               y_lab = "Per. herb. NPP (g C/m2)")
+pfg_npp_plot
+
+shr_npp_plot <- violin_pretty_plot(dat = plot_data_descriptive, 
+                               y_var = "shrNPP",
+                               y_lab = "Shrub NPP (g C/m2)")
+shr_npp_plot
+
+tre_npp_plot <- violin_pretty_plot(dat = plot_data_descriptive, 
+                               y_var = "treNPP",
+                               y_lab = "Tree NPP (g C/m2)")
+tre_npp_plot
+
+pft_npp_plots <- cowplot::plot_grid(afg_npp_plot + xlab(NULL) + scale_x_discrete(labels=NULL), pfg_npp_plot + xlab(NULL) + scale_x_discrete(labels=NULL),
+                                    shr_npp_plot, tre_npp_plot,
+                                    nrow = 2, rel_heights = c(0.6, 1), align = "v",
+                                    labels = "auto")
+pft_npp_plots
+
+highrestiff(plot_obj = pft_npp_plots,
+            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Violin/SW_LoamyUplands_pftnpp_violin.tif",
+            width_in = 6,
+            height_in = 6.5,
+            resolution_dpi = 300)
+
+# combining npp to herbaceous, woody, and total
+plot_data_descriptive$herbNPP <- plot_data_descriptive$afgNPP + plot_data_descriptive$pfgNPP
+plot_data_descriptive$woodyNPP <- plot_data_descriptive$shrNPP + plot_data_descriptive$treNPP
+plot_data_descriptive$totalNPP <- plot_data_descriptive$herbNPP + plot_data_descriptive$woodyNPP
+
+herb_npp_plot <- violin_pretty_plot(dat = plot_data_descriptive, 
+                               y_var = "herbNPP",
+                               y_lab = "Herb. NPP (g C/m2)")
+herb_npp_plot
+
+woody_npp_plot <- violin_pretty_plot(dat = plot_data_descriptive, 
+                               y_var = "woodyNPP",
+                               y_lab = "Woody NPP (g C/m2)")
+woody_npp_plot
+
+total_npp_plot <- violin_pretty_plot(dat = plot_data_descriptive, 
+                               y_var = "totalNPP",
+                               y_lab = "Total NPP (g C/m2)")
+total_npp_plot
+
+gh_npp_plots <- cowplot::plot_grid(herb_npp_plot + xlab(NULL) + scale_x_discrete(labels=NULL),
+                                    woody_npp_plot + xlab(NULL) + scale_x_discrete(labels=NULL),
+                                   total_npp_plot,
+                                    nrow = 3, rel_heights = c(0.6, 0.6, 1), align = "v",
+                                   labels = "auto")
+gh_npp_plots
+
+highrestiff(plot_obj = gh_npp_plots,
+            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Violin/SW_LoamyUplands_ghnpp_violin.tif",
+            width_in = 3,
+            height_in = 9,
+            resolution_dpi = 300)
+
+# 4. biodiversity
+diversity_plot <- violin_pretty_plot(dat = plot_data_descriptive,
+                                     y_var = "shannon_diversity",
+                                     y_lab = "Shannon diversity index")
+diversity_plot
+
+richness_plot <- violin_pretty_plot(dat = plot_data_descriptive,
+                                     y_var = "sp_richness",
+                                     y_lab = "Number of species")
+richness_plot
+
+biodiversity_plots <- cowplot::plot_grid(diversity_plot + xlab(NULL) + scale_x_discrete(labels=NULL),
+                                         richness_plot,
+                                         nrow = 2, rel_heights = c(0.6, 1),
+                                         labels = "auto")
+biodiversity_plots
+
+highrestiff(plot_obj = biodiversity_plots,
+            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Violin/SW_LoamyUplands_biodiversity_violin.tif",
+            width_in = 3,
+            height_in = 6.5,
+            resolution_dpi = 300)
+
+# 5. remote sensing variance
+# Ideally, we should probably do this from the LandCART total foliar cover predictions, but obtaining those rasters for the whole UCRB is very slow. For now, we'll use the sum of the RAP 3.0 plant functional type cover values for each plot to represent total foliar cover instead. The RAP values were downloaded from within a 35-m radius of each point in this ESG using a Google Earth Engine script. Consider switching to LandCART, since it actually predicts a total foliar cover value, when raster generation and downloading for the UCRB 1995-2019 (April 1 - Nov 1) is complete.
+library(broom) # for easy handling of many linear model parts
+library(purrr) # for functional programming, eep!
+library(tidyr)
+
+VegCover_files <- list.files("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_SWLoamyUplands/VegCover",
+                        full.names = T)
+VegCover <- read.csv(VegCover_files[1])
+VegCover$Year <- as.numeric(substr(VegCover_files[1], 134, 137))
+
+for(file in VegCover_files[-1]){
+  VegCover_temp <- read.csv(file)
+  VegCover_temp$Year <- as.numeric(substr(file, 134, 137))
+  VegCover <- bind_rows(VegCover, VegCover_temp)
+  rm(VegCover_temp)
+}
+
+VegCover <- select(VegCover, PlotCod, Bst_grp, Bst_gr_, Year, AFG, BGR, LTR, PFG, SHR, TRE) %>%
+  setNames(c("PlotCode", "PlantCommunity_fuzzy", "PlantCommunity_name", "Year", "AFG", "BGR", "LTR", "PFG", "SHR", "TRE")) %>%
+  rowwise() %>%
+  mutate(TotalFoliar = sum(AFG, PFG, SHR, TRE, na.rm = T))
+
+sampleyears <- select(plot_data_descriptive, PlotCode, Year) %>%
+  setNames(c("PlotCode", "Year_sampled"))
+
+VegCover <- left_join(VegCover, sampleyears)
+
+VegCover_10yrs <- VegCover %>% # select the 10 years up to and including the field sampling year
+  mutate(Years_to_sampling = Year_sampled - Year) %>%
+  filter(Years_to_sampling >=0 & Years_to_sampling <10) 
+
+VegCover_variance <- VegCover_10yrs %>%
+  select(PlotCode, PlantCommunity_fuzzy, Year, Years_to_sampling, TotalFoliar) %>%
+  as_tibble() %>%
+  nest(data = c(Year, Years_to_sampling, TotalFoliar)) %>% # create an internal data frame for each plot
+  mutate(model = map(data, ~lm(TotalFoliar ~ Years_to_sampling, data = .))) %>% # create a linear model from each plot's data frame
+  mutate(data = map(model, augment), # get residuals for each model and add to internal plot data frames
+         model_glance = map(model, glance)) %>% # get model summary statistics
+  mutate(resid_variance = map_dbl(data, ~var(.$.resid)), # get the variance of the detrended data (aka residuals)
+         resid_AC1 = map_dbl(data,
+                             ~acf(x = .$.resid, type = "correlation", lag.max = 1, plot = F)$acf[2]) # get the lag-1 autocorrelation of the detrended data
+         ) %>%
+  select(-data, -model) %>%
+  unnest(model_glance)
+# do we care that most of the linear models are not significant and only about half have an R-squared > 0.1?
+
+# make figures
+plot_data_descriptive <- left_join(plot_data_descriptive, select(VegCover_variance, PlotCode, resid_variance, resid_AC1))
+
+variance_plot <- violin_pretty_plot(dat = plot_data_descriptive,
+                                     y_var = "resid_variance",
+                                     y_lab = "Variance")
+variance_plot
+
+AC1_plot <- violin_pretty_plot(dat = plot_data_descriptive,
+                                     y_var = "resid_AC1",
+                                     y_lab = "Lag-1 autocorrelation")
+AC1_plot
+
+RSvariability_plots <- cowplot::plot_grid(variance_plot + xlab(NULL) + scale_x_discrete(labels=NULL),
+                                         AC1_plot,
+                                         nrow = 2, rel_heights = c(0.6, 1),
+                                         labels = "auto")
+RSvariability_plots
+
+highrestiff(plot_obj = RSvariability_plots,
+            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Violin/SW_LoamyUplands_RSvariability_violin.tif",
+            width_in = 3,
+            height_in = 6,
+            resolution_dpi = 300)
+
+```
