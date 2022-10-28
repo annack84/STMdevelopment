@@ -150,6 +150,9 @@ plot_data_pull <- function(user = "Anna",
     indicator_data_all <- dplyr::bind_rows(indicator_data_all, indicator_data_temp)
   }
 
+  # remove duplicate records if necessary
+  indicator_data_all <- distinct(indicator_data_all)
+
   # filter to just desired indicators
   indicators_expanded <- indicators
   if(!is.null(impute_gap_type)){
