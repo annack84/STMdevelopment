@@ -1,7 +1,7 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Loamy Uplands'
 author: "Anna Knight, Travis Nauman, and Mike Duniway"
-date: "05/02/2022"
+date: "11/02/2022"
 output: 
   bookdown::html_document2:
     toc: true
@@ -77,8 +77,12 @@ num_esds <- nrow(esds)
 This ecological site group includes `r num_esds` ecological sites. These sites were correlated to the group based on average soil, climate and geomorphic properties of the soil components linked to each ecological site.
 
 ```{r assoc-eco-sites, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+linked_esd_names <- esds[,c("ecoclassid","ecoclassname")] %>%
+  mutate(ecoclassid = paste0("[", ecoclassid, "](https://edit.jornada.nmsu.edu/catalogs/esd/",
+                             substr(ecoclassid, 2, 5), "/", ecoclassid, ")"))
+
 ## Associated ecological sites
-format_tables_EDIT_style(data = esds[,c("ecoclassid","ecoclassname")],
+format_tables_EDIT_style(data = linked_esd_names,
                          col.names=c("ESD Code","ESD Name"),
                          caption = "Ecological Sites associated with this ESG",
                          row.names = F)
@@ -393,12 +397,13 @@ ord.df <- select(ord.df, all_of(sp_keep))
 
 # remove unknown species if present
 ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
-rm(plot_data_clean, plot_data)
 ```
 
-Field data from were collected by field crews with the Natural Resource Conservation Service's (NRCS) National Resource Inventory (NRI) program, the Bureau of Land Management's (BLM) Assessment, Inventory, and Monitoring (AIM) and Landscape Monitoring Framework (LMF) programs, and the Nationa Park Service's (NPS) Inventory and Monitoring Northern Colorado Plateau Network (NCPN) program between `r min(plot_data_first$Year)` and `r max(plot_data_first$Year)`. Plots within the target ESG with SGU classification probability less than or equal to the 10th percentile were excluded, resulting in a total of `r nrow(ord.df)` plots for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (in development, McCord & Stauffer, 2020). When plots were sampled in multiple years, only the first sampling year was used in STM development. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.86 and 0.85 for 100-cm and 200-cm gap predictions, respectively).")}`
+Field data from were collected by field crews with the Natural Resource Conservation Service's (NRCS) National Resource Inventory (NRI) program, the Bureau of Land Management's (BLM) Assessment, Inventory, and Monitoring (AIM) and Landscape Monitoring Framework (LMF) programs, and the Nationa Park Service's (NPS) Inventory and Monitoring Northern Colorado Plateau Network (NCPN) program between `r min(plot_data_clean$Year)` and `r max(plot_data_clean$Year)`. Plots within the target ESG with SGU classification probability less than or equal to the 10th percentile (`r certainty_cutoff`%) were excluded, resulting in a total of `r nrow(ord.df)` plots for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (McCord et al., 2022). When plots were sampled in multiple years, only the first sampling year was used in STM development. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.86 and 0.85 for 100-cm and 200-cm gap predictions, respectively).")}`
 
 ```{r doc-plot-indicators, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+rm(plot_data_clean, plot_data)
+
 indicator_descriptions <- make_indicator_descriptions(indicators = indicators,
                                                       shrub_by_spp = shrub_by_spp,
                                                       subshrub_by_spp = subshrub_by_spp,
@@ -1343,7 +1348,7 @@ Herrick, J. E., Van Zee, J. W., McCord, S. E., Courtright, E. M., Karl, J. W., &
 
 Maechler, M., Rousseeuw, P., Struyf, A., Hubert, M., Hornik, K.(2021).  cluster: Cluster Analysis Basics and Extensions. R package version 2.1.2.
 
-McCord, S.E., N.G. Stauffer. terradactyl: an example of modularity and ontologies to ensure the sustainability of open source software. Society for Range Management  73rd Annual Meeting. February 16-20, 2020. Denver, Colorado.
+McCord, S. E., Brehm, J. R., Burnett, S. H., Dietrich, C., Edwards, B., Metz, L. J., Hernandez Narvaez, M., Pierson, F., Ramirez, K. S., Stauffer, N. G., Webb, N. P., and Tweedie, C. E. (2022). A framework and toolset for standardizing agroecosystem indicators. Ecological Indicators, 144. doi:10.1016/j.ecolind.2022.109511
 
 Nauman, T. W., Burch, S. S., Humphries, J. T., Knight, A. C., & Duniway, M. C. (2022). A Quantitative Soil-Geomorphic Framework for Developing and Mapping Ecological Site Groups. Rangeland Ecology & Management, 81, 9-33. doi:10.1016/j.rama.2021.11.003
 

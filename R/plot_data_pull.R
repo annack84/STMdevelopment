@@ -90,15 +90,15 @@ plot_data_pull <- function(user = "Anna",
 
   file_paths <- data_file_paths(user)
   # extract ESG for each plot location
-  plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
-                                layer = "all_plot-years_2021-09-30",
+  plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "PlotLocations"),
+                                layer = "all_plot-years_2022-11-04",
                                 quiet=TRUE) # TODO write code to pull the
   # most recent version so we don't have to change this file name
   # when a new project is added to PlotNet
 
   if("NRI" %in% data_sources){
     nri_locations <- sf::st_read(dsn = file_paths$nri,
-                                 layer = "NRI_UCRB_plot-years_2021-11-01",
+                                 layer = "NRI_UCRB_plot-years_2022-11-03",
                                  quiet = TRUE)
 
     plot_locations <- dplyr::filter(plot_locations, !grepl(pattern = "^NRI_",
@@ -341,6 +341,10 @@ plot_data_pull <- function(user = "Anna",
 
       species_data <- dplyr::bind_rows(species_data, species_data_opunt)
     }
+
+    # remove duplicates if present
+    species_data <- distinct(species_data)
+
     # make wide
     species_data_wide <- dplyr::select(species_data, any_of(colnames(species_data_all_target))) %>%
       tidyr::pivot_wider(data = .,
