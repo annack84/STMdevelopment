@@ -26,7 +26,7 @@ get_dominant_spp <- function(data= filter(plot_data_descriptive, PlantCommunity_
                              species_cols = colnames(descriptive.df),
                              user = "Anna"
                              ){
-  file_paths <- data_file_paths("Anna")
+  file_paths <- data_file_paths(user = user)
 
   spp_list_aim <- filter(read.csv(file_paths$species_list), SpeciesState=="AIM")
 

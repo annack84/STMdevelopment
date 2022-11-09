@@ -27,3 +27,29 @@
 #'   \item{AH_AnnForbGrassCover}{Independent variable representing any-hit % cover of annual herbaceous plants from LPI}
 #'    }
 "gap100_predictive_model"
+
+#' Compiled species list from AIM, LMF, NRI, NCPN and USGS internal data
+#'
+#' This file contains the species codes (typically derived from the USDA Plant
+#' database), scientific names, and attributes of each species used for grouping
+#' plants into functional types.
+#'
+#' @format ## `compiled_species_list`
+#' A data frame with 15320 rows and 14 columns:
+#' \describe{
+#'   \item{SpeciesCode}{Character. Abbreviation unique to the species, typically based on the USDA Plants database (https://plants.usda.gov/home)}
+#'   \item{ScientificName}{ }
+#'   \item{CommonName}{ }
+#'   \item{Family}{ }
+#'   \item{Duration}{ }
+#'   \item{GrowthHabit}{ }
+#'   \item{GrowthHabitSub}{ }
+#'   \item{Native}{ }
+#'   \item{UpdatedSpeciesCode}{ }
+#'   \item{SpeciesState}{ }
+#'   \item{Noxious}{ }
+#'   \item{PhotosyntheticPathway}{ }
+#'   \item{SG_Group}{ }
+#'   \item{PinyonJuniper}{ }
+#'   }
+"compiled_species_list"

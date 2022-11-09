@@ -1,7 +1,7 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Loamy Uplands'
 author: "Anna Knight, Travis Nauman, and Mike Duniway"
-date: "11/02/2022"
+date: "11/0/2022"
 output: 
   bookdown::html_document2:
     toc: true
@@ -335,26 +335,32 @@ plot_data <- plot_data_pull(user=user,
 # TODO update I&M species codes to match current USDA Plants codes! probably a step for the plot_data_pull function?
 
 # remove incomplete rows - ordination won't work with NAs
-plot_data_clean <- na.omit(plot_data)
+plot_data_clean <- na.omit(plot_data) %>%
+  # NRI has a separate plot code for each time a plot was sampled, but all other data sets have the same plot
+  # code for all sampling times. Make a similar code for NRI.
+  mutate(PlotCode_NoYear = ifelse(test = SourceKey == "NRI_UCRB",
+                                  yes = paste0(SourceKey, "_",
+                                               SiteName, "_",
+                                               substr(PlotID, 5, nchar(PlotID))),
+                                  no = PlotCode))
 
 # Some plots were sampled multiple times - I'll include only the first year that a plot has complete data
 plot_data_first <- plot_data_clean %>% #plot_data_clean %>%
-  dplyr::group_by(PlotCode) %>%
+  dplyr::group_by(PlotCode_NoYear) %>%
   dplyr::arrange(.data=., Year, .by_group = TRUE) %>%
   dplyr::filter(dplyr::row_number()==1) %>%
   dplyr::ungroup()
-
 
 # remove plots with SGU probability (i.e. certainty of prediction) in the 10th percentile
 SGU_prob_raster <- raster::raster("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/UCRB_SGUs_ProbMax/UCRB_SGUs_ProbMax.tif")
 
 file_paths <- data_file_paths(user)
-plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
-                              layer = "all_plot-years_2021-09-30",
+plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "PlotLocations"),
+                              layer = "all_plot-years_2022-11-08",
                               quiet=TRUE)
 if("NRI" %in% data_sources){
   nri_locations <- sf::st_read(dsn = file_paths$nri,
-                               layer = "NRI_UCRB_plot-years_2021-11-01",
+                               layer = "NRI_UCRB_plot-years_2022-11-03",
                                quiet = TRUE)
   
   plot_locations <- dplyr::filter(plot_locations, !grepl(pattern = "^NRI_",
@@ -377,7 +383,7 @@ plot_data_first <- filter(plot_data_first, UCRB_SGUs_ProbMax > certainty_cutoff)
 ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotName,
                         -Year, -Longitude_NAD83, -Latitude_NAD83,
                         -Month, -Day,
-                        -UCRB_SGUs_ProbMax, -geometry
+                        -UCRB_SGUs_ProbMax, -geometry, -PlotCode_NoYear
                         ) %>%
   tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
 

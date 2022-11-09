@@ -335,26 +335,32 @@ plot_data <- plot_data_pull(user=user,
 # TODO update I&M species codes to match current USDA Plants codes! probably a step for the plot_data_pull function?
 
 # remove incomplete rows - ordination won't work with NAs
-plot_data_clean <- na.omit(plot_data)
+plot_data_clean <- na.omit(plot_data) %>%
+  # NRI has a separate plot code for each time a plot was sampled, but all other data sets have the same plot
+  # code for all sampling times. Make a similar code for NRI.
+  mutate(PlotCode_NoYear = ifelse(test = SourceKey == "NRI_UCRB",
+                                  yes = paste0(SourceKey, "_",
+                                               SiteName, "_",
+                                               substr(PlotID, 5, nchar(PlotID))),
+                                  no = PlotCode))
 
 # Some plots were sampled multiple times - I'll include only the first year that a plot has complete data
 plot_data_first <- plot_data_clean %>% #plot_data_clean %>%
-  dplyr::group_by(PlotCode) %>%
+  dplyr::group_by(PlotCode_NoYear) %>%
   dplyr::arrange(.data=., Year, .by_group = TRUE) %>%
   dplyr::filter(dplyr::row_number()==1) %>%
   dplyr::ungroup()
-
 
 # remove plots with SGU probability (i.e. certainty of prediction) in the 10th percentile
 SGU_prob_raster <- raster::raster("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/UCRB_SGUs_ProbMax/UCRB_SGUs_ProbMax.tif")
 
 file_paths <- data_file_paths(user)
-plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "NRI/NRI_PlotNet"),
-                              layer = "all_plot-years_2021-09-30",
+plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "PlotLocations"),
+                              layer = "all_plot-years_2022-11-08",
                               quiet=TRUE)
 if("NRI" %in% data_sources){
   nri_locations <- sf::st_read(dsn = file_paths$nri,
-                               layer = "NRI_UCRB_plot-years_2021-11-01",
+                               layer = "NRI_UCRB_plot-years_2022-11-03",
                                quiet = TRUE)
   
   plot_locations <- dplyr::filter(plot_locations, !grepl(pattern = "^NRI_",
@@ -377,7 +383,7 @@ plot_data_first <- filter(plot_data_first, UCRB_SGUs_ProbMax > certainty_cutoff)
 ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotName,
                         -Year, -Longitude_NAD83, -Latitude_NAD83,
                         -Month, -Day,
-                        -UCRB_SGUs_ProbMax, -geometry
+                        -UCRB_SGUs_ProbMax, -geometry, -PlotCode_NoYear
                         ) %>%
   tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
 
@@ -466,7 +472,7 @@ indices_name <- c("CH", #"Duda",
              )
 
 memb_exps <- seq(1.1,
-                 1.3, # start with 2.0, can reduce value to rerun if some larger values don't give results
+                 1.7, # start with 2.0, can reduce value to rerun if some larger values don't give results
                  by = 0.1)
 
 cl <- makeCluster(spec = 3, # number of cores to use
@@ -540,8 +546,8 @@ best_memb_exp <- as.numeric(cluster_eval_fanny_indices_rank[[which.min(cluster_e
 
 
 ```{r fuzzy-cluster, echo=FALSE}
-k_groups_fuzzy <- 4 #2
-memb_exp <- 1.1 #1.2
+k_groups_fuzzy <- 4 #2 it really wants to be 2!!
+memb_exp <- 1.1 #1.1
 
 set.seed(1)
 clust_fuzz <- fanny(x=dist.df,
@@ -581,17 +587,17 @@ The clustering results were visualized in ordination spaced, using non-metric mu
 ```{r ordination-plots, echo=FALSE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of plot indicator data. Points represent plots; ellipses represent plant communities identified by the hierarchical clustering and indicator species analysis."}
 # 2D plotting
 pal_veg2 <- RColorBrewer::brewer.pal(n=k_groups_fuzzy, name = "Dark2")
-# manually update based on indicator species
-group_labels_fuzzy <- c(paste0("Mixed sagebrush, native per.
-grasses, & cheatgrass (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)), ")"),
-                        paste0("Open pinyon-juniper woodland
-(n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)), ")"),
-                        paste0("Mixed pinyon-juniper &
-sagebrush (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")"),
-                        paste0("Native perennial grassland
-(n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)), ")"))
+# # manually update based on indicator species
+# group_labels_fuzzy <- c(paste0("Mixed sagebrush, native per.
+# grasses, & cheatgrass (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)), ")"),
+#                         paste0("Open pinyon-juniper woodland
+# (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)), ")"),
+#                         paste0("Mixed pinyon-juniper &
+# sagebrush (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")"),
+#                         paste0("Native perennial grassland
+# (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)), ")"))
 
-#group_labels_fuzzy <- as.character(1:clust_fuzz$k.crisp)
+group_labels_fuzzy <- as.character(1:clust_fuzz$k.crisp)
 
 par(mfrow=c(2,2))
 # Axes 1x2
@@ -868,11 +874,14 @@ plot_data_first_tall <- select(plot_data_first,
                                              FH_LichenMossCover,
                                              CA_percent_100plus, 
                                              ATCA2,
+                               ERNA10,
+                               CHVI8,
                                EPVI,
-                               CORA,
+                               PUTR2,
                                GUSA2,
                                JUOS,
-                               PIED
+                               PIED,
+                               QUGA
                                ) %>%
   tidyr::pivot_longer(cols = c(AH_C3IntroducedPerenGrassCover, 
                                              AH_C3NativePerenGrassCover,     
@@ -890,9 +899,8 @@ plot_data_first_tall <- select(plot_data_first,
                                              AH_C4IntroducedPerenGrassCover, 
                                              FH_LichenMossCover,
                                              CA_percent_100plus, 
-                                             ATCA2,
+                               CHVI8,
                                EPVI,
-                               CORA,
                                GUSA2,
                                JUOS,
                                PIED
@@ -922,9 +930,8 @@ cover_funcgrps <- sort(c("AH_C3IntroducedPerenGrassCover",
 funcgrps_names <- arrange(filter(indicator_descriptions, Indicator_code %in% cover_funcgrps), Indicator_code)$Indicator
 names(cover_funcgrps) <- funcgrps_names
 
-cover_spp <- sort(c("ATCA2",
+cover_spp <- sort(c("CHVI8",
                                "EPVI",
-                               "CORA",
                                "GUSA2",
                                "JUOS",
                                "PIED"
@@ -961,9 +968,9 @@ functypes_cover_states <- ggplot(data = select(plot_data_descriptive,
   theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
         axis.text.y = element_text(color = "black"))
 
-woody_grps <- c("AH_ArtemisiaTridentataCover", "ATCA2",
+woody_grps <- c("AH_ArtemisiaTridentataCover", 
+                               "CHVI8",
                                "EPVI",
-                               "CORA",
                                "GUSA2",
                                "JUOS",
                                "PIED"
