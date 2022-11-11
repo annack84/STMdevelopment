@@ -252,9 +252,7 @@ plot_data_pull <- function(user = "Anna",
   # get species lists TODO update this list's C3/C4 designations based on Travis's lit review list
   if(ann_grass_by_spp | ann_forb_by_spp | per_grass_by_spp | per_forb_by_spp |
      shrub_by_spp | subshrub_by_spp | tree_by_spp | opuntia_combined){
-    species_list <- read.csv(file_paths$species_list,
-                             stringsAsFactors = F,
-                             na.strings = c("NA", "", " "))
+    species_list <- compiled_species_list
 
     # shrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="Shrub")
     # subshrub_spp <- dplyr::filter(species_list, GrowthHabitSub=="SubShrub")

@@ -9,20 +9,39 @@
 
 A data frame with 15320 rows and 14 columns:
 \describe{
-\item{SpeciesCode}{Character. Abbreviation unique to the species, typically based on the USDA Plants database (https://plants.usda.gov/home)}
-\item{ScientificName}{ }
-\item{CommonName}{ }
-\item{Family}{ }
-\item{Duration}{ }
-\item{GrowthHabit}{ }
-\item{GrowthHabitSub}{ }
-\item{Native}{ }
-\item{UpdatedSpeciesCode}{ }
-\item{SpeciesState}{ }
-\item{Noxious}{ }
-\item{PhotosyntheticPathway}{ }
-\item{SG_Group}{ }
-\item{PinyonJuniper}{ }
+\item{SpeciesCode}{Character. Abbreviation unique to the species, typically
+based on the USDA Plants database (https://plants.usda.gov/home).}
+\item{ScientificName}{Character. Scientific name of the plant species.}
+\item{CommonName}{Character. Common name of the plant species, typically
+based on the USDA Plants database.}
+\item{Family}{Character. Taxonomic
+family of the plant species.}
+\item{Duration}{Character. Life span of the
+plant. Options are "Annual" or "Perennial". Plants with biennial growth are
+considered "Annual" in this data set.}
+\item{GrowthHabit}{Character. Plant
+tissue type. Options are "Woody" or "NonWoody".}
+\item{GrowthHabitSub}{Character. Life form of the plant. Options are
+"Forb", "Graminoid", "Shrub", "SubShrub", "Succulent", or "Tree".}
+\item{Native}{Character. Native status of the plant within the contiguous
+United States. Options are "Introduced" or "Native".}
+\item{UpdatedSpeciesCode}{Character. If the species code represents an old
+taxonomy or does not match USDA Plants naming conventions, the current USDA
+Plants code is contained here.}
+\item{SpeciesState}{Character. The data
+collection project (AIM, NRI, etc.) that the species code corresponds to.}
+\item{Noxious}{Character. The noxious legal status of the plant based on US
+federal and state government lists. Only state government lists from the
+western contiguous US were used. Options are "NO" (i.e. not noxious) or
+"YES" (i.e. noxious).}
+\item{PhotosyntheticPathway}{Character. Carbon
+fixation pathway of the plant species. Options are "C3", "C4", or "CAM".}
+\item{SG_Group}{Character. Sage grouse group, based on Bureau of Land
+Management state lists. Options are "Sagebrush", "PreferredForb",
+"ShortStaturePerennialGrass", "NonSagebrushShrub", or
+"TallStaturePerennialGrass".}
+\item{PinyonJuniper}{Character. Indicates
+whether the plant is a species of pinyon or juniper tree.}
 }
 }
 }

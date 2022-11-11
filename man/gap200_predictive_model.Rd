@@ -19,6 +19,10 @@ This model can estimate percent cover of annual and perennial canopy gaps >
 200 cm using percent cover of perennial canopy gaps > 200 cm and any-hit
 annual herbaceous cover. It was built using data from all NRI and LMF plots
 in the Upper Colorado River Basin where both perennial gaps and annual +
-perennial gaps were measure at the same time. Adjusted R-squared:  0.8462
+perennial gaps were measure at the same time. Cases where annual and
+perennial gap cover was greater than 1 standard deviation above perennial gap
+cover were excluded because annual and perennial gap cover typically should
+not exceed perennial gap cover, but occasionally does does due to measurement
+errors. Adjusted R-squared: 0.8144; P-value < 0.001
 }
 \keyword{datasets}

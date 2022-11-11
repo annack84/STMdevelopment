@@ -1,7 +1,7 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Loamy Uplands'
 author: "Anna Knight, Travis Nauman, and Mike Duniway"
-date: "11/0/2022"
+date: "11/09/2022"
 output: 
   bookdown::html_document2:
     toc: true
@@ -470,7 +470,7 @@ indices_name <- c("CH", #"Duda",
              )
 
 memb_exps <- seq(1.1,
-                 1.3, # start with 2.0, can reduce value to rerun if some larger values don't give results
+                 1.4, # start with 2.0, can reduce value to rerun if some larger values don't give results
                  by = 0.1)
 
 cl <- makeCluster(spec = 3, # number of cores to use
