@@ -1,7 +1,7 @@
 ---
 title: "Ecological Site Group Description: Semiarid Warm Sandy Uplands"
 author: "Anna Knight"
-date: "2022-11-02"
+date: "`r Sys.Date()`"
 output: 
   bookdown::html_document2:
     toc: true
@@ -357,7 +357,9 @@ SGU_prob_raster <- raster::raster("C:/Users/aknight/Documents/Telework_Backups/V
 file_paths <- data_file_paths(user)
 plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "PlotLocations"),
                               layer = "all_plot-years_2022-11-08",
-                              quiet=TRUE)
+                              quiet=TRUE) %>%
+  distinct()
+
 if("NRI" %in% data_sources){
   nri_locations <- sf::st_read(dsn = file_paths$nri,
                                layer = "NRI_UCRB_plot-years_2022-11-03",
@@ -365,7 +367,8 @@ if("NRI" %in% data_sources){
   
   plot_locations <- dplyr::filter(plot_locations, !grepl(pattern = "^NRI_",
                                                          x=PlotCode)) %>%
-    dplyr::bind_rows(., nri_locations)
+    dplyr::bind_rows(., nri_locations) %>%
+    distinct()
 }
 
 plot_SGU_prob <- sf::st_as_sf(raster::extract(x = SGU_prob_raster,

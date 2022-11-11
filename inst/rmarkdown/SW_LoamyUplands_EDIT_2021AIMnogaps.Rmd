@@ -283,8 +283,8 @@ indicators <- c("AH_C3NativePerenGrassCover",
                 "AH_ArtemisiaTridentataCover", # All big sagebrush species lumped together
                 "BareSoilCover", # Bare soil
                 "FH_TotalLitterCover", # Litter
-                "CA_percent_100plus", # Canopy gaps > 100 cm
-                "CA_percent_200plus",
+                #"CA_percent_100plus", # Canopy gaps > 100 cm
+                #"CA_percent_200plus",
                 "FH_LichenCover", # Lichen + moss combined cover
                 "FH_MossCover"#,
                 #"SoilStab_all" # to represent cyano abundance... I think this is only marginally a community variable. If used in hierarchical clustering and Bray-Curtis NMDS, will need to standardize it to make units more similar to % cover units
@@ -587,19 +587,19 @@ The clustering results were visualized in ordination spaced, using non-metric mu
 ```{r ordination-plots, echo=FALSE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of plot indicator data. Points represent plots; ellipses represent plant communities identified by the hierarchical clustering and indicator species analysis."}
 # 2D plotting
 pal_veg2 <- RColorBrewer::brewer.pal(n=k_groups_fuzzy, name = "Dark2")
-# # manually update based on indicator species
-# group_labels_fuzzy <- c(paste0("C4 & C3 perennial
-# grassland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)), ")"),
-#                         paste0("Depauperate grassland
-# (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)), ")"),
-#                         paste0("Sagebrush & C3 perennial
-# grass shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")"),
-#                         paste0("Gambel oak
-# shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)), ")"),
-#                         paste0("Non-native annual
-# grassland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==5)), ")"))
+# manually update based on indicator species
+group_labels_fuzzy <- c(paste0("C3 perennial grassland 
+(n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)), ")"),
+                        paste0("Gambel oak
+shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)), ")"),
+                        paste0("Depauperate savanna
+(n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")"),
+                        paste0("Sagebrush & C3 perennial
+grass shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)), ")"),
+                        paste0("Non-native annual &
+sagebrush shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==5)), ")"))
 
-group_labels_fuzzy <- as.character(1:clust_fuzz$k.crisp)
+#group_labels_fuzzy <- as.character(1:clust_fuzz$k.crisp)
 
 par(mfrow=c(2,2))
 # Axes 1x2
@@ -720,7 +720,7 @@ fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_firs
 # create custom diagram of states in PowerPoint. Save as a JPG to load in here.
 # State/community naming conventions need to be determined.
 # Species get listed in the descriptions in decreasing order of mean cover for that community
-knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_LoamyUplands_boxandarrow_DRAFT.JPG")
+knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_LoamyUplands_boxandarrow_DRAFT_newAIMwithgaps.JPG")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
@@ -1172,19 +1172,19 @@ TODO write state description
 TODO write state description
 
 ```{r comm1-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp3 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==3),
+dom_spp_grp4 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==4),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
 
-dom_spp_grp3_pub <- filter(
-  select(dom_spp_grp3, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+dom_spp_grp4_pub <- filter(
+  select(dom_spp_grp4, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
                pct_plots >=10) %>%
   mutate(MeanCover = round(MeanCover, 2),
          pct_plots = round(pct_plots, 2)) %>%
   setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
 
 
-format_tables_EDIT_style(data = dom_spp_grp3_pub,
+format_tables_EDIT_style(data = dom_spp_grp4_pub,
                          caption = "Community 1.1 plant community composition") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
@@ -1220,19 +1220,19 @@ format_tables_EDIT_style(data = dom_spp_grp3_pub,
 TODO write state description
 
 ```{r comm2-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp4 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==4),
+dom_spp_grp2 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==2),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
 
-dom_spp_grp4_pub <- filter(
-  select(dom_spp_grp4, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+dom_spp_grp2_pub <- filter(
+  select(dom_spp_grp2, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
                pct_plots >=10) %>%
     mutate(MeanCover = round(MeanCover, 2),
          pct_plots = round(pct_plots, 2)) %>%
   setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
 
 
-format_tables_EDIT_style(data = dom_spp_grp4_pub,
+format_tables_EDIT_style(data = dom_spp_grp2_pub,
                          caption = "Community 2.1 plant community composition") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
@@ -1243,7 +1243,7 @@ format_tables_EDIT_style(data = dom_spp_grp4_pub,
 TODO write state description
 
 ## Community 3.1
-## Grassland State: C4 and C3 perennial grassland
+## Grassland State: C3 perennial grassland
 
 TODO write state description
 
@@ -1271,24 +1271,24 @@ format_tables_EDIT_style(data = dom_spp_grp1_pub,
 TODO write state description
 
 ## Community 4.1
-## Perennial Grass Loss State: Depauperate grassland
+## Perennial Grass Loss State: Depauperate savanna
 
 TODO write state description
 
 ```{r comm4-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp2 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==2),
+dom_spp_grp3 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==3),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
 
-dom_spp_grp2_pub <- filter(
-  select(dom_spp_grp2, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+dom_spp_grp3_pub <- filter(
+  select(dom_spp_grp3, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
                pct_plots >=10) %>%
   mutate(MeanCover = round(MeanCover, 2),
          pct_plots = round(pct_plots, 2)) %>%
   setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
 
 
-format_tables_EDIT_style(data = dom_spp_grp2_pub,
+format_tables_EDIT_style(data = dom_spp_grp3_pub,
                          caption = "Community 4.1 plant community composition") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
@@ -1299,7 +1299,7 @@ format_tables_EDIT_style(data = dom_spp_grp2_pub,
 TODO write state description
 
 ## Community 5.1
-## Invaded State: Non-native annual grassland
+## Invaded State: Non-native annual grass and sagebrush shrubland
 
 TODO write state description
 
