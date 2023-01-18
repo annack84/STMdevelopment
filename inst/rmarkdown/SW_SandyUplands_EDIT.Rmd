@@ -175,7 +175,7 @@ These sites neither benefit significantly from run-in moisture nor experience ex
 
 # Soil features
 
-Soils in this group are moderately deep or deeper to bedrock and are composed primarily of alluvium and eolian sediments. Surface horizons have sand, loamy sand, sandy loam, and loam textures and subsurface horizons are similar but can also include sandy clay loams. Soils are non-saline and non sodic and can have up to 20% calcium carbonate, but generally have less than 6% carbonates. Soil pH ranges from 5.0 to 9.6, but is generally closer to 8.0. Water erosion hazard is moderate and wind erosion hazard is severe.  
+Soils in this group are moderately deep or deeper to bedrock and are composed primarily of alluvium and eolian sediments. Surface and subsurface horizons very high sand content (>75% on average) with textures including loamy sand, sand, and sandy loam. Soils are non-saline and non sodic and can have up to 10% calcium carbonate, but generally have less than 5% carbonates. Soil pH ranges from `r min(c(round(min(comps@horizons[comps@horizons$hzdept_r<30,c("ph1to1h2o_r")],na.rm=T), 0), round(min(comps@horizons[comps@horizons$hzdept_r>30,c("ph1to1h2o_r")],na.rm=T), 0)))` to `r max(c(round(max(comps@horizons[comps@horizons$hzdept_r<30,c("ph1to1h2o_r")],na.rm=T), 1), round(max(comps@horizons[comps@horizons$hzdept_r>30,c("ph1to1h2o_r")],na.rm=T), 1)))`. Water erosion hazard is moderate and wind erosion hazard is severe.  
 
 ```{r soil-features, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 
@@ -240,7 +240,7 @@ lattice::xyplot(top ~ p.q50 | variable, data=agg, ylab='Depth (cm)',
 
 # Ecological dynamics
 
-TODO narrative about key types of transitions and disturbances
+These sites have high risk for wind erosion and dune mobilization, especially with drought or large disturbances. They also have potential for water erosion issues. Compared to reference states, alternative states may have higher bare ground, annual invasion, woody encroachment, and/or loss of perennial grasses.
 
 ## State and transition model development 
 
@@ -262,7 +262,7 @@ format_tables_EDIT_style(data = apriori_stms_target[-nrow(apriori_stms_target),]
 ```{r ref-production, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Reference state production by plant functional group (based on reference states from Ecological Site Descriptions within this ESG)"}
 ## Plot of reference production indicators used in paper
 resp_vars <- colnames(esds)[1:21]
-resp_vars <- resp_vars[!resp_vars %in% c("ecoclassid","Ponderosa","Aspen")]
+resp_vars <- resp_vars[!resp_vars %in% c("ecoclassid")]
 par(mar = c(4,8,4,2)) ## This works when knitted
 boxplot(esds[,resp_vars], horizontal = TRUE,las = 1, main = "Reference Production (lbs/Acre)")
 
@@ -408,7 +408,7 @@ ord.df <- select(ord.df, all_of(sp_keep))
 ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
 ```
 
-Field data from were collected by field crews with the Natural Resource Conservation Service's (NRCS) National Resource Inventory (NRI) program, the Bureau of Land Management's (BLM) Assessment, Inventory, and Monitoring (AIM) and Landscape Monitoring Framework (LMF) programs, and the Nationa Park Service's (NPS) Inventory and Monitoring Northern Colorado Plateau Network (NCPN) program between `r min(plot_data_clean$Year)` and `r max(plot_data_clean$Year)`. Plots within the target ESG with SGU classification probability less than or equal to the 10th percentile (`r certainty_cutoff`%) were excluded, resulting in a total of `r nrow(ord.df)` plots for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (McCord et al., 2022). When plots were sampled in multiple years, only the first sampling year was used in STM development. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.86 and 0.85 for 100-cm and 200-cm gap predictions, respectively).")}`
+Field data from were collected by field crews with the Natural Resource Conservation Service's (NRCS) National Resource Inventory (NRI) program, the Bureau of Land Management's (BLM) Assessment, Inventory, and Monitoring (AIM) and Landscape Monitoring Framework (LMF) programs, and the Nationa Park Service's (NPS) Inventory and Monitoring Northern Colorado Plateau Network (NCPN) program between `r min(plot_data_clean$Year)` and `r max(plot_data_clean$Year)`. Plots within the target ESG with SGU classification probability less than or equal to the 10th percentile (`r certainty_cutoff`%) were excluded, resulting in a total of `r nrow(ord.df)` plots for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (McCord et al., 2022). When plots were sampled in multiple years, only the first sampling year was used in STM development. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.83 and 0.81 for 100-cm and 200-cm gap predictions, respectively).")}`
 
 ```{r doc-plot-indicators, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 rm(plot_data_clean, plot_data)
