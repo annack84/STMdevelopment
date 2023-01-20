@@ -111,7 +111,7 @@ plot_data_pull <- function(user = "Anna",
   plot_ESGs <- sf::st_as_sf(raster::extract(x = ESG_raster,
                                             y = plot_locations,
                                             sp = T))
-  colnames(plot_ESGs)[which(colnames(plot_ESGs)=="ESGs_final_SWSandyLoamyUplandsSplit")] <- "ESGid"
+  colnames(plot_ESGs)[which(colnames(plot_ESGs)=="ESGs_final")] <- "ESGid"
 
   plot_ESGs_join <- dplyr::left_join(plot_ESGs, ESG_table)
 

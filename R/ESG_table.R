@@ -19,7 +19,7 @@ ESG_table <- dplyr::tribble(
   16,     "Semiarid_Warm_VeryShallow",
   17,     "Semiarid_Warm_SalineUplands",
   18,     "Semiarid_Warm_Shallow_DeepRocky",
-  19,     "Semiarid_Warm_LoamyUplands",
+  19,     "Semiarid_Warm_SandyUplands_LoamyUplands",
   20,     "Semiarid_Warm_FinerUplands",
   21,     "Semiarid_Warm_ClayUplands",
   22,     "Semiarid_Warm_SandyBottoms_Bottoms",
@@ -35,8 +35,7 @@ ESG_table <- dplyr::tribble(
   32,     "Semiarid_Cool_SandyBottoms",
   33,     "Semiarid_Cool_SalineBottoms",
   34,     "Semiarid_Cool_Bottoms",
-  35,     "Riparian",
-  36,     "Semiarid_Warm_SandyUplands"
+  35,     "Riparian"
 )
 
 #' @export

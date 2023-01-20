@@ -40,7 +40,7 @@ esd_data_pull <- function(
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="VeryShallow",16,esds$ESGid)  # semiarid warm very shallow
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="SalineUplands",17,esds$ESGid)  # semiarid warm saline uplands
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&(esds$sgu=="Shallow"|esds$sgu=="DeepRocky"),18,esds$ESGid)  # semiarid warm shallow and deep rocky
-  esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="LoamyUplands",19,esds$ESGid)  # semiarid warm loamy uplands
+  esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&(esds$sgu=="SandyUplands"|esds$sgu=="LoamyUplands"),19,esds$ESGid)  # semiarid warm sandy and loamy uplands
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="FinerUplands",20,esds$ESGid)  # semiarid warm finer uplands
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="ClayUplands",21,esds$ESGid)  # semiarid warm clay uplands
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&(esds$sgu=="SandyBottoms"|esds$sgu=="Bottoms"),22,esds$ESGid)  # semiarid warm sandy bottoms and bottoms
@@ -57,7 +57,6 @@ esd_data_pull <- function(
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Cool"&esds$sgu=="SalineBottoms",33,esds$ESGid)  # semiarid cool saline bottoms
   esds$ESGid <- ifelse(esds$clim=="Semiarid_Cool"&esds$sgu=="Bottoms",34,esds$ESGid)  # semiarid cool bottoms
   esds$ESGid <- ifelse(esds$sgu=="Riparian",35,esds$ESGid) # Riparian
-  esds$ESGid <- ifelse(esds$clim=="Semiarid_Warm"&esds$sgu=="SandyUplands",36,esds$ESGid)  # semiarid warm sandy uplands uplands
 
 
   ## ESG Lookup table
