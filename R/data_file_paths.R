@@ -32,7 +32,10 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
                                           "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmax_30yr_normal_800mM2_annual_asc/PRISM_tmax_30yr_normal_800mM2_annual_asc.asc",
                                           "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc"
                         ),
-                        aero = "V:/PROJECTS/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv"
+                        aero = "V:/PROJECTS/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv",
+                        rhem = list(aim = "V:/PROJECTS/ANNA_KNIGHT/ESG/STM/RHEM/Final_5_RHEM_AIM_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv",
+                                    lmf = "V:/PROJECTS/ANNA_KNIGHT/ESG/STM/RHEM/Final_5_RHEM_LMF_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv",
+                                    nri = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RHEM/contains_NRI_do_not_sync/Final_2_RHEM_NRI_SoilGrids_NEDSlope_32425_09May2022.csv")
   )
 
   if(user=="Anna"){
@@ -54,6 +57,8 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
                       "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc"
                       )
     file_list$aero <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv"
+    file_list$rhem$aim <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RHEM/Final_5_RHEM_AIM_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv"
+    file_list$rhem$lmf <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RHEM/Final_5_RHEM_LMF_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv"
   }
 
   if(user=="Travis"){
