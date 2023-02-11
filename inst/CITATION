@@ -1,0 +1,16 @@
+citHeader("To cite STMdevelopment in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "STMdevelopment: a package for developing State-and-Transitions Models for Ecological Site Groups on the Colorado Plateau",
+  author   = "Anna Knight, Travis Nauman, Michael Duniway",
+  journal  = ,
+  year     = 2023,
+  volume   = ,
+  number   = ,
+  pages    = ,
+  url      = ,
+  textVersion = paste(
+
+  )
+)

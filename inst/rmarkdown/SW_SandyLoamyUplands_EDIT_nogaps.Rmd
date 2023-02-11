@@ -245,7 +245,8 @@ These sites have high risk for wind erosion and dune mobilization, especially wi
 
 ## State and transition model development 
 
-```{r apriori-stm, eval=TRUE, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r apriori-stm, eval=FALSE, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# TODO update with the newly tabulated ESD STMs from Travis, then set to eval = TRUE
 apriori_stms <- read.csv(data_file_paths(user)$apriori_stms, stringsAsFactors = F,
                          na.strings = c("NA", "", " "))
 
@@ -741,7 +742,7 @@ fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_firs
 # create custom diagram of states in PowerPoint. Save as a JPG to load in here.
 # State/community naming conventions need to be determined.
 # Species get listed in the descriptions in decreasing order of mean cover for that community
-knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_SandyLoamyUplands_boxandarrow_DRAFT_newAIMnogaps.JPG")
+knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_SandyLoamyUplands_boxandarrow_workshop1.JPG")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
@@ -1163,7 +1164,7 @@ ggplot(data = select(plot_data_descriptive, PlantCommunity_fuzzy, Ann_tmean, Ann
          tidyr::pivot_longer(c(Ann_tmean, Ann_tmax, Ann_tmin), names_to = "temptype", values_to = "tempdegrees"),
        aes(fill=PlantCommunity_fuzzy, y=tempdegrees, x=temptype)) +
   geom_boxplot() +
-  scale_fill_discrete(name="Plant community", labels=group_labels_fuzzy) +
+  scale_fill_manual(name="Plant community", labels=group_labels_fuzzy, values = pal_veg2) +
   scale_x_discrete(labels=c("Maximum", "Mean", "Minimum")) +
   xlab(NULL) +
   ylab("Temperature (C)") +
@@ -1587,7 +1588,7 @@ ord_plot_all <- cowplot::plot_grid(ord_plot12 + theme(legend.position = "none"),
 
 today <- Sys.Date()
 highrestiff(plot_obj = ord_plot_all,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Ordination/", target_ESG, "/SW_SandyLoamyUplands_NMDS_ellipses_functypes_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Ordination/SW_SandyLoamyUplands_NMDS_ellipses_functypes_", today, ".tif"),
             width_in = 6,
             height_in = 6,
             resolution_dpi = 300)
@@ -1603,7 +1604,7 @@ ord_plot_all_nolabels <- cowplot::plot_grid(ord_plot12_nolabels + theme(legend.p
 
 today <- Sys.Date()
 highrestiff(plot_obj = ord_plot_all_nolabels,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Ordination/", target_ESG, "/SW_SandyLoamyUplands_NMDS_ellipses_functypes_nolabels_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Ordination/SW_SandyLoamyUplands_NMDS_ellipses_functypes_nolabels_", today, ".tif"),
             width_in = 6,
             height_in = 6,
             resolution_dpi = 300)
@@ -1648,10 +1649,20 @@ box_pretty_plot <- function(dat = plot_data_descriptive,
                                y_lab = "Total horizontal dust flux",
                             fill_var = "PlantCommunity_fuzzy_reordered",
                             palette = pal_veg2_reordered){
+  group_labels <- paste0(as.character(levels(dat$PlantCommunity_fuzzy_reordered)),
+                               "
+(n = ",
+                               c(nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==1 & !is.na(dat[[y_var]]), ]),
+                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==2 & !is.na(dat[[y_var]]), ]),
+                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==3 & !is.na(dat[[y_var]]), ]),
+                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==4 & !is.na(dat[[y_var]]), ])
+                                  ),
+                               ")")
+  
   box_plot <- ggplot(data = dat,
        aes_string(x="PlantCommunity_fuzzy_reordered", y=y_var, fill = fill_var)) +
     geom_boxplot() +
-    #scale_x_discrete(labels=group_labels_short) +
+    scale_x_discrete(labels=group_labels) +
     scale_fill_manual(values =palette, name="Plant community", # set custom colors for ellipses
                        #labels=group_labels_short
                       ) +
@@ -1702,20 +1713,35 @@ tmean_plot <- box_pretty_plot(dat = plot_data_descriptive,
                                y_lab = "Mean ann. temp. (C)")
 tmean_plot
 
-# rhem if available
+# rhem
+rhem_plot_runoff <- box_pretty_plot(dat = plot_data_descriptive,
+                                    y_var = "Runoff_Long_Term_MEAN",
+                                    y_lab = "Mean runoff
+(mm/yr)")
+rhem_plot_runoff
+
+rhem_plot_soilloss <- box_pretty_plot(dat = plot_data_descriptive,
+                                    y_var = "Soil_Loss_Long_Term_MEAN",
+                                    y_lab = "Mean soil loss
+(tons/ha/yr)")
+rhem_plot_soilloss
 
 # put them all together
-abiotic_plots <- cowplot::plot_grid(aero_plot + xlab(NULL) + scale_x_discrete(labels=NULL), soilstab_plot + xlab(NULL) + scale_x_discrete(labels=NULL),
+abiotic_plots <- cowplot::plot_grid(aero_plot,
+                                    soilstab_plot,
+                                    rhem_plot_runoff,
+                                    rhem_plot_soilloss,
                                     ppt_plot, tmean_plot,
-                                    nrow = 2, rel_heights = c(0.6, 1), align = "v",
+                                    nrow = 3, #rel_heights = c(0.6, 1),
+                                    align = "v",
                                     labels = "auto")
 abiotic_plots
 
 today <- Sys.Date()
 highrestiff(plot_obj = abiotic_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/", target_ESG, "SW_SandyLoamyUplands_abiotic_boxplot_2_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_abiotic_boxplot_2_", today, ".tif"),
             width_in = 6,
-            height_in = 6,
+            height_in = 9,
             resolution_dpi = 300)
 
 # put them in a different layout because we love drafts
@@ -1725,20 +1751,21 @@ climate_plots <- cowplot::plot_grid(ppt_plot, tmean_plot, AI_plot,
 climate_plots
 
 highrestiff(plot_obj = climate_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/", target_ESG, "/SW_SandyLoamyUplands_climate_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_climate_boxplot_", today, ".tif"),
             width_in = 9,
             height_in = 3.5,
             resolution_dpi = 300)
 
 soils_plots <- cowplot::plot_grid(aero_plot, soilstab_plot,
-                                    nrow = 1, 
+                                  rhem_plot_runoff, rhem_plot_soilloss,
+                                    nrow = 2, 
                                     labels = "auto")
 soils_plots
 
 highrestiff(plot_obj = soils_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/", target_ESG, "/SW_SandyLoamyUplands_soils_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_soils_boxplot_", today, ".tif"),
             width_in = 6,
-            height_in = 3.5,
+            height_in = 6,
             resolution_dpi = 300)
 
 # 3. NPP
@@ -1746,14 +1773,14 @@ highrestiff(plot_obj = soils_plots,
 
 # Robinson, N. P., Allred, B. W., Naugle, D. E., & Jones, M. O. (2019). Patterns of rangeland productivity and land ownership: Implications for conservation and management. Ecologial Applications, 23(3), e01862. 
 
-NPP_files <- list.files("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_SWLoamyUplands/NPP",
+NPP_files <- list.files(paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_do_not_sync/", target_ESG, "/NPP"),
                         full.names = T)
 npp <- read.csv(NPP_files[1])
-npp$Year <- as.numeric(substr(NPP_files[1], 124, 127))
+npp$Year <- as.numeric(substr(NPP_files[1], 174, 177))
 
 for(file in NPP_files[-1]){
   npp_temp <- read.csv(file)
-  npp_temp$Year <- as.numeric(substr(file, 124, 127))
+  npp_temp$Year <- as.numeric(substr(file, 174, 177))
   npp <- bind_rows(npp, npp_temp)
   rm(npp_temp)
 }
@@ -1789,8 +1816,9 @@ pft_npp_plots <- cowplot::plot_grid(afg_npp_plot + xlab(NULL) + scale_x_discrete
                                     labels = "auto")
 pft_npp_plots
 
+today <- Sys.Date()
 highrestiff(plot_obj = pft_npp_plots,
-            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/SW_SandyLoamyUplands_pftnpp_boxplot.tif",
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_pftnpp_boxplot_", today, ".tif"),
             width_in = 6,
             height_in = 6.5,
             resolution_dpi = 300)
@@ -1822,14 +1850,15 @@ gh_npp_plots <- cowplot::plot_grid(herb_npp_plot + xlab(NULL) + scale_x_discrete
                                    labels = "auto")
 gh_npp_plots
 
+today <- Sys.Date()
 highrestiff(plot_obj = gh_npp_plots,
-            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/SW_SandyLoamyUplands_ghnpp_boxplot.tif",
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_ghnpp_boxplot_", today, ".tif"),
             width_in = 3,
             height_in = 9,
             resolution_dpi = 300)
 
 highrestiff(plot_obj = total_npp_plot,
-            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/SW_SandyLoamyUplands_totalnpp_boxplot_2.tif",
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_totalnpp_boxplot_2_", today, ".tif"),
             width_in = 3,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -1853,8 +1882,9 @@ biodiversity_plots <- cowplot::plot_grid(richness_plot, diversity_plot, total_np
                                          labels = "auto")
 biodiversity_plots
 
+today <- Sys.Date()
 highrestiff(plot_obj = biodiversity_plots,
-            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/SW_SandyLoamyUplands_biodiversity_boxplot_2.tif",
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_biodiversity_boxplot_", today, ".tif"),
             #width_in = 3,
             width_in = 9,
             #height_in = 6.5,
@@ -1869,14 +1899,14 @@ library(broom) # for easy handling of many linear model parts
 library(purrr) # for functional programming, eep!
 library(tidyr)
 
-VegCover_files <- list.files("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_SWLoamyUplands/VegCover",
+VegCover_files <- list.files(paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_do_not_sync/", target_ESG, "/VegCover"),
                         full.names = T)
 VegCover <- read.csv(VegCover_files[1])
-VegCover$Year <- as.numeric(substr(VegCover_files[1], 134, 137))
+VegCover$Year <- as.numeric(substr(VegCover_files[1], 176, 179))
 
 for(file in VegCover_files[-1]){
   VegCover_temp <- read.csv(file)
-  VegCover_temp$Year <- as.numeric(substr(file, 134, 137))
+  VegCover_temp$Year <- as.numeric(substr(file, 176, 179))
   VegCover <- bind_rows(VegCover, VegCover_temp)
   rm(VegCover_temp)
 }
@@ -1908,7 +1938,7 @@ VegCover_variance <- VegCover_10yrs %>%
          ) %>%
   select(-data, -model) %>%
   unnest(model_glance)
-# do we care that most of the linear models are not significant and only about half have an R-squared > 0.1?
+
 
 # make figures
 plot_data_descriptive <- left_join(plot_data_descriptive, select(VegCover_variance, PlotCode, resid_variance, resid_AC1))
@@ -1929,8 +1959,9 @@ RSvariability_plots <- cowplot::plot_grid(variance_plot + xlab(NULL) + scale_x_d
                                          labels = "auto")
 RSvariability_plots
 
+today <- Sys.Date()
 highrestiff(plot_obj = RSvariability_plots,
-            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/SW_SandyLoamyUplands_RSvariability_boxplot.tif",
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_RSvariability_boxplot_", today, ".tif"),
             width_in = 3,
             height_in = 6,
             resolution_dpi = 300)
@@ -1941,8 +1972,9 @@ variance_violin <- violin_pretty_plot(dat = plot_data_descriptive,
                                       fill_var = "PlantCommunity_fuzzy_reordered")
 variance_violin
 
+today <- Sys.Date()
 highrestiff(plot_obj = variance_violin,
-            file = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Violin/SW_SandyLoamyUplands_variance_violin.tif",
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Violin/SW_SandyLoamyUplands_variance_violin_", today, ".tif"),
             width_in = 3,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -1983,7 +2015,7 @@ functypes_cover_plot
 
 today <- Sys.Date()
 highrestiff(plot_obj = functypes_cover_plot,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Boxplot/", target_ESG, "/SW_SandyLoamyUplands_pftcover_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_pftcover_boxplot_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2048,6 +2080,122 @@ burn_plot <- ggplot(data = mtbs_summary,
 
 burn_plot
 
+today <- Sys.Date()
+highrestiff(plot_obj = burn_plot,
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_MTBSpctburned_boxplot_", today, ".tif"),
+            width_in = 3,
+            height_in = 3.5,
+            resolution_dpi = 300)
+
+# PJ Treatments
+WRI_polygons <- st_read(dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/FickPJ",
+                        layer = "PJ") %>%
+  st_transform(crs = st_crs(fuzzy_cluster_memb_sf))
+
+sf_use_s2(FALSE)
+pj_plots <- st_join(fuzzy_cluster_memb_sf, WRI_polygons, sparse = T) %>%
+  mutate(YearSampled = year(DateSampled),
+         TreatedPreSampling = ifelse(test = YearSampled>=yearStart,
+                                     yes = TRUE,
+                                     no = FALSE)) %>%
+  mutate(TreatedPreSampling = ifelse(test = is.na(TreatedPreSampling),
+                                     yes = FALSE,
+                                     no = TreatedPreSampling))
+
+# Look at the types of treatments present, then categorize into broader types for visual summaries
+sort(unique(paste(pj_plots$method, pj_plots$treat, sep = " - ")))
+# additional documentation available in G:\Base Layers\Disturbance\TREATMENTS.
+# For WRI treatments, see also the database at https://wri.utah.gov/wri/project/search.html
+
+pj_plots_cats <- pj_plots %>%
+  filter(!is.na(src)) %>%
+  mutate(GeneralTreatmenType = ifelse(test = treat %in% c(# my categories: prescribed fire, brush removal, herbaceous removal, seeding, soil improvements. CHECK aerator, mowing, and weeding for each ESG to make sure they still fit as assigned here!!!
+                                                          "aerator",
+                                                          "brush removal",
+                                                          "mowing",
+                                                          "weeding"),
+                                      yes = "Woody removal",
+                                      no = NA), 
+         TreatmentSubType = ifelse(test = GeneralTreatmenType=="Woody removal" & method %in% c("anchor chain",
+                                                                                               "bullhogfull size",
+                                                                                               "bullhogskid steer",
+                                                                                               "double drum (1-way)",
+                                                                                               "lop and scatter",
+                                                                                               "mastication",
+                                                                                               "mechanical",
+                                                                                               "mowing",
+                                                                                               "rollerchop"),
+                                   yes = "Mechanical",
+                                   no = ifelse(test = GeneralTreatmenType=="Woody removal" & method %in% c("herbicide",
+                                                                                                           "herbicide aerial"),
+                                               yes = "Chemical",
+                                               no = NA
+                                               )
+         ))
+
+n_plots_treated <- length(unique(filter(pj_plots_cats, TreatedPreSampling==T)$PlotCode))
+n_plots_tx_twice_or_more <- pj_plots_cats %>%
+  filter(TreatedPreSampling==T) %>%
+  group_by(PlotCode) %>%
+  summarise(n_diff_treatments = n_distinct(yearStart)) %>%
+  filter(n_diff_treatments >= 2) %>%
+  nrow()
+
+plots_per_group <- data.frame(Best_group = c(1:4),
+                              plots_per_group = c(nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)),
+                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)),
+                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)),
+                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==4))
+                                                  ))
+
+pj_plot_pct <- pj_plots_cats %>%
+  left_join(., plots_per_group) %>%
+  filter(TreatedPreSampling==T) %>%
+  st_drop_geometry() %>%
+  group_by(PlotCode) %>% # next 3 lines select only the treatment closest to the sampling year
+  arrange(desc(yearStart), .by_group = T) %>%
+  mutate(Tx_flag = row_number()) %>%
+  filter(Tx_flag==1) %>%
+  ungroup() %>%
+  group_by(Best_group) %>%
+  summarise(MechanicalUnseeded = 100*length(which(TreatmentSubType=="Mechanical" & seeded==0))/first(plots_per_group),
+            MechanicalSeeded = 100*length(which(TreatmentSubType=="Mechanical" & seeded==1))/first(plots_per_group),
+            ChemicalUnseeded = 100*length(which(TreatmentSubType=="Chemical" & seeded==0))/first(plots_per_group),
+            ChemicalSeeded = 100*length(which(TreatmentSubType=="Chemical" & seeded==1)/first(plots_per_group))
+  ) %>%
+  tidyr::pivot_longer(cols = c(MechanicalUnseeded, MechanicalSeeded, ChemicalUnseeded, ChemicalSeeded),
+                      names_to = "TreatmentPair",
+                      values_to = "pct") %>%
+  mutate(Best_group = as.factor(Best_group))
+
+treatments_plot_pcts <- ggplot(data = pj_plot_pct, aes(x = Best_group, y = pct, fill = TreatmentPair)) +
+  geom_col() +
+  scale_fill_manual(values = c("#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A"),
+                    name = "Treatment",
+                    labels = c("Chemical woody treatment (seeded)",
+                               "Chemical woody treatment",
+                               "Mechanical woody treatment (seeded)",
+                               "Mechanical woody treatment")) +
+  scale_x_discrete(name = NULL,
+                   labels = c("Open woodland", "Shrubland", "Invaded", "Grassland")) +
+  ylab("% of plots treated in each
+plant community") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+        axis.title = element_text(size = 12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.position = "right")
+treatments_plot_pcts
+
+today <- Sys.Date()
+highrestiff(plot_obj = treatments_plot_pcts,
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_PJtreatments_pct_barplot_", today, ".tif"),
+            width_in = 6,
+            height_in = 3.5,
+            resolution_dpi = 300)
+
 # GAP protection classes
 
 GAP_raster <- raster::raster("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Disturbance_LandUse/PADUS_GAP_Status_Code1.tif")
@@ -2106,7 +2254,7 @@ protection_plot
 
 today <- Sys.Date()
 highrestiff(plot_obj = protection_plot,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Bar/", target_ESG, "/SW_SandyLoamyUplands_PADUSprotection_flipped_barplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_PADUSprotection_flipped_barplot_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2148,7 +2296,7 @@ protection_plot2
 
 today <- Sys.Date()
 highrestiff(plot_obj = protection_plot2,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Bar/", target_ESG, "/SW_SandyLoamyUplands_PADUSprotection_dodge_barplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_PADUSprotection_dodge_barplot_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2209,12 +2357,69 @@ disturbance_plots
 
 today <- Sys.Date()
 highrestiff(plot_obj = disturbance_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/Bar/", target_ESG, "/SW_SandyLoamyUplands_disturbanceproctection_barplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_disturbanceproctection_barplot_", today, ".tif"),
             width_in = 7,
             height_in = 3.5,
             resolution_dpi = 300)
 
 
 rm(GAP_raster, plot_GAP)
+
+```
+```{r workshop-handouts, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+# Make materials for spring 2023 workshop handouts
+# 1. condensed community tables
+# 2. bar charts of functional types and ground cover - separate copy for each state
+
+### community tables
+dom_spp_grp2_workshop <- dom_spp_grp2_pub %>%
+  filter(`Mean cover (%)` >= 1) %>%
+  arrange(desc(`Mean cover (%)`))
+
+### bar charts
+functypes_grps <- c("TotalFoliarCover", #"AH_WoodyCover", #AH_ForbGrassCover, 
+                    "AH_ShrubCover", "AH_TreeCover",
+                        "AH_PerenForbGrassCover", "AH_AnnForbGrassCover"
+                )
+functypes_cover_states <- ggplot(data = select(plot_data_descriptive, 
+                                             any_of(c("PlantCommunity_fuzzy", functypes_grps))) %>%
+                                   tidyr::pivot_longer(cols = all_of(functypes_grps),
+                      names_to = "CoverType",
+                      values_to = "PctCover"),
+                             aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
+  geom_boxplot() +
+  scale_fill_brewer(type = "qual", palette = "Set3",
+                    name = "Functional type",
+                    labels = c("Annual herbaceous", "Perennial herbaceous",
+                               #"Woody",
+                               "Shrub", "Tree",
+                               "Total foliar cover")
+                    ) +
+  scale_x_discrete(labels=group_labels_fuzzy) +
+  xlab(NULL) +
+  ylab("Cover (%)") +
+  ggtitle("Plant functional groups") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+        axis.text.y = element_text(color = "black"))
+
+
+ground_grps <- c("BareSoilCover", "FH_TotalLitterCover", "CA_percent_200plus",
+                 "FH_LichenMossCover", "CA_percent_100plus"
+                 )
+ground_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% ground_grps),
+                              aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
+  geom_boxplot() +
+  scale_fill_brewer(type = "qual", palette = "Set3",
+                    name = "Functional group",
+                    labels = names(cover_labels[which(cover_labels %in% ground_grps)])) +
+  scale_x_discrete(labels=group_labels_fuzzy) +
+  xlab("Plant community") +
+  ylab("Cover (%)") +
+  ggtitle("Ground cover") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+        axis.text.y = element_text(color = "black"))
+
 
 ```
