@@ -1,6 +1,6 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Shallow and Deep Rocky'
-author: "Anna Knight, Tara Bishop, Mike Duniway, Travis Nauman"
+author: "Anna Knight, Tara Bishop, Travis Nauman, Mike Duniway"
 date: "`r Sys.Date()`"
 output: 
   bookdown::html_document2:
@@ -767,8 +767,7 @@ fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_firs
 ### CUSTOM DIAGRAM
 
 ```{r custom-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM", fig.height=8, fig.width=10}
-# TODO create custom diagram of states
-#knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_Shallow_DeepRocky_boxandarrow_DRAFT.JPG")
+knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_ShallowDeepRocky_boxandarrow_workshop1.JPG")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}

@@ -1,6 +1,6 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Sandy and Loamy Uplands'
-author: "Anna Knight, Tara Bishop, Mike Duniway, Travis Nauman"
+author: "Anna Knight, Travis Nauman, Tara Bishop, Mike Duniway"
 date: "`r Sys.Date()`"
 output: 
   bookdown::html_document2:
