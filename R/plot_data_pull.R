@@ -115,12 +115,18 @@ plot_data_pull <- function(user = "Anna",
 
   plot_ESGs_join <- dplyr::left_join(plot_ESGs, ESG_table)
 
+  # remove "forest" stratified plots from NCPN because they don't record overstory > 2 m
+  NCPN_forest_plots <- read.csv(file.path(dirname(file_paths$plotnet_processed),
+                                          "ProcessingIntermediates", "InventoryAndMonitoring",
+                                          "NCPN", "IM_NCPN_forest_plots.csv")) %>%
+    dplyr::mutate(PlotCode = paste("IM_NCPN", Park, Plot, sep = "_"))
+
   # filter plots to those on target ESG from desired projects
   plot_target_ESG <- dplyr::filter(plot_ESGs_join,
                                    ESGs_text==target_ESG &
                                      grepl(x=PlotCode,
-                                           pattern = paste(data_sources, collapse = "|")))
-
+                                           pattern = paste(data_sources, collapse = "|"))) %>%
+    dplyr::filter(!(PlotCode %in% NCPN_forest_plots$PlotCode))
 
   # pull desired indicators from all plots on target ESG
   # list the indicator files

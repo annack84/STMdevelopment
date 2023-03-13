@@ -1,6 +1,6 @@
 ---
-title: 'Ecological Site Group Description: Semiarid Warm Shallow and Deep Rocky'
-author: "Anna Knight, Tara Bishop, Travis Nauman, Mike Duniway"
+title: 'Ecological Site Group Description: Semiarid Warm Sandy and Loamy Uplands'
+author: "Anna Knight, Travis Nauman, Tara Bishop, Mike Duniway"
 date: "`r Sys.Date()`"
 output: 
   bookdown::html_document2:
@@ -43,7 +43,7 @@ pre { /* Code block - determines code spacing between lines */
 # General information
 ```{r setup, include=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-target_ESG <- "Semiarid_Warm_Shallow_DeepRocky"
+target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
 user <- "Anna"
 #user <- "VPN"
 
@@ -66,7 +66,7 @@ Areas shown in blue indicate the maximum mapped extent of this ecological site. 
 
 ## Associated ecological site concepts
 
-This ecological site group includes a variety of upland ecological sites that have shallow to deep soils with high rock content. The group was defined by placing ecological sites into groups by separating soils, climate, and geomorphic features to best differentiate reference vegetation production values and documented ecological states as documented by Nauman et al. (2022).
+This ecological site group includes a variety of upland ecological sites that have deeper sandy soils without significant rock content. The group was defined by placing ecological sites into groups by separating soils, climate, and geomorphic features to best differentiate reference vegetation production values and documented ecological states as documented by Nauman et al. (2022).
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 esds <- esd_data_pull(user=user, target_ESG = target_ESG)
@@ -123,12 +123,12 @@ lfsum <-  factor(landforms)
 lfsum <- reorder(lfsum,lfsum,FUN=function(x) -length(x))
 landforms_unique <- unique(landforms)
 ```
-These sites occur on upland positions on a variety of landforms (n=`r length(landforms_unique)`). Moderate to steep slopes and rugged topography are common. Less commonly, some sites may occur on high-energy alluvial deposits. 
+These sites occur on upland positions with mostly gentle slopes on a variety of landforms (n=`r length(landforms_unique)`). Some areas can have steeper slopes, but these are not typical of the group. 
 
 ```{r physio-features, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 
 # Slope
-slope_ave <- mean(comps@site$slope_r.x, na.rm = T)
+slope_ave <- mean(comps@site$slope_r.x)
 slope_75th <- unname(quantile(comps@site$slope_r.x, probs = 0.75, na.rm = T))
 slope_max <- max(comps@site$slope_r.x, na.rm = T)
 slope_sd <- sd(comps@site$slope_r.x, na.rm = T)
@@ -161,8 +161,9 @@ format_tables_EDIT_style(data = clim.df, caption = "Representative climatic feat
 #knitr::kable(x = clim.df, caption = "Table 3. Representative climatic features (min, mean, max)")
 ```
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Montly precipitation range"}
+```{r monthly-precip, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Montly precipitation range"}
 # TODO create line chart and bar charts of monthly high/low precip that you can tab between
+# may need to do some zonal stats with PRISM to get monthly values table for all the ESGs
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Figure 1. Montly average minimum and maximum temperature"}
@@ -175,7 +176,7 @@ These sites neither benefit significantly from run-in moisture nor experience ex
 
 # Soil features
 
-Soils in this group have shallow to deep depth to bedrock and typically have > 30% rock fragments by volume. Surface and subsurface horizons have a variety of textures ranging from sand to clay loam. Soils are non-saline and non sodic and often have high calcium carbonate contents. Soil pH ranges from `r min(c(round(min(comps@horizons[comps@horizons$hzdept_r<30,c("ph1to1h2o_r")],na.rm=T), 0), round(min(comps@horizons[comps@horizons$hzdept_r>30,c("ph1to1h2o_r")],na.rm=T), 0)))` to `r max(c(round(max(comps@horizons[comps@horizons$hzdept_r<30,c("ph1to1h2o_r")],na.rm=T), 1), round(max(comps@horizons[comps@horizons$hzdept_r>30,c("ph1to1h2o_r")],na.rm=T), 1)))`. Erosion hazard is generally low but bare ground states are possible.  
+Soils in this group are moderately deep or deeper to bedrock and are composed primarily of alluvium and eolian sediments. Surface horizons have sand, loamy sand, sandy loam, and loam textures and subsurface horizons are similar but can also include sandy clay loams. Soils are non-saline and non sodic and can have up to 20% calcium carbonate, but generally have less than 6% carbonates. Soil pH ranges from `r min(c(round(min(comps@horizons[comps@horizons$hzdept_r<30,c("ph1to1h2o_r")],na.rm=T), 0), round(min(comps@horizons[comps@horizons$hzdept_r>30,c("ph1to1h2o_r")],na.rm=T), 0)))` to `r max(c(round(max(comps@horizons[comps@horizons$hzdept_r<30,c("ph1to1h2o_r")],na.rm=T), 1), round(max(comps@horizons[comps@horizons$hzdept_r>30,c("ph1to1h2o_r")],na.rm=T), 1)))`, but is generally closer to 8.0. Water erosion hazard is low and wind erosion hazard is severe.  
 
 ```{r soil-features, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 
@@ -240,7 +241,7 @@ lattice::xyplot(top ~ p.q50 | variable, data=agg, ylab='Depth (cm)',
 
 # Ecological dynamics
 
-These site are susceptible to drought, especially in shallower soils. Erosion issues are possible but rare. Compared to reference states, alternative states may have woody encroachment, high bare ground, and/or loss of biological soil crust and perennial grasses.
+These sites have high risk for wind erosion and dune mobilization, especially with drought or large disturbances. Water erosion issues are possible. Compared to reference states, alternative states may have annual invasion, woody encroachment, and/or loss of perennial grasses.
 
 ## State and transition model development 
 
@@ -325,8 +326,8 @@ plot_data <- plot_data_pull(user=user,
                            shrub_by_spp = shrub_by_spp,
                            subshrub_by_spp = subshrub_by_spp,
                            tree_by_spp = tree_by_spp,
-                           opuntia_combined = opuntia_combined,
-                           impute_gap_type = impute_gap_type
+                           opuntia_combined = opuntia_combined#,
+                           #impute_gap_type = impute_gap_type
                            ) %>%
   filter(!is.na(Month))
 
@@ -360,7 +361,6 @@ plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "Plo
                               layer = "all_plot-years_2022-11-08",
                               quiet=TRUE) %>%
   distinct()
-
 if("NRI" %in% data_sources){
   nri_locations <- sf::st_read(dsn = file_paths$nri,
                                layer = "NRI_UCRB_plot-years_2022-11-03",
@@ -379,11 +379,9 @@ plot_SGU_prob <- sf::st_as_sf(raster::extract(x = SGU_prob_raster,
 plot_data_first <- left_join(plot_data_first, select(plot_SGU_prob, PlotCode, UCRB_SGUs_ProbMax)) %>%
   distinct() 
 
-certainty_cutoff_level <- 0.1
-certainty_cutoff <- quantile(plot_data_first$UCRB_SGUs_ProbMax, probs = certainty_cutoff_level, na.rm = T)
+certainty_cutoff <- quantile(plot_data_first$UCRB_SGUs_ProbMax, probs = 0.1)
 
-plot_data_first <- filter(plot_data_first, UCRB_SGUs_ProbMax > certainty_cutoff) %>%
-  filter(PlotCode != "AIM_Utah Vernal FO 2019_009") # this one is duplicated in the plot locations with very different coordinates
+plot_data_first <- filter(plot_data_first, UCRB_SGUs_ProbMax > certainty_cutoff)
 
 # make the clustering and ordination data frame - can't include ANY columns except the actual variables!
 ord.df <- dplyr::select(plot_data_first, -SourceKey, -PlotID, -SiteName, -PlotName,
@@ -411,7 +409,7 @@ ord.df <- select(ord.df, all_of(sp_keep))
 ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
 ```
 
-Field data from were collected by field crews with the Natural Resource Conservation Service's (NRCS) National Resource Inventory (NRI) program, the Bureau of Land Management's (BLM) Assessment, Inventory, and Monitoring (AIM) and Landscape Monitoring Framework (LMF) programs, and the Nationa Park Service's (NPS) Inventory and Monitoring Northern Colorado Plateau Network (NCPN) program between `r min(plot_data_clean$Year)` and `r max(plot_data_clean$Year)`. Plots within the target ESG with SGU classification probability less than or equal to the `r certainty_cutoff_level*100`th percentile (`r certainty_cutoff`%) were excluded, resulting in a total of `r nrow(ord.df)` plots for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (McCord et al., 2022). When plots were sampled in multiple years, only the first sampling year was used in STM development. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.83 and 0.81 for 100-cm and 200-cm gap predictions, respectively).")}`
+Field data from were collected by field crews with the Natural Resource Conservation Service's (NRCS) National Resource Inventory (NRI) program, the Bureau of Land Management's (BLM) Assessment, Inventory, and Monitoring (AIM) and Landscape Monitoring Framework (LMF) programs, and the Nationa Park Service's (NPS) Inventory and Monitoring Northern Colorado Plateau Network (NCPN) program between `r min(plot_data_clean$Year)` and `r max(plot_data_clean$Year)`. Plots within the target ESG with SGU classification probability less than or equal to the 10th percentile (`r certainty_cutoff`%) were excluded, resulting in a total of `r nrow(ord.df)` plots for this ESG. Plant and soil cover were measured using line-point intercept and canopy gap methods (Herrick et al., 2017). Plot-level indicators (Table \@ref(tab:doc-plot-indicators)) were calculated using the terradactyl package in R (McCord et al., 2022). When plots were sampled in multiple years, only the first sampling year was used in STM development. `r if(!is.null(impute_gap_type)){paste("For plots that were missing annual & perennial gap data but had perennial-only gap data (primarily I&M-NCPN), annual & perennial gap values were imputed from perennial-only gaps and annual herbaceous cover using a linear model built from LMF and NRI plots that had both types of gap (r-squared of 0.83 and 0.81 for 100-cm and 200-cm gap predictions, respectively).")}`
 
 ```{r doc-plot-indicators, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 rm(plot_data_clean, plot_data)
@@ -552,17 +550,33 @@ best_memb_exp <- as.numeric(cluster_eval_fanny_indices_rank[[which.min(cluster_e
 
 
 ```{r fuzzy-cluster, echo=FALSE}
-k_groups_fuzzy <- 8 # best is 8 (rank 74), then 9 (rank 87) then 10 (rank 105) then 7 (rank 108) - all with 1.1 memb. exp.
-memb_exp <- 1.1 #1.1
+k_groups_fuzzy <- 4 # best 4 (rank 83), second best 10 (rank 87), third best 9 (rank 87), fourth best 7 (rank 92; all with 1.1 memb_exp)
+memb_exp <- 1.1
 
 set.seed(1)
 clust_fuzz <- fanny(x=dist.df,
-                    k = k_groups_fuzzy,
+                    k = k_groups_fuzzy, # 2
                     diss = T,
                     #metric = "euclidean",
                     memb.exp = # this affects how crisp/fuzzy the clusters are - closer to 1 is crisper
-                      memb_exp 
+                      memb_exp # 1.1
                     )
+
+
+# grp_fuzz <- clust_fuzz$clustering
+# plot_data_first$PlantCommunity_fuzzy_original <- as.factor(grp_fuzz)
+# 
+# k_groups_fuzzy <- 10 # best 4 (rank 83), second best 10 (rank 87), third best 9 (rank 87), fourth best 7 (rank 92; all with 1.1 memb_exp)
+# memb_exp <- 1.1
+# 
+# set.seed(1)
+# clust_fuzz <- fanny(x=dist.df,
+#                     k = k_groups_fuzzy, # 2
+#                     diss = T,
+#                     #metric = "euclidean",
+#                     memb.exp = # this affects how crisp/fuzzy the clusters are - closer to 1 is crisper
+#                       memb_exp # 1.1
+#                     )
 
 
 grp_fuzz <- clust_fuzz$clustering
@@ -593,57 +607,37 @@ The clustering results were visualized in ordination spaced, using non-metric mu
 ```{r ordination-plots, echo=FALSE, fig.height=10, fig.width=10, fig.cap="NMDS ordination of plot indicator data. Points represent plots; ellipses represent plant communities identified by the hierarchical clustering and indicator species analysis."}
 # 2D plotting
 pal_veg2 <- RColorBrewer::brewer.pal(n=k_groups_fuzzy, name = "Dark2")
-# manually update based on indicator species
-# group_labels_fuzzy <- c(paste0("Juniper-pinyon
-# woodland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)), ")"),
-#                         paste0("Open juniper-pinyon
-# shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)), ")"),
-#                         paste0("C4 grassland
-# (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")"),
-#                         paste0("Annualized juniper
-# savanna (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)), ")"),
-#                         paste0("Pinyon-juniper
-# woodland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==5)), ")"),
-#                         paste0("Gambel oak
-# woodland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==6)), ")"),
-#                         paste0("Sagebrush shrubland/
-# grassland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==7)), ")"),
-#                         paste0("Bare juniper
-# savanna (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")")
-#                         )
+# pal_veg2 <- RColorBrewer::brewer.pal(n=k_groups_fuzzy, name = "Set3")
 
-group_labels_base <- c(paste0("Juniper-pinyon
+# manually update based on indicator species
+group_labels_base <- c(paste0("PJ & gambel oak
 woodland"),
-                        paste0("Open juniper-pinyon
-shrubland"),
-                        paste0("C4 grassland
-"),
-                        paste0("Annualized juniper
-savanna"),
-                        paste0("Pinyon-juniper
-woodland"),
-                        paste0("Gambel oak
-woodland"),
-                        paste0("Sagebrush shrubland/
-grassland"),
-                        paste0("Bare juniper
-savanna)")
-                        )
+                        paste0("Sagebrush & C3 perennial
+grass shrubland"),
+                        paste0("Non-native annual grass &
+sagebrush shrubland)"),
+                        paste0("C3 perennial grassland
+"))
 
 group_labels_fuzzy <- paste0(group_labels_base,
                                " (n = ",
                                c(nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)),
                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)),
                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)),
-                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)),
-                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==5)),
-                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==6)),
-                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==7)),
-                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==8))
+                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==4))
                                   ),
                                ")")
 
-#group_labels_fuzzy <- as.character(1:clust_fuzz$k.crisp)
+# group_labels_fuzzy <- c(paste0("PJ & gambel oak
+# woodland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)), ")"),
+#                         paste0("Sagebrush & C3 perennial
+# grass shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)), ")"),
+#                         paste0("Non-native annual grass &
+# sagebrush shrubland (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)), ")"),
+#                         paste0("C3 perennial grassland
+# (n = ", nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)), ")"))
+
+#  group_labels_fuzzy <- as.character(1:clust_fuzz$k.crisp)
 
 par(mfrow=c(2,2))
 # Axes 1x2
@@ -700,17 +694,15 @@ fuzzy_cluster_membership <- as.data.frame(clust_fuzz$membership)
 fuzzy_cluster_membership$PlotCode <- row.names(clust_fuzz$membership)
 fuzzy_cluster_membership$best_group <- clust_fuzz$clustering
 
-colnames(fuzzy_cluster_membership) <- c(paste0("Group_", 1:8, "_membership"), "PlotCode", "Best_group")
+colnames(fuzzy_cluster_membership) <- c(paste0("Group_", 1:k_groups_fuzzy, "_membership"), "PlotCode", "Best_group")
 
-group_names <- data.frame(Best_group = 1:8,
-                          Best_group_name = c("Juniper-pinyon woodland",
-                                              "Open juniper-pinyon shrubland",
-                                              "C4 grassland",
-                                              "Annualized juniper savanna",
-                                              "Pinyon-juniper woodland",
-                                              "Gambel oak woodland",
-                                              "Sagebrush shrubland/grassland",
-                                              "Bare juniper savanna")) # update with descriptive names after examining the groups
+group_names <- data.frame(Best_group = 1:k_groups_fuzzy,
+                          # Best_group_name = c("PJ & gambel oak woodland",
+                          #                "Sagebrush & C3 perennial grass shrubland",
+                          #                "Non-native annual grass & sagebrush shrubland",
+                          #                "C3 perennial grassland")
+                           Best_group_name = as.character(1:k_groups_fuzzy)
+                          )
 fuzzy_cluster_membership <- left_join(fuzzy_cluster_membership, group_names)
 
 # get the plot location and date sampled (use first date)
@@ -720,21 +712,19 @@ plot_locations_first <- plot_locations %>%
   group_by(PlotCode) %>%
   summarise(DateSampled = first(DateSampled))
 
-fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_first) %>%
-  filter(PlotCode != "AIM_Colorado NWDO Little Snake FO 2017_1024" &
-           PlotCode != "AIM_UT Color Country DO 2019_01") # the geometry of these plot locations is messed up somehow
+fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_first)
 
 # # save plots - usually only need to run this once
 # sf::st_write(fuzzy_cluster_memb_sf,
 #              dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/contains_NRI_do_not_sync",
-#              layer = paste0("SW_ShallowDeepRocky_fuzzyclusters_", Sys.Date(), ".shp"),
+#              layer = paste0("SW_SandyLoamyUplands_fuzzyclusters_", Sys.Date(), ".shp"),
 #              driver = "ESRI Shapefile")
 # 
 # fuzzy_cluster_memb_sf_shareable <- filter(fuzzy_cluster_memb_sf, !grepl(pattern = "NRI", x=PlotCode))
 # 
 # sf::st_write(fuzzy_cluster_memb_sf_shareable,
 #              dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps",
-#              layer = paste0("SW_ShallowDeepRocky_fuzzyclust_share_", Sys.Date(), ".shp"),
+#              layer = paste0("SW_SandyLoamyUplands_fuzzyclust_share_", Sys.Date(), ".shp"),
 #              driver = "ESRI Shapefile")
 # 
 # states <- sf::st_read("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Political boundaries/cb_2018_us_state_5m/cb_2018_us_state_5m.shp")
@@ -757,7 +747,7 @@ fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_firs
 # 
 # sf::st_write(fuzzy_cluster_memb_sf_mike,
 #              dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/contains_NRI_do_not_sync",
-#              layer = paste0("SW_ShallowDeepRocky_fuzzyclust_mike_", Sys.Date(), ".shp"),
+#              layer = paste0("SW_SandyLoamyUplands_fuzzyclust_mike_", Sys.Date(), ".shp"),
 #              driver = "ESRI Shapefile")
 
 ```
@@ -767,17 +757,17 @@ fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_firs
 ### CUSTOM DIAGRAM
 
 ```{r custom-stm, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM", fig.height=8, fig.width=10}
-knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_ShallowDeepRocky_boxandarrow_workshop1.JPG")
+# create custom diagram of states in PowerPoint. Save as a JPG to load in here.
+# State/community naming conventions need to be determined.
+# Species get listed in the descriptions in decreasing order of mean cover for that community
+knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_SandyLoamyUplands_boxandarrow_workshop1.JPG")
 ```
 
 ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
 # TODO legend for custom diagram if needed
-
-# scratch pad:
-# All states described here contain some introduced species (e.g. *Bromus tectorum*; see Tables \@ref(tab:comm1-1-dominant-spp), \@ref(tab:comm2-1-dominant-spp), \@ref(tab:comm3-1-dominant-spp), \@ref(tab:comm4-1-dominant-spp), and \@ref(tab:comm5-1-dominant-spp) for details).
 ```
 
-The data used to develop this STM were sourced from large monitoring data sets designed to sample landscapes with a variety of current and historic land use. The model does not describe reference communities because these data do not include targeted sampling of relict plant communities with histories of little alteration to disturbance regimes. Several states described here contain some introduced species (e.g. *Bromus tectorum*; see Tables \@ref(tab:comm3-1-dominant-spp) and \@ref(tab:comm4-1-dominant-spp) for details).
+The data used to develop this STM were sourced from large monitoring data sets designed to sample landscapes with a variety of current and historic land use. The model does not describe reference communities because these data do not include targeted sampling of relict plant communities with histories of little alteration to disturbance regimes. All states described here contain some introduced species (e.g. *Bromus tectorum, Alyssum desertorum, Agropyron cristatum*; see Tables \@ref(tab:comm1-1-dominant-spp), \@ref(tab:comm2-1-dominant-spp), \@ref(tab:comm3-1-dominant-spp), and \@ref(tab:comm4-1-dominant-spp) for details).
 
 For furthur information on reference states as well as drivers of transitions, see the Ecological Site Descriptions for the sites listed in Table \@ref(tab:assoc-eco-sites).
 
@@ -804,6 +794,7 @@ plot_data_descriptive <- plot_data_pull(user=user,
                                                        "AH_AnnForbGrassCover",
                                                        "SoilStab_all",
                                                        "AH_ArtemisiaTridentataCover",
+                                                       "FH_CyanobacteriaCover",
                                                        "CA_percent_200plus",
                                                        "CA_percent_100plus"
                                                        ),
@@ -823,27 +814,13 @@ plot_data_descriptive <- plot_data_pull(user=user,
 
 colnames(plot_data_descriptive)[which(colnames(plot_data_descriptive)=="AH_ArtemisiaTridentataCover")] <- "ARTR2"
 
-# temporary patch - some plot codes are duplicated but have different primary keys
-filter(plot_data_first, 
-        PlotCode=="AIM_Colorado NWDO Little Snake FO 2017_1024" |
-            PlotCode=="AIM_UT Color Country DO 2019_01")$PlotID
-plot_data_descriptive <- filter(plot_data_descriptive, 
-                                !(PlotCode=="AIM_Colorado NWDO Little Snake FO 2017_1024" & PlotID!="1705311149423160") &
-                                    !(PlotCode=="AIM_UT Color Country DO 2019_01" & PlotID!="1906201000185195"))
-
-plot_locations <- cbind(plot_locations, sf::st_coordinates(plot_locations)) %>%
-  filter(!(PlotCode=="AIM_Colorado NWDO Little Snake FO 2017_1024" &
-             X!=filter(plot_data_descriptive, PlotCode=="AIM_Colorado NWDO Little Snake FO 2017_1024")$Longitude_NAD83)
-         & !(PlotCode=="AIM_UT Color Country DO 2019_01" &
-             X!=filter(plot_data_descriptive, PlotCode=="AIM_UT Color Country DO 2019_01")$Longitude_NAD83))
-
-# summarize species occurance
+# summarize species occurrance
 descriptive.df <- dplyr::select(plot_data_descriptive, -SourceKey, -PlotID, -SiteName, -PlotName,
                         -Year, -Longitude_NAD83, -Latitude_NAD83,
                         -Month, -Day, -PlantCommunity_fuzzy, -TotalFoliarCover,
                         -AH_WoodyCover, -AH_ShrubCover, -AH_TreeCover, -AH_ForbGrassCover, 
                         -AH_PerenForbGrassCover, -AH_AnnForbGrassCover,
-                        -SoilStab_all, -CA_percent_200plus, -CA_percent_100plus
+                        -SoilStab_all, -FH_CyanobacteriaCover, -CA_percent_200plus, -CA_percent_100plus
                         ) %>%
   tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
 
@@ -856,7 +833,7 @@ plot_data_descriptive <- select(plot_data_descriptive, SourceKey, PlotID, SiteNa
                         Month, Day, PlantCommunity_fuzzy, TotalFoliarCover,
                         AH_WoodyCover, AH_ShrubCover, AH_TreeCover, AH_ForbGrassCover, 
                         AH_PerenForbGrassCover, AH_AnnForbGrassCover,
-                        SoilStab_all, CA_percent_100plus, CA_percent_200plus, all_of(sp_keep_desc))
+                        SoilStab_all, FH_CyanobacteriaCover, CA_percent_100plus, CA_percent_200plus, all_of(sp_keep_desc))
 
 #ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
 
@@ -893,21 +870,6 @@ plot_data_descriptive <- left_join(plot_data_descriptive,
 ## species richness and diversity
 plot_data_descriptive$shannon_diversity <- vegan::diversity(x=descriptive.df, index = "shannon")
 plot_data_descriptive$sp_richness <- vegan::specnumber(x=descriptive.df)
-
-# # AERO
-# aero <- read.csv(file_paths$aero)
-# plot_aero <- aero %>% 
-#   # AIM error patch
-#   filter(!(ProjectName=="Colorado NWDO Little Snake FO 2017" & PlotID=="1024" &
-#              Longitude_NAD83!=filter(plot_data_descriptive,
-#                                      PlotCode=="AIM_Colorado NWDO Little Snake FO 2017_1024")$Longitude_NAD83)
-#          & !(ProjectName=="UT Color Country DO 2019" & PlotID=="01" &
-#              Longitude_NAD83!=filter(plot_data_descriptive,
-#                                      PlotCode=="AIM_UT Color Country DO 2019_01")$Longitude_NAD83)) %>% 
-#   select(ProjectName, PlotID, horizontal_flux_total_MN, horizontal_flux_total_LPI, horizontal_flux_total_UPI) %>%
-#   setNames(c("SiteName", "PlotName", "horizontal_flux_total_MN", "horizontal_flux_total_LPI", "horizontal_flux_total_UPI"))
-#   
-# plot_data_descriptive <- left_join(plot_data_descriptive, plot_aero)
 
 # AERO
 aero <- read.csv(file_paths$aero)
@@ -967,35 +929,35 @@ plot_data_descriptive <- left_join(plot_data_descriptive, rhem_aim) %>%
 #                 type='box')
 
 plot_data_first_tall <- select(plot_data_first,
-                                             SourceKey, PlotID, SiteName,
-                                             PlotName, Year, PlotCode,
-                                             #PlantCommunity,
-                                             PlantCommunity_fuzzy,
-                                             AH_C3IntroducedPerenGrassCover, 
-                                             AH_C3NativePerenGrassCover,     
-                                             AH_C4NativePerenGrassCover,
-                                             AH_IntroducedAnnForbCover,
-                                             AH_IntroducedAnnGrassCover,
-                                             AH_IntroducedPerenForbCover,    
-                                             AH_NativeAnnForbCover, 
-                                             AH_NativeAnnGrassCover,
-                                             AH_NativePerenForbCover, 
-                                             BareSoilCover,                  
-                                             FH_TotalLitterCover, 
-                                             AH_ArtemisiaTridentataCover,
-                                             #CA_percent_200plus, 
-                                             AH_C4IntroducedPerenGrassCover, 
-                                             FH_LichenMossCover,
-                                             #CA_percent_100plus, 
-                                             EPVI,
-                                             CEMO2,
-                                             CHVI8,
-                                             PUTR2,
-                                             AMUT,
-                                             QUGA,
-                                             GUSA2,
-                                             JUOS,
-                                             PIED
+                               SourceKey, PlotID, SiteName,
+                               PlotName, Year, PlotCode,
+                               #PlantCommunity,
+                               PlantCommunity_fuzzy,
+                               AH_C3IntroducedPerenGrassCover, 
+                               AH_C3NativePerenGrassCover,     
+                               AH_C4NativePerenGrassCover,
+                               AH_IntroducedAnnForbCover,
+                               AH_IntroducedAnnGrassCover,
+                               AH_IntroducedPerenForbCover,    
+                               AH_NativeAnnForbCover, 
+                               AH_NativeAnnGrassCover,
+                               AH_NativePerenForbCover, 
+                               BareSoilCover,                  
+                               FH_TotalLitterCover, 
+                               AH_ArtemisiaTridentataCover,
+                               #CA_percent_200plus, 
+                               AH_C4IntroducedPerenGrassCover, 
+                               FH_LichenMossCover,
+                               #CA_percent_100plus, 
+                               CHVI8,
+                               SYRO,
+                               ERNA10,
+                               SAVE4,
+                               PUTR2,
+                               GUSA2,
+                               PIED,
+                               JUOS,
+                               QUGA
                                ) %>%
   left_join(., select(plot_data_descriptive, PlotCode, CA_percent_100plus, CA_percent_200plus)) %>%
   tidyr::pivot_longer(cols = c(AH_C3IntroducedPerenGrassCover, 
@@ -1014,15 +976,15 @@ plot_data_first_tall <- select(plot_data_first,
                                              AH_C4IntroducedPerenGrassCover, 
                                              FH_LichenMossCover,
                                              CA_percent_100plus, 
-                                             EPVI,
-                                             CEMO2,
                                              CHVI8,
-                                             PUTR2,
-                                             AMUT,
-                                             QUGA,
-                                             GUSA2,
-                                             JUOS,
-                                             PIED
+                               SYRO,
+                               ERNA10,
+                               SAVE4,
+                               PUTR2,
+                               GUSA2,
+                               PIED,
+                               JUOS,
+                               QUGA
                                ),
                       names_to = "CoverType",
                       values_to = "PctCover")
@@ -1045,8 +1007,8 @@ cover_funcgrps <- sort(c("AH_C3IntroducedPerenGrassCover",
                  "CA_percent_200plus", 
                  "AH_C4IntroducedPerenGrassCover", 
                  "FH_LichenMossCover",
-                 "CA_percent_100plus"))
-
+                 "CA_percent_100plus"
+                 ))
 funcgrps_names <- indicator_descriptions %>%
   bind_rows(., data.frame(Indicator_code = c("CA_percent_100plus", "CA_percent_200plus"),
                           Indicator = c("Ann. & peren. canopy gaps > 100 cm", "Ann. & peren. canopy gaps > 200 cm"))) %>%
@@ -1057,15 +1019,15 @@ funcgrps_names <- indicator_descriptions %>%
 
 names(cover_funcgrps) <- funcgrps_names
 
-cover_spp <- sort(c("EPVI",
-                    "CEMO2",
-                    "CHVI8",
+cover_spp <- sort(c("CHVI8",
+                    "SYRO",
+                    "ERNA10",
+                    "SAVE4",
                     "PUTR2",
-                    "AMUT",
-                    "QUGA",
                     "GUSA2",
+                    "PIED",
                     "JUOS",
-                    "PIED"
+                    "QUGA"
                     ))
 spp_names <- paste0( filter(spp_list, SpeciesCode %in% cover_spp & SpeciesState=="AIM")$ScientificName,
                     " (", filter(spp_list, SpeciesCode %in% cover_spp & SpeciesState=="AIM")$CommonName, ")")
@@ -1099,16 +1061,9 @@ functypes_cover_states <- ggplot(data = select(plot_data_descriptive,
   theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
         axis.text.y = element_text(color = "black"))
 
-woody_grps <- c("AH_ArtemisiaTridentataCover", 
-                    "EPVI",
-                    "CEMO2",
-                    "CHVI8",
-                    "PUTR2",
-                    "AMUT",
-                    "QUGA",
-                    "GUSA2",
-                    "JUOS",
-                    "PIED"
+woody_grps <- c("AH_ArtemisiaTridentataCover", "CHVI8", "SYRO",
+                "ERNA10", "SAVE4", "PUTR2", "GUSA2",
+                "PIED", "JUOS", "QUGA"
                 )
 woody_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% woody_grps),
                              aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
@@ -1158,7 +1113,8 @@ annherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in
         axis.text.y = element_text(color = "black"))
 
 ground_grps <- c("BareSoilCover", "FH_TotalLitterCover", "CA_percent_200plus",
-                 "FH_LichenMossCover", "CA_percent_100plus")
+                 "FH_LichenMossCover", "CA_percent_100plus"
+                 )
 ground_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% ground_grps),
                               aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
   geom_boxplot() +
@@ -1193,14 +1149,14 @@ cowplot::plot_grid(cover_states, cover_axes, ncol = 2, rel_widths = c(1, 0.5))
 
 
 ```{r groups-climate, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Climate gradients by plant community. Larger aridity index values indicate a LESS arid condition."}
-group_labels_fuzzy <- paste0(group_labels_base,
-                               " (n = ",
-                               c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(AI))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(AI))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(AI))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(AI)))
-                                  ),
-                               ")")
+# group_labels_fuzzy <- paste0(group_labels_base,
+#                                " (n = ",
+#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(AI))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(AI))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(AI))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(AI)))
+#                                   ),
+#                                ")")
 
 cowplot::plot_grid(
   cowplot::plot_grid(
@@ -1239,14 +1195,14 @@ nrow = 2, labels = c(NA, "c"))
 
 
 ```{r groups-soilstab, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Soil stability by plant community"}
-group_labels_fuzzy <- paste0(group_labels_base,
-                               " (n = ",
-                               c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(SoilStab_all))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(SoilStab_all))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(SoilStab_all))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(SoilStab_all)))
-                                  ),
-                               ")")
+# group_labels_fuzzy <- paste0(group_labels_base,
+#                                " (n = ",
+#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(SoilStab_all))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(SoilStab_all))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(SoilStab_all))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(SoilStab_all)))
+#                                   ),
+#                                ")")
 
 ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=SoilStab_all)) +
@@ -1262,14 +1218,14 @@ ggplot(data = plot_data_descriptive,
 
 
 ```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="(a) Species diversity (Shannon diversity index) and (b) species richness by plant community. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher diversity values indicate greater diversity (0 indicates a plot that has only one species)."}
-group_labels_fuzzy <- paste0(group_labels_base,
-                               " (n = ",
-                               c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(shannon_diversity))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(shannon_diversity))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(shannon_diversity))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(shannon_diversity)))
-                                  ),
-                               ")")
+# group_labels_fuzzy <- paste0(group_labels_base,
+#                                " (n = ",
+#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(shannon_diversity))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(shannon_diversity))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(shannon_diversity))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(shannon_diversity)))
+#                                   ),
+#                                ")")
 
 cowplot::plot_grid(ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=shannon_diversity)) +
@@ -1291,19 +1247,20 @@ cowplot::plot_grid(ggplot(data = plot_data_descriptive,
 ```
 
 ```{r groups-aero, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Wind erosion potential by plant community, based on AERO models. Data only available for AIM and LMF plots."}
+# group_labels_fuzzy <- paste0(group_labels_base,
+#                                " (n = ",
+#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(horizontal_flux_total_MN))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(horizontal_flux_total_MN))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(horizontal_flux_total_MN))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(horizontal_flux_total_MN)))
+#                                   ),
+#                                ")")
+
 # dust_tall <- plot_data_descriptive %>%
 #   select(PlotID, PlantCommunity_fuzzy, horizontal_flux_total_MN, horizontal_flux_total_LPI, horizontal_flux_total_UPI) %>%
 #   tidyr::pivot_longer(cols = c(horizontal_flux_total_MN, horizontal_flux_total_LPI, horizontal_flux_total_UPI),
 #                       names_to = "dust_statistic",
 #                       values_to = "dust_flux")
-group_labels_fuzzy <- paste0(group_labels_base,
-                               " (n = ",
-                               c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(horizontal_flux_total_MN))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(horizontal_flux_total_MN))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(horizontal_flux_total_MN))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(horizontal_flux_total_MN)))
-                                  ),
-                               ")")
 
 ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=horizontal_flux_total_MN)) +
@@ -1318,14 +1275,14 @@ ggplot(data = plot_data_descriptive,
 ```
 
 ```{r groups-rhem, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="Water erosion potential by plant community, based on RHEM models. Data not available for NPS-NCPN plots."}
-group_labels_fuzzy <- paste0(group_labels_base,
-                               " (n = ",
-                               c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(Runoff_Long_Term_MEAN))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(Runoff_Long_Term_MEAN))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(Runoff_Long_Term_MEAN))),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(Runoff_Long_Term_MEAN)))
-                                  ),
-                               ")")
+# group_labels_fuzzy <- paste0(group_labels_base,
+#                                " (n = ",
+#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(Runoff_Long_Term_MEAN))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(Runoff_Long_Term_MEAN))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(Runoff_Long_Term_MEAN))),
+#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(Runoff_Long_Term_MEAN)))
+#                                   ),
+#                                ")")
 
 cowplot::plot_grid(ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=Runoff_Long_Term_MEAN)) +
@@ -1345,30 +1302,31 @@ cowplot::plot_grid(ggplot(data = plot_data_descriptive,
   theme(axis.text.x = element_text(angle = 45, hjust = 1)),
   nrow = 1, labels = "auto")
 ```
+
 ## State 1
-## (No name) State
+## Shrubland State
 
 TODO write state description
 
 ## Community 1.1
-## (No name) State: (No name community)
+## Shrubland State: sagebrush and C3 perennial grass shrubland
 
 TODO write state description
 
 ```{r comm1-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp1 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==1),
+dom_spp_grp2 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==2),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
 
-dom_spp_grp1_pub <- filter(
-  select(dom_spp_grp1, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+dom_spp_grp2_pub <- filter(
+  select(dom_spp_grp2, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
                pct_plots >=10) %>%
   mutate(MeanCover = round(MeanCover, 2),
          pct_plots = round(pct_plots, 2)) %>%
   setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
 
 
-format_tables_EDIT_style(data = dom_spp_grp1_pub,
+format_tables_EDIT_style(data = dom_spp_grp2_pub,
                          caption = "Community 1.1 plant community composition") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
@@ -1396,70 +1354,42 @@ format_tables_EDIT_style(data = dom_spp_grp1_pub,
 ```
 
 ## State 2
-## (No name) State
+## Open woodland State
 
 ## Community 2.1
-## (No name) State: (No name community)
+## Open woodland state: pinyon-juniper and gambel oak woodland
 
 TODO write state description
 
 ```{r comm2-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp2 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==2),
+dom_spp_grp1 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==1),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
 
-dom_spp_grp2_pub <- filter(
-  select(dom_spp_grp2, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+dom_spp_grp1_pub <- filter(
+  select(dom_spp_grp1, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
                pct_plots >=10) %>%
     mutate(MeanCover = round(MeanCover, 2),
          pct_plots = round(pct_plots, 2)) %>%
   setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
 
 
-format_tables_EDIT_style(data = dom_spp_grp2_pub,
+format_tables_EDIT_style(data = dom_spp_grp1_pub,
                          caption = "Community 2.1 plant community composition") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
 
 ## State 3
-## (No name) State
+## Grassland State
 
 TODO write state description
 
 ## Community 3.1
-## (No name) State: (No name community)
+## Grassland State: C3 perennial grassland
 
 TODO write state description
 
 ```{r comm3-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp3 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==3),
-                                   species_cols = colnames(descriptive.df),
-                                   user = user)
-
-dom_spp_grp3_pub <- filter(
-  select(dom_spp_grp3, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
-               pct_plots >=10) %>%
-  mutate(MeanCover = round(MeanCover, 2),
-         pct_plots = round(pct_plots, 2)) %>%
-  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
-
-
-format_tables_EDIT_style(data = dom_spp_grp3_pub,
-                         caption = "Community 3.1 plant community composition") %>%
-  collapse_rows(columns = 1, valign = "top")
-```
-
-## State 4
-## (No name) State
-
-TODO write state description
-
-## Community 4.1
-## (No name) State: (No name community)
-
-TODO write state description
-
-```{r comm4-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 dom_spp_grp4 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==4),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
@@ -1473,143 +1403,35 @@ dom_spp_grp4_pub <- filter(
 
 
 format_tables_EDIT_style(data = dom_spp_grp4_pub,
+                         caption = "Community 3.1 plant community composition") %>%
+  collapse_rows(columns = 1, valign = "top")
+```
+
+## State 4
+## Invaded State
+
+TODO write state description
+
+## Community 4.1
+## Invaded State: Non-native annual grass and sagebrush shrubland
+
+TODO write state description
+
+```{r comm4-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+dom_spp_grp3 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==3),
+                                   species_cols = colnames(descriptive.df),
+                                   user = user)
+
+dom_spp_grp3_pub <- filter(
+  select(dom_spp_grp3, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
+               pct_plots >=10) %>%
+  mutate(MeanCover = round(MeanCover, 2),
+         pct_plots = round(pct_plots, 2)) %>%
+  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
+
+
+format_tables_EDIT_style(data = dom_spp_grp3_pub,
                          caption = "Community 4.1 plant community composition") %>%
-  collapse_rows(columns = 1, valign = "top")
-```
-
-### Additional community tables
-
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO create table of production (or percent cover) by species, with species linking to their USDA Plants profile
-
-# knitr::kable(x = dom_plant_spp_tab, caption = "Table 8. Community 1.1 plant community composition")
-```
-
-## State 5
-## (No name) State
-
-TODO write state description
-
-## Community 5.1
-## (No name) State: (No name community)
-
-TODO write state description
-
-```{r comm5-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp5 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==5),
-                                   species_cols = colnames(descriptive.df),
-                                   user = user)
-
-dom_spp_grp5_pub <- filter(
-  select(dom_spp_grp5, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
-               pct_plots >=10) %>%
-  mutate(MeanCover = round(MeanCover, 2),
-         pct_plots = round(pct_plots, 2)) %>%
-  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
-
-
-format_tables_EDIT_style(data = dom_spp_grp5_pub,
-                         caption = "Community 5.1 plant community composition") %>%
-  collapse_rows(columns = 1, valign = "top")
-```
-
-## State 6
-## (No name) State
-
-TODO write state description
-
-## Community 6.1
-## (No name) State: (No name community)
-
-TODO write state description
-
-```{r comm6-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp6 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==6),
-                                   species_cols = colnames(descriptive.df),
-                                   user = user)
-
-dom_spp_grp6_pub <- filter(
-  select(dom_spp_grp6, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
-               pct_plots >=10) %>%
-  mutate(MeanCover = round(MeanCover, 2),
-         pct_plots = round(pct_plots, 2)) %>%
-  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
-
-
-format_tables_EDIT_style(data = dom_spp_grp6_pub,
-                         caption = "Community 6.1 plant community composition") %>%
-  collapse_rows(columns = 1, valign = "top")
-```
-
-### Additional community tables
-
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO create table of production (or percent cover) by species, with species linking to their USDA Plants profile
-
-# knitr::kable(x = dom_plant_spp_tab, caption = "Table 8. Community 1.1 plant community composition")
-```
-
-## State 7
-## (No name) State
-
-TODO write state description
-
-## Community 7.1
-## (No name) State: (No name community)
-
-TODO write state description
-
-```{r comm7-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp7 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==7),
-                                   species_cols = colnames(descriptive.df),
-                                   user = user)
-
-dom_spp_grp7_pub <- filter(
-  select(dom_spp_grp7, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
-               pct_plots >=10) %>%
-  mutate(MeanCover = round(MeanCover, 2),
-         pct_plots = round(pct_plots, 2)) %>%
-  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
-
-
-format_tables_EDIT_style(data = dom_spp_grp7_pub,
-                         caption = "Community 7.1 plant community composition") %>%
-  collapse_rows(columns = 1, valign = "top")
-```
-
-### Additional community tables
-
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO create table of production (or percent cover) by species, with species linking to their USDA Plants profile
-
-# knitr::kable(x = dom_plant_spp_tab, caption = "Table 8. Community 1.1 plant community composition")
-```
-
-## State 8
-## (No name) State
-
-TODO write state description
-
-## Community 8.1
-## (No name) State: (No name community)
-
-TODO write state description
-
-```{r comm8-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-dom_spp_grp8 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==8),
-                                   species_cols = colnames(descriptive.df),
-                                   user = user)
-
-dom_spp_grp8_pub <- filter(
-  select(dom_spp_grp8, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
-               pct_plots >=10) %>%
-  mutate(MeanCover = round(MeanCover, 2),
-         pct_plots = round(pct_plots, 2)) %>%
-  setNames(c("Functional group", "Scientific name", "Common name", "USDA Plants code", "Mean cover (%)", "Percent of plots where present"))
-
-
-format_tables_EDIT_style(data = dom_spp_grp8_pub,
-                         caption = "Community 8.1 plant community composition") %>%
   collapse_rows(columns = 1, valign = "top")
 ```
 
@@ -1637,7 +1459,7 @@ TODO write recreation narrative
 
 ## Wood products
 
-TODO write wood production narrative
+TODO write wood production narrative (probably "None")
 
 ## Other products
 
@@ -1684,7 +1506,7 @@ TODO link to PDF of the reference sheet
 
 TODO look into options for printing from the RMarkdown HTML format
 
-```{r ESAfigures, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+```{r Publicationfigures, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 # 1. plant functional group join plot with ordination
 # 2. lattice of abiotic gradients that distinguish the states
 # aero
@@ -1703,17 +1525,11 @@ TODO look into options for printing from the RMarkdown HTML format
 
 #group_labels_short <- c("Grassland", "Perennial grass loss", "Shrubland", "Mesic shrubland", "Invaded")
 plot_data_descriptive$PlantCommunity_fuzzy_reordered <- factor(plot_data_descriptive$PlantCommunity_fuzzy,
-                                                               levels = c(as.character(1:8)),
-                                                               labels = c("Juniper-pinyon woodland",
-                                                                            "Open juniper-pinyon shrubland",
-                                                                            "C4 grassland",
-                                                                            "Annualized juniper savanna",
-                                                                            "Pinyon-juniper woodland",
-                                                                            "Gambel oak woodland",
-                                                                            "Sagebrush shrubland/grassland",
-                                                                            "Bare juniper savanna"),
+                                                               levels = c("1", "2", "3", "4"),
+                                                               labels = c("Open woodland", "Shrubland", "Invaded",
+                                                                          "Grassland"),
                                                                ordered = T)
-pal_veg2_reordered <- pal_veg2
+pal_veg2_reordered <- c(pal_veg2[1], pal_veg2[2], pal_veg2[3], pal_veg2[4])
 
 # 1. plant functional group join plot with ordination
 species_scores <- as.data.frame(scores(ord, choices = 1:3, display = "species")) # get axis scores for each response type
@@ -1791,7 +1607,7 @@ ord_plot_all <- cowplot::plot_grid(ord_plot12 + theme(legend.position = "none"),
 
 today <- Sys.Date()
 highrestiff(plot_obj = ord_plot_all,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Ordination/SW_ShallowDeepRocky_NMDS_ellipses_functypes_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Ordination/SW_SandyLoamyUplands_NMDS_ellipses_functypes_", today, ".tif"),
             width_in = 6,
             height_in = 6,
             resolution_dpi = 300)
@@ -1807,7 +1623,7 @@ ord_plot_all_nolabels <- cowplot::plot_grid(ord_plot12_nolabels + theme(legend.p
 
 today <- Sys.Date()
 highrestiff(plot_obj = ord_plot_all_nolabels,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Ordination/SW_ShallowDeepRocky_NMDS_ellipses_functypes_nolabels_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Ordination/SW_SandyLoamyUplands_NMDS_ellipses_functypes_nolabels_", today, ".tif"),
             width_in = 6,
             height_in = 6,
             resolution_dpi = 300)
@@ -1858,11 +1674,7 @@ box_pretty_plot <- function(dat = plot_data_descriptive,
                                c(nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==1 & !is.na(dat[[y_var]]), ]),
                                  nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==2 & !is.na(dat[[y_var]]), ]),
                                  nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==3 & !is.na(dat[[y_var]]), ]),
-                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==4 & !is.na(dat[[y_var]]), ]),
-                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==5 & !is.na(dat[[y_var]]), ]),
-                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==6 & !is.na(dat[[y_var]]), ]),
-                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==7 & !is.na(dat[[y_var]]), ]),
-                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==8 & !is.na(dat[[y_var]]), ])
+                                 nrow(dat[as.integer(dat$PlantCommunity_fuzzy_reordered)==4 & !is.na(dat[[y_var]]), ])
                                   ),
                                ")")
   
@@ -1946,7 +1758,7 @@ abiotic_plots
 
 today <- Sys.Date()
 highrestiff(plot_obj = abiotic_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_abiotic_boxplot_2_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_abiotic_boxplot_2_", today, ".tif"),
             width_in = 6,
             height_in = 9,
             resolution_dpi = 300)
@@ -1958,7 +1770,7 @@ climate_plots <- cowplot::plot_grid(ppt_plot, tmean_plot, AI_plot,
 climate_plots
 
 highrestiff(plot_obj = climate_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_climate_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_climate_boxplot_", today, ".tif"),
             width_in = 9,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -1970,7 +1782,7 @@ soils_plots <- cowplot::plot_grid(aero_plot, soilstab_plot,
 soils_plots
 
 highrestiff(plot_obj = soils_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_soils_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_soils_boxplot_", today, ".tif"),
             width_in = 6,
             height_in = 6,
             resolution_dpi = 300)
@@ -1983,11 +1795,11 @@ highrestiff(plot_obj = soils_plots,
 NPP_files <- list.files(paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_do_not_sync/", target_ESG, "/NPP"),
                         full.names = T)
 npp <- read.csv(NPP_files[1])
-npp$Year <- as.numeric(substr(NPP_files[1], 171, 174))
+npp$Year <- as.numeric(substr(NPP_files[1], 174, 177))
 
 for(file in NPP_files[-1]){
   npp_temp <- read.csv(file)
-  npp_temp$Year <- as.numeric(substr(file, 171, 174))
+  npp_temp$Year <- as.numeric(substr(file, 174, 177))
   npp <- bind_rows(npp, npp_temp)
   rm(npp_temp)
 }
@@ -2025,7 +1837,7 @@ pft_npp_plots
 
 today <- Sys.Date()
 highrestiff(plot_obj = pft_npp_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_pftnpp_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_pftnpp_boxplot_", today, ".tif"),
             width_in = 6,
             height_in = 6.5,
             resolution_dpi = 300)
@@ -2059,13 +1871,13 @@ gh_npp_plots
 
 today <- Sys.Date()
 highrestiff(plot_obj = gh_npp_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_ghnpp_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_ghnpp_boxplot_", today, ".tif"),
             width_in = 3,
             height_in = 9,
             resolution_dpi = 300)
 
 highrestiff(plot_obj = total_npp_plot,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_totalnpp_boxplot_2_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_totalnpp_boxplot_2_", today, ".tif"),
             width_in = 3,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2091,7 +1903,7 @@ biodiversity_plots
 
 today <- Sys.Date()
 highrestiff(plot_obj = biodiversity_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_biodiversity_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_biodiversity_boxplot_", today, ".tif"),
             #width_in = 3,
             width_in = 9,
             #height_in = 6.5,
@@ -2109,11 +1921,11 @@ library(tidyr)
 VegCover_files <- list.files(paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_do_not_sync/", target_ESG, "/VegCover"),
                         full.names = T)
 VegCover <- read.csv(VegCover_files[1])
-VegCover$Year <- as.numeric(substr(VegCover_files[1], 168, 171))
+VegCover$Year <- as.numeric(substr(VegCover_files[1], 176, 179))
 
 for(file in VegCover_files[-1]){
   VegCover_temp <- read.csv(file)
-  VegCover_temp$Year <- as.numeric(substr(file, 168, 171))
+  VegCover_temp$Year <- as.numeric(substr(file, 176, 179))
   VegCover <- bind_rows(VegCover, VegCover_temp)
   rm(VegCover_temp)
 }
@@ -2168,7 +1980,7 @@ RSvariability_plots
 
 today <- Sys.Date()
 highrestiff(plot_obj = RSvariability_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_RSvariability_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_RSvariability_boxplot_", today, ".tif"),
             width_in = 3,
             height_in = 6,
             resolution_dpi = 300)
@@ -2181,7 +1993,7 @@ variance_violin
 
 today <- Sys.Date()
 highrestiff(plot_obj = variance_violin,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Violin/SW_ShallowDeepRocky_variance_violin_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Violin/SW_SandyLoamyUplands_variance_violin_", today, ".tif"),
             width_in = 3,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2222,7 +2034,7 @@ functypes_cover_plot
 
 today <- Sys.Date()
 highrestiff(plot_obj = functypes_cover_plot,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_ShallowDeepRocky_pftcover_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Boxplot/SW_SandyLoamyUplands_pftcover_boxplot_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2258,21 +2070,15 @@ mtbs_plots <- st_join(x=fuzzy_cluster_memb_sf, y=mtbs) %>%
   st_drop_geometry()
 
 # write.csv(mtbs_plots,
-#           "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/SW_ShallowDeepRocky_burnedplots.csv",
+#           "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/SW_SandyLoamyUplands_burnedplots.csv",
 #           row.names = F)
 
 rm(mtbs)
 
 mtbs_plots$PlantCommunity_fuzzy_reordered <- factor(mtbs_plots$Best_group,
-                                                               levels = c(as.character(1:8)),
-                                                               labels = c(c("Juniper-pinyon woodland",
-                                                                            "Open juniper-pinyon shrubland",
-                                                                            "C4 grassland",
-                                                                            "Annualized juniper savanna",
-                                                                            "Pinyon-juniper woodland",
-                                                                            "Gambel oak woodland",
-                                                                            "Sagebrush shrubland/grassland",
-                                                                            "Bare juniper savanna")),
+                                                               levels = c("1", "2", "3", "4"),
+                                                               labels = c("Open woodland", "Shrubland", "Invaded",
+                                                                          "Grassland"),
                                                                ordered = T)
 mtbs_summary <- mtbs_plots %>%
   group_by(PlantCommunity_fuzzy_reordered) %>%
@@ -2313,14 +2119,14 @@ burn_plot_post
 
 today <- Sys.Date()
 highrestiff(plot_obj = burn_plot,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_ShallowDeepRocky_MTBSpctburnedpresample_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_MTBSpctburnedpresample_boxplot_", today, ".tif"),
             width_in = 3,
             height_in = 3.5,
             resolution_dpi = 300)
 
 today <- Sys.Date()
 highrestiff(plot_obj = burn_plot_post,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_ShallowDeepRocky_MTBSpctburnedpostsample_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_MTBSpctburnedpostsample_boxplot_", today, ".tif"),
             width_in = 3,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2345,21 +2151,15 @@ sort(unique(paste(pj_plots$method, pj_plots$treat, sep = " - ")))
 # additional documentation available in G:\Base Layers\Disturbance\TREATMENTS.
 # For WRI treatments, see also the database at https://wri.utah.gov/wri/project/search.html
 
-pj_plots[pj_plots$name %in% "Monument Ridge Bullhog", "method"] <- "bullhogfull size" # based on manual check of WRI website
-pj_plots[pj_plots$name %in% "Monument Ridge Bullhog", "treat"] <- "brush removal"
-
 pj_plots_cats <- pj_plots %>%
   filter(!is.na(src)) %>%
   mutate(GeneralTreatmenType = ifelse(test = treat %in% c(# my categories: prescribed fire, brush removal, herbaceous removal, seeding, soil improvements. CHECK aerator, mowing, and weeding for each ESG to make sure they still fit as assigned here!!!
                                                           "aerator",
                                                           "brush removal",
                                                           "mowing",
-                                                          "weeding",
-                                                          "herbicide"),
+                                                          "weeding"),
                                       yes = "Woody removal",
-                                      no = ifelse(test = treat %in% c("seeding"),
-                                                  yes = "Seeding only",
-                                                  no = NA)), 
+                                      no = NA), 
          TreatmentSubType = ifelse(test = GeneralTreatmenType=="Woody removal" & method %in% c("anchor chain",
                                                                                                "bullhogfull size",
                                                                                                "bullhogskid steer",
@@ -2368,20 +2168,14 @@ pj_plots_cats <- pj_plots %>%
                                                                                                "mastication",
                                                                                                "mechanical",
                                                                                                "mowing",
-                                                                                               "rollerchop",
-                                                                                               "thinning"),
+                                                                                               "rollerchop"),
                                    yes = "Mechanical",
                                    no = ifelse(test = GeneralTreatmenType=="Woody removal" & method %in% c("herbicide",
                                                                                                            "herbicide aerial"),
                                                yes = "Chemical",
-                                               no = ifelse(test = GeneralTreatmenType=="Seeding only" 
-                                                           & method %in% c("broadcast"),
-                                                           yes = "Broadcast seeding",
-                                                           no = "Unknown"
-                                               ))))
-
-# consider just printing this as a table
-count(st_drop_geometry(pj_plots_cats), GeneralTreatmenType, TreatmentSubType, seeded, burned)
+                                               no = NA
+                                               )
+         ))
 
 n_plots_treated <- length(unique(filter(pj_plots_cats, TreatedPreSampling==T)$PlotCode))
 n_plots_tx_twice_or_more <- pj_plots_cats %>%
@@ -2391,15 +2185,11 @@ n_plots_tx_twice_or_more <- pj_plots_cats %>%
   filter(n_diff_treatments >= 2) %>%
   nrow()
 
-plots_per_group <- data.frame(Best_group = c(1:8),
+plots_per_group <- data.frame(Best_group = c(1:4),
                               plots_per_group = c(nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)),
                                                   nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)),
                                                   nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)),
-                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)),
-                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==5)),
-                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==6)),
-                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==7)),
-                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==8))
+                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==4))
                                                   ))
 
 pj_plot_pct <- pj_plots_cats %>%
@@ -2445,7 +2235,7 @@ treatments_plot_pcts
 
 today <- Sys.Date()
 highrestiff(plot_obj = treatments_plot_pcts,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_ShallowDeepRocky_PJtreatments_pct_barplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_PJtreatments_pct_barplot_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2508,7 +2298,7 @@ protection_plot
 
 today <- Sys.Date()
 highrestiff(plot_obj = protection_plot,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_ShallowDeepRocky_PADUSprotection_flipped_barplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_PADUSprotection_flipped_barplot_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2518,11 +2308,7 @@ group_labels_fuzzy <- paste0(group_labels_base,
                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1)),
                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2)),
                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3)),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4)),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==5)),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==6)),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==7)),
-                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==8))
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4))
                                   ),
                                ")")
 
@@ -2554,7 +2340,7 @@ protection_plot2
 
 today <- Sys.Date()
 highrestiff(plot_obj = protection_plot2,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_ShallowDeepRocky_PADUSprotection_dodge_barplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_PADUSprotection_dodge_barplot_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2570,44 +2356,23 @@ GAP_proportions_byclass <- plot_data_descriptive %>%
                                           yes = "Private",
                                           no = PADUS_GAP_Status_lumped)) %>%
   group_by(PADUS_GAP_Status_lumped) %>%
-  summarise(pct_JPwoodland = (length(which(PlantCommunity_fuzzy_reordered == "Juniper-pinyon woodland"))/n())*100,
-            pct_OpenJPshrubland = (length(which(PlantCommunity_fuzzy_reordered == "Open juniper-pinyon shrubland"))/n())*100,
-            pct_C4grassland = (length(which(PlantCommunity_fuzzy_reordered == "C4 grassland"))/n())*100,
-            pct_AnnualizedJuniperSavanna = (length(which(PlantCommunity_fuzzy_reordered == "Annualized juniper savanna"))/n())*100,
-            pct_PJwoodland = (length(which(PlantCommunity_fuzzy_reordered == "Pinyon-juniper woodland"))/n())*100,
-            pct_GambelOakWoodland = (length(which(PlantCommunity_fuzzy_reordered == "Gambel oak woodland"))/n())*100,
-            pct_SagebrushShrubland = (length(which(PlantCommunity_fuzzy_reordered == "Sagebrush shrubland/grassland"))/n())*100,
-            pct_BareJuniperSavanna = (length(which(PlantCommunity_fuzzy_reordered == "Bare juniper savanna"))/n())*100,
-            ) %>%
+  summarise(pct_OpenWoodland = (length(which(PlantCommunity_fuzzy_reordered == "Open woodland"))/n())*100,
+            pct_Shrubland = (length(which(PlantCommunity_fuzzy_reordered == "Shrubland"))/n())*100,
+            pct_Invaded = (length(which(PlantCommunity_fuzzy_reordered == "Invaded"))/n())*100,
+            pct_Grassland = (length(which(PlantCommunity_fuzzy_reordered == "Grassland"))/n())*100) %>%
   tidyr::pivot_longer(data=.,
-               cols = c(pct_JPwoodland,
-               pct_OpenJPshrubland,
-               pct_C4grassland,
-               pct_AnnualizedJuniperSavanna,
-               pct_PJwoodland,
-               pct_GambelOakWoodland,
-               pct_SagebrushShrubland,
-               pct_BareJuniperSavanna),
+               cols = c(pct_OpenWoodland,
+                        pct_Shrubland,
+                        pct_Invaded,
+                        pct_Grassland),
                names_to = "PlantCommunity",
                values_to = "Percent") %>%
   mutate(PlantCommunity_fuzzy_reordered = factor(PlantCommunity,
-                                                 levels = c("pct_JPwoodland",
-                                                            "pct_OpenJPshrubland",
-                                                            "pct_C4grassland",             
-                                                            "pct_AnnualizedJuniperSavanna",
-                                                            "pct_PJwoodland",
-                                                            "pct_GambelOakWoodland",
-                                                            "pct_SagebrushShrubland",      
-                                                            "pct_BareJuniperSavanna"),
-                                                 labels = c("Juniper-pinyon woodland",
-                                                            "Open juniper-pinyon shrubland",
-                                                            "C4 grassland",
-                                                            "Annualized juniper savanna",
-                                                            "Pinyon-juniper woodland",
-                                                            "Gambel oak woodland",
-                                                            "Sagebrush shrubland/grassland",
-                                                            "Bare juniper savanna"),
-                                                 ordered = T))
+                                                 levels = c("pct_OpenWoodland", "pct_Shrubland", "pct_Invaded",
+                                                            "pct_Grassland"),
+         labels = c("Open woodland", "Shrubland",
+                    "Invaded", "Grassland"),
+         ordered = T))
 
 protection_lumped_plot <- ggplot(data = GAP_proportions_byclass,
                           aes(x=PADUS_GAP_Status_lumped, y=Percent, fill=PlantCommunity_fuzzy_reordered)) +
@@ -2636,7 +2401,7 @@ disturbance_plots
 
 today <- Sys.Date()
 highrestiff(plot_obj = disturbance_plots,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_ShallowDeepRocky_disturbanceproctection_barplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_disturbanceproctection_barplot_", today, ".tif"),
             width_in = 7,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2645,17 +2410,13 @@ highrestiff(plot_obj = disturbance_plots,
 rm(GAP_raster, plot_GAP)
 
 ```
-
 ```{r workshop-handouts, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 # Make materials for spring 2023 workshop handouts
 # 1. condensed community tables
 # 2. bar charts of functional types and ground cover - separate copy for each state
 
 ### community tables
-functype_table_palette <- c("#80B1D3", "#80B1D3", "#9ECAE1",
-                                     "#FFFFB3", "#FFFFB3", "#FFFFB3",
-                                     "#FFFFB3", "#C6DBEF", "#FB8072",
-                                     "#BEBADA", "#8DD3C7")
+functype_table_palette <- c("#80B1D3", "#80B1D3", "#9ECAE1", "#FFFFB3", "#FFFFB3",  "#C6DBEF", "#FFFFB3", "#FFFFB3", "#C6DBEF", "#FB8072", "#BEBADA", "#8DD3C7")
 names(functype_table_palette) <- sort(unique(dom_spp_grp1$Indicator))
                     
 dom_spp_grp2_workshop <- dom_spp_grp2_pub %>%
@@ -2674,23 +2435,7 @@ dom_spp_grp3_workshop <- dom_spp_grp3_pub %>%
   filter(`Mean cover (%)` >= 1) %>%
   arrange(desc(`Mean cover (%)`))
 
-dom_spp_grp5_workshop <- dom_spp_grp5_pub %>%
-  filter(`Mean cover (%)` >= 1) %>%
-  arrange(desc(`Mean cover (%)`))
-
-dom_spp_grp6_workshop <- dom_spp_grp6_pub %>%
-  filter(`Mean cover (%)` >= 1) %>%
-  arrange(desc(`Mean cover (%)`))
-
-dom_spp_grp7_workshop <- dom_spp_grp7_pub %>%
-  filter(`Mean cover (%)` >= 1) %>%
-  arrange(desc(`Mean cover (%)`))
-
-dom_spp_grp8_workshop <- dom_spp_grp8_pub %>%
-  filter(`Mean cover (%)` >= 1) %>%
-  arrange(desc(`Mean cover (%)`))
-
-workingdat <- dom_spp_grp6_workshop
+workingdat <- dom_spp_grp3_workshop
 
 kableExtra::kbl(x = workingdat,
                 format = "html", row.names = F,
@@ -2703,14 +2448,10 @@ code",
 cover (%)",
                                 "% of plots
 where present"), align = "c",
-      caption = #"Open juniper-pinyon woodland" #grp1
-  #"Mixed shrubs with open juniper-pinyon" #grp2
-  #"C4 grassland with mixed shrubs and scattered juniper-pinyon" #grp3
-  #"Annualized invaded mixed shrubland/C3 grassland with scattered PJ" #grp4
-  #"Open pinyon-juniper woodland" #grp5
-  "Gambel oak woodland with mixed shrubs and grasses" #grp6
-  #"Sagebrush with mixed C3 grasses" #grp7
-  #"Juniper-pinyon with light C3 grass understory" #grp8
+      caption = #"Sagebrush and C3 perennial grass shrubland species cover" # grp2
+        #"Pinyon-juniper and gambel oak woodland" # grp1
+        #"C3 perennial grassland" # grp4
+        "Non-native annual grass and sagebrush shrubland" # grp3
       ) %>%
     kable_styling(bootstrap_options = c("bordered", "condensed")) %>%
   column_spec(kable_input=., column=4, width = "2cm") %>%
@@ -2736,7 +2477,7 @@ functypes_grps <- c("TotalFoliarCover", #"AH_WoodyCover", #AH_ForbGrassCover,
                         "AH_PerenForbGrassCover", "AH_AnnForbGrassCover"
                 )
 
-plot_data_descriptive_grp <- filter(plot_data_descriptive, PlantCommunity_fuzzy==8)
+plot_data_descriptive_grp <- filter(plot_data_descriptive, PlantCommunity_fuzzy==1)
 
 functypes_cover_states <- ggplot(data = select(plot_data_descriptive_grp, 
                                              any_of(c("PlantCommunity_fuzzy", functypes_grps))) %>%
@@ -2752,7 +2493,7 @@ functypes_cover_states <- ggplot(data = select(plot_data_descriptive_grp,
                                "Shrub", "Tree",
                                "Total foliar cover")
                     ) +
-  scale_x_discrete(labels=group_labels_fuzzy[8]) +
+  scale_x_discrete(labels=group_labels_fuzzy[1]) +
   xlab(NULL) +
   ylab("Cover (%)") +
   ylim(c(0,100)) +
@@ -2764,7 +2505,7 @@ functypes_cover_states
 
 today <- Sys.Date()
 highrestiff(plot_obj = functypes_cover_states,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/JFSP_Workshop_1/PlantFuncTypes_", "8", "_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/JFSP_Workshop_1/PlantFuncTypes_", "Woodland", "_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2773,7 +2514,7 @@ ground_grps <- c("BareSoilCover", "FH_TotalLitterCover", "CA_percent_200plus",
                  "FH_LichenMossCover", "CA_percent_100plus"
                  )
 
-plot_data_first_tall_grp <- filter(plot_data_first_tall, PlantCommunity_fuzzy==8)
+plot_data_first_tall_grp <- filter(plot_data_first_tall, PlantCommunity_fuzzy==4)
 
 ground_cover_states <- ggplot(data = filter(plot_data_first_tall_grp, CoverType %in% ground_grps),
                               aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
@@ -2782,7 +2523,7 @@ ground_cover_states <- ggplot(data = filter(plot_data_first_tall_grp, CoverType 
                     name = "Functional group",
                     labels = names(cover_labels[which(cover_labels %in% ground_grps)])
                     ) +
-  scale_x_discrete(labels=group_labels_fuzzy[8]) +
+  scale_x_discrete(labels=group_labels_fuzzy[4]) +
   xlab(NULL) +
   ylab("Cover (%)") +
   ylim(c(0,100)) +
@@ -2795,7 +2536,7 @@ ground_cover_states
 
 today <- Sys.Date()
 highrestiff(plot_obj = ground_cover_states,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/JFSP_Workshop_1/GroundCover_", "8", "_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/JFSP_Workshop_1/GroundCover_", "Grassland", "_", today, ".tif"),
             width_in = 6,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2803,3 +2544,128 @@ highrestiff(plot_obj = ground_cover_states,
 
 ```
 
+```{r post-workshop-exploration, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+woodland_data_first <- filter(plot_data_first, PlantCommunity_fuzzy==1)
+
+woodland_ord.df <- dplyr::select(woodland_data_first, -SourceKey, -PlotID, -SiteName, -PlotName,
+                        -Year, -Longitude_NAD83, -Latitude_NAD83,
+                        -Month, -Day,
+                        -UCRB_SGUs_ProbMax, -geometry, -PlotCode_NoYear,
+                        -PlantCommunity_fuzzy
+                        ) %>%
+  tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
+
+# remove rare species
+woodland_sp_pa <- mutate(rowwise(woodland_ord.df), across(everything(), function(x){if(x>0){1}else{0}})) # make a presence/absence data frame
+woodland_sp_keep <- names(colSums(woodland_sp_pa)[which(colSums(woodland_sp_pa)>2)]) 
+woodland_ord.df <- select(woodland_ord.df, all_of(woodland_sp_keep))
+
+# remove unknown species if present
+woodland_ord.df <- select(woodland_ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
+
+#NMDS_scree(woodland_ord.df)
+
+woodland_ord_dims <- 3 # change manually based on the plot results
+
+#run NMS ordination 
+set.seed(1)
+woodland_ord <- metaMDS(woodland_ord.df,
+               k=woodland_ord_dims, # number of dimensions
+               trymax = 30) 
+
+# visualize results
+# 2D plotting
+woodland_fit_data <- select(woodland_data_first, PlotCode,
+                            PIED, JUOS, QUGA) %>%
+  left_join(., select(plot_data_descriptive, PlotCode, AH_TreeCover, AH_ShrubCover, AH_WoodyCover))
+
+hist(woodland_fit_data$PIED)
+hist(woodland_fit_data$JUOS)
+hist(woodland_fit_data$QUGA)
+hist(woodland_fit_data$AH_TreeCover)
+hist(woodland_fit_data$AH_ShrubCover)
+
+woodland_ord.fit_12 <- envfit(woodland_ord ~
+                               PIED +
+                               JUOS +
+                               QUGA +
+                               AH_TreeCover +
+                               AH_ShrubCover
+                             ,
+                      data=woodland_fit_data, na.rm=T, choices=1:2)
+
+woodland_ord.fit_32 <- envfit(woodland_ord ~
+                               PIED +
+                               JUOS +
+                               QUGA +
+                               AH_TreeCover +
+                               AH_ShrubCover
+                             ,
+                      data=woodland_fit_data, na.rm=T, choices=c(3,2))
+
+woodland_ord.fit_13 <- envfit(woodland_ord ~
+                               PIED +
+                               JUOS +
+                               QUGA +
+                               AH_TreeCover +
+                               AH_ShrubCover
+                             ,
+                      data=woodland_fit_data, na.rm=T, choices=c(1,3))
+
+par(mfrow=c(2,2))
+# Axes 1x2
+plot(woodland_ord, choices = c(1,2), type = "n", # plot the axes
+     xlim = c(-1, 1),
+     ylim = c(-1, 1))
+points(woodland_ord, choices = c(1,2), display = "sites", # plot points - can choose "sites" or "species"
+       #col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, 
+       #bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy]
+       )
+# ordiellipse(ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = F,
+#             choices = c(1,2)) # plot your groups
+# # can use oriellipse, orihull, or ordispider to plot groups, depending on your needs
+plot(woodland_ord.fit_12)
+
+# Axes 3x2
+plot(woodland_ord, choices = c(3,2), type = "n", 
+     xlim = c(-1, 1),
+     ylim = c(-1, 1))
+points(woodland_ord, choices = c(3,2), display = "sites", 
+       #col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, 
+       #bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy]
+       )
+# ordiellipse(woodland_ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = F,
+#             choices = c(3,2)) 
+plot(woodland_ord.fit_32)
+
+# Axes 1x3
+plot(woodland_ord, choices = c(1,3), type = "n",
+     xlim = c(-1, 1),
+     ylim = c(-1, 1))
+points(woodland_ord, choices = c(1,3), display = "sites",
+       #col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+       pch = 21, cex = .6, 
+       #bg=pal_veg2[plot_data_first$PlantCommunity_fuzzy]
+       )
+# ordiellipse(woodland_ord, plot_data_first$PlantCommunity_fuzzy, col=pal_veg2, lwd = 2, label = F,
+#             choices = c(1,3)) 
+plot(woodland_ord.fit_13)
+
+# Legend
+# plot(woodland_ord, type = "n", axes=FALSE,
+#      display = "sites",
+#      col=pal_veg2[plot_data_first$PlantCommunity_fuzzy],
+#      xlab = "",
+#      ylab = "")
+# legend(x="center",
+#        legend = group_labels_fuzzy,
+#        fill = pal_veg2,
+#        title = "Plant communities",
+#        bty = "n",
+#        y.intersp = 1.5)
+
+par(mfrow=c(1,1))
+
+```

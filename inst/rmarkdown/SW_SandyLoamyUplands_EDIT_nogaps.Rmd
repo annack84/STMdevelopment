@@ -776,6 +776,7 @@ plot_data_descriptive <- plot_data_pull(user=user,
                                                        "AH_AnnForbGrassCover",
                                                        "SoilStab_all",
                                                        "AH_ArtemisiaTridentataCover",
+                                                       "FH_CyanobacteriaCover",
                                                        "CA_percent_200plus",
                                                        "CA_percent_100plus"
                                                        ),
@@ -2045,13 +2046,14 @@ mtbs_plots <- st_join(x=fuzzy_cluster_memb_sf, y=mtbs) %>%
             Best_group_name = first(Best_group_name),
             DateSampled = first(DateSampled),
             Times_burned_presampling = length(which(Burned_presampling)),
+            Times_burned_postsampling = length(which(!Burned_presampling)),
             Date_burned_1 = sort(Ig_Date)[1],
             Date_burned_2 = sort(Ig_Date)[2]) %>%
   st_drop_geometry()
 
-write.csv(mtbs_plots,
-          "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/SW_SandyLoamyUplands_burnedplots.csv",
-          row.names = F)
+# write.csv(mtbs_plots,
+#           "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/SW_SandyLoamyUplands_burnedplots.csv",
+#           row.names = F)
 
 rm(mtbs)
 
@@ -2062,14 +2064,15 @@ mtbs_plots$PlantCommunity_fuzzy_reordered <- factor(mtbs_plots$Best_group,
                                                                ordered = T)
 mtbs_summary <- mtbs_plots %>%
   group_by(PlantCommunity_fuzzy_reordered) %>%
-  summarise(pct_Burned = (length(which(Times_burned_presampling > 0))/n())*100)
+  summarise(pct_Burned = (length(which(Times_burned_presampling > 0))/n())*100,
+            pct_Burned_postsampling = (length(which(Times_burned_postsampling > 0))/n())*100)
 
 burn_plot <- ggplot(data = mtbs_summary,
                     aes(x=PlantCommunity_fuzzy_reordered, y=pct_Burned, fill = PlantCommunity_fuzzy_reordered)) +
   geom_col() +
   scale_fill_manual(values = pal_veg2_reordered) +
   xlab(NULL) +
-  ylab("% of plots burned") +
+  ylab("% of plots burned pre-sampling") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "black"),
         axis.text.y = element_text(size = 10, color = "black"),
@@ -2080,9 +2083,32 @@ burn_plot <- ggplot(data = mtbs_summary,
 
 burn_plot
 
+burn_plot_post <- ggplot(data = mtbs_summary,
+                    aes(x=PlantCommunity_fuzzy_reordered, y=pct_Burned_postsampling, fill = PlantCommunity_fuzzy_reordered)) +
+  geom_col() +
+  scale_fill_manual(values = pal_veg2_reordered) +
+  xlab(NULL) +
+  ylab("% of plots burned post-sampling") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+          axis.title = element_text(size = 12),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+        legend.position = "none") 
+
+burn_plot_post
+
 today <- Sys.Date()
 highrestiff(plot_obj = burn_plot,
-            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_MTBSpctburned_boxplot_", today, ".tif"),
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_MTBSpctburnedpresample_boxplot_", today, ".tif"),
+            width_in = 3,
+            height_in = 3.5,
+            resolution_dpi = 300)
+
+today <- Sys.Date()
+highrestiff(plot_obj = burn_plot_post,
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/Bar/SW_SandyLoamyUplands_MTBSpctburnedpostsample_boxplot_", today, ".tif"),
             width_in = 3,
             height_in = 3.5,
             resolution_dpi = 300)
@@ -2372,54 +2398,130 @@ rm(GAP_raster, plot_GAP)
 # 2. bar charts of functional types and ground cover - separate copy for each state
 
 ### community tables
+functype_table_palette <- c("#80B1D3", "#80B1D3", "#9ECAE1", "#FFFFB3", "#FFFFB3",  "#C6DBEF", "#FFFFB3", "#FFFFB3", "#C6DBEF", "#FB8072", "#BEBADA", "#8DD3C7")
+names(functype_table_palette) <- sort(unique(dom_spp_grp1$Indicator))
+                    
 dom_spp_grp2_workshop <- dom_spp_grp2_pub %>%
   filter(`Mean cover (%)` >= 1) %>%
   arrange(desc(`Mean cover (%)`))
+
+dom_spp_grp1_workshop <- dom_spp_grp1_pub %>%
+  filter(`Mean cover (%)` >= 1) %>%
+  arrange(desc(`Mean cover (%)`))
+
+dom_spp_grp4_workshop <- dom_spp_grp4_pub %>%
+  filter(`Mean cover (%)` >= 1) %>%
+  arrange(desc(`Mean cover (%)`))
+
+dom_spp_grp3_workshop <- dom_spp_grp3_pub %>%
+  filter(`Mean cover (%)` >= 1) %>%
+  arrange(desc(`Mean cover (%)`))
+
+workingdat <- dom_spp_grp3_workshop
+
+kableExtra::kbl(x = workingdat,
+                format = "html", row.names = F,
+                  col.names = c("Functional group",
+                                "Scientific name",
+                                "Common name",
+                                "USDA Plants
+code",
+                                "Mean
+cover (%)",
+                                "% of plots
+where present"), align = "c",
+      caption = #"Sagebrush and C3 perennial grass shrubland species cover" # grp2
+        #"Pinyon-juniper and gambel oak woodland" # grp1
+        #"C3 perennial grassland" # grp4
+        "Non-native annual grass and sagebrush shrubland" # grp3
+      ) %>%
+    kable_styling(bootstrap_options = c("bordered", "condensed")) %>%
+  column_spec(kable_input=., column=4, width = "2cm") %>%
+  column_spec(kable_input=., column=5, width = "2cm") %>%
+  column_spec(kable_input=., column=6, width = "2.5cm") %>% 
+  row_spec(kable_input=., row=0, bold=T, background = "white") %>% 
+  row_spec(kable_input=., row = which(workingdat$`Functional group`=="C3 introduced perennial grasses"), background = functype_table_palette["C3 introduced perennial grasses"]) %>% 
+  row_spec(kable_input=., row = which(workingdat$`Functional group`=="C3 native perennial grasses"), background = functype_table_palette["C3 native perennial grasses"]) %>%
+  row_spec(kable_input=., row = which(workingdat$`Functional group`=="C4 native perennial grasses"), background = functype_table_palette["C4 native perennial grasses"]) %>%
+    row_spec(kable_input=., row = which(workingdat$`Functional group`=="Introduced annual forbs"), background = functype_table_palette["Introduced annual forbs"]) %>%
+  row_spec(kable_input=., row = which(workingdat$`Functional group`=="Introduced annual grasses"), background = functype_table_palette["Introduced annual grasses"]) %>%
+  row_spec(kable_input=., row = which(workingdat$`Functional group`=="Introduced perennial forbs"), background = functype_table_palette["Introduced perennial forbs"]) %>%
+  row_spec(kable_input=., row = which(workingdat$`Functional group`=="Native annual forbs"), background = functype_table_palette["Native annual forbs"]) %>%
+  row_spec(kable_input=., row = which(workingdat$`Functional group`=="Native annual grasses"), background = functype_table_palette["Native annual grasses"]) %>%
+  row_spec(kable_input=., row = which(workingdat$`Functional group`=="Native perennial forbs"), background = functype_table_palette["Native perennial forbs"]) %>%
+    row_spec(kable_input=., row = which(workingdat$`Functional group`=="Shrubs"), background = functype_table_palette["Shrubs"]) %>% 
+      row_spec(kable_input=., row = which(workingdat$`Functional group`=="Succulents"), background = functype_table_palette["Succulents"]) %>% 
+      row_spec(kable_input=., row = which(workingdat$`Functional group`=="Trees"), background = functype_table_palette["Trees"])
 
 ### bar charts
 functypes_grps <- c("TotalFoliarCover", #"AH_WoodyCover", #AH_ForbGrassCover, 
                     "AH_ShrubCover", "AH_TreeCover",
                         "AH_PerenForbGrassCover", "AH_AnnForbGrassCover"
                 )
-functypes_cover_states <- ggplot(data = select(plot_data_descriptive, 
+
+plot_data_descriptive_grp <- filter(plot_data_descriptive, PlantCommunity_fuzzy==1)
+
+functypes_cover_states <- ggplot(data = select(plot_data_descriptive_grp, 
                                              any_of(c("PlantCommunity_fuzzy", functypes_grps))) %>%
                                    tidyr::pivot_longer(cols = all_of(functypes_grps),
                       names_to = "CoverType",
                       values_to = "PctCover"),
                              aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
-  geom_boxplot() +
-  scale_fill_brewer(type = "qual", palette = "Set3",
+  geom_boxplot(outlier.shape = NA) + # make outliers invisible
+  scale_fill_manual(values = c("#FFFFB3", "#80B1D3", "#FB8072", "#8DD3C7", "#666666"),
                     name = "Functional type",
                     labels = c("Annual herbaceous", "Perennial herbaceous",
                                #"Woody",
                                "Shrub", "Tree",
                                "Total foliar cover")
                     ) +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=group_labels_fuzzy[1]) +
   xlab(NULL) +
   ylab("Cover (%)") +
+  ylim(c(0,100)) +
   ggtitle("Plant functional groups") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+  theme(axis.text.x = element_text( color = "black"),
         axis.text.y = element_text(color = "black"))
+functypes_cover_states
 
+today <- Sys.Date()
+highrestiff(plot_obj = functypes_cover_states,
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/JFSP_Workshop_1/PlantFuncTypes_", "Woodland", "_", today, ".tif"),
+            width_in = 6,
+            height_in = 3.5,
+            resolution_dpi = 300)
 
 ground_grps <- c("BareSoilCover", "FH_TotalLitterCover", "CA_percent_200plus",
                  "FH_LichenMossCover", "CA_percent_100plus"
                  )
-ground_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% ground_grps),
+
+plot_data_first_tall_grp <- filter(plot_data_first_tall, PlantCommunity_fuzzy==4)
+
+ground_cover_states <- ggplot(data = filter(plot_data_first_tall_grp, CoverType %in% ground_grps),
                               aes(x=PlantCommunity_fuzzy, y=PctCover, fill=CoverType)) +
-  geom_boxplot() +
-  scale_fill_brewer(type = "qual", palette = "Set3",
+  geom_boxplot(outlier.shape = NA) +
+  scale_fill_manual(values = c("#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494"),
                     name = "Functional group",
-                    labels = names(cover_labels[which(cover_labels %in% ground_grps)])) +
-  scale_x_discrete(labels=group_labels_fuzzy) +
-  xlab("Plant community") +
+                    labels = names(cover_labels[which(cover_labels %in% ground_grps)])
+                    ) +
+  scale_x_discrete(labels=group_labels_fuzzy[4]) +
+  xlab(NULL) +
   ylab("Cover (%)") +
+  ylim(c(0,100)) +
   ggtitle("Ground cover") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, color = "black"),
+  theme(axis.text.x = element_text(color = "black"),
         axis.text.y = element_text(color = "black"))
+
+ground_cover_states
+
+today <- Sys.Date()
+highrestiff(plot_obj = ground_cover_states,
+            file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures/", target_ESG, "/JFSP_Workshop_1/GroundCover_", "Grassland", "_", today, ".tif"),
+            width_in = 6,
+            height_in = 3.5,
+            resolution_dpi = 300)
 
 
 ```
