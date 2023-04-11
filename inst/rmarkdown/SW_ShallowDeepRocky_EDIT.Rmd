@@ -700,6 +700,12 @@ fuzzy_cluster_membership <- as.data.frame(clust_fuzz$membership)
 fuzzy_cluster_membership$PlotCode <- row.names(clust_fuzz$membership)
 fuzzy_cluster_membership$best_group <- clust_fuzz$clustering
 
+# # merge groups 1 and 5 based on workshop feedback
+# fuzzy_cluster_membership <- mutate(fuzzy_cluster_membership,
+#                                    best_group = ifelse(best_group==1|best_group==5,
+#                                                        yes = 9,
+#                                                        no = best_group))
+
 colnames(fuzzy_cluster_membership) <- c(paste0("Group_", 1:8, "_membership"), "PlotCode", "Best_group")
 
 group_names <- data.frame(Best_group = 1:8,
@@ -711,6 +717,18 @@ group_names <- data.frame(Best_group = 1:8,
                                               "Gambel oak woodland",
                                               "Sagebrush shrubland/grassland",
                                               "Bare juniper savanna")) # update with descriptive names after examining the groups
+
+# group_names <- data.frame(Best_group = 1:9,
+#                           Best_group_name = c("Juniper-pinyon woodland",
+#                                               "Open juniper-pinyon shrubland",
+#                                               "C4 grassland",
+#                                               "Annualized juniper savanna",
+#                                               "Pinyon-juniper woodland",
+#                                               "Gambel oak woodland",
+#                                               "Sagebrush shrubland/grassland",
+#                                               "Bare juniper savanna",
+#                                               "Pinyon-juniper woodland"))
+
 fuzzy_cluster_membership <- left_join(fuzzy_cluster_membership, group_names)
 
 # get the plot location and date sampled (use first date)
@@ -722,7 +740,10 @@ plot_locations_first <- plot_locations %>%
 
 fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_first) %>%
   filter(PlotCode != "AIM_Colorado NWDO Little Snake FO 2017_1024" &
-           PlotCode != "AIM_UT Color Country DO 2019_01") # the geometry of these plot locations is messed up somehow
+           PlotCode != "AIM_UT Color Country DO 2019_01") %>%  # the geometry of these plot locations is messed up somehow
+  mutate(post_workshop1_group = ifelse(test = Best_group==1|Best_group==5,
+                                       yes = 9,
+                                       no = Best_group))
 
 # # save plots - usually only need to run this once
 # sf::st_write(fuzzy_cluster_memb_sf,
