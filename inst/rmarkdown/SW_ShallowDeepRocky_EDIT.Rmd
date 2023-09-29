@@ -46,6 +46,7 @@ knitr::opts_chunk$set(echo = TRUE)
 target_ESG <- "Semiarid_Warm_Shallow_DeepRocky"
 user <- "Anna"
 #user <- "VPN"
+output_figure_folder <- file.path("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Figures", target_ESG) 
 
 library(dplyr)
 library(kableExtra)
@@ -1380,6 +1381,11 @@ TODO write state description
 dom_spp_grp1 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==1),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+# save the complete table for field crews
+write.csv(x = dom_spp_grp1,
+          file = file.path(output_figure_folder, "Tables", 
+                           paste0(target_ESG, "_1Juniper-pinyonwoodland_species.csv")),
+          row.names = F)
 
 dom_spp_grp1_pub <- filter(
   select(dom_spp_grp1, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
@@ -1428,6 +1434,11 @@ TODO write state description
 dom_spp_grp2 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==2),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+# save the complete table for field crews
+write.csv(x = dom_spp_grp2,
+          file = file.path(output_figure_folder, "Tables", 
+                           paste0(target_ESG, "_2Openjuniper-pinyonshrubland_species.csv")),
+          row.names = F)
 
 dom_spp_grp2_pub <- filter(
   select(dom_spp_grp2, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
@@ -1456,6 +1467,11 @@ TODO write state description
 dom_spp_grp3 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==3),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+# save the complete table for field crews
+write.csv(x = dom_spp_grp3,
+          file = file.path(output_figure_folder, "Tables", 
+                           paste0(target_ESG, "_3C4grassland_species.csv")),
+          row.names = F)
 
 dom_spp_grp3_pub <- filter(
   select(dom_spp_grp3, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
@@ -1484,6 +1500,11 @@ TODO write state description
 dom_spp_grp4 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==4),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+# save the complete table for field crews
+write.csv(x = dom_spp_grp4,
+          file = file.path(output_figure_folder, "Tables", 
+                           paste0(target_ESG, "_4Annualizedjunipersavanna_species.csv")),
+          row.names = F)
 
 dom_spp_grp4_pub <- filter(
   select(dom_spp_grp4, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
@@ -1520,6 +1541,11 @@ TODO write state description
 dom_spp_grp5 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==5),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+# save the complete table for field crews
+write.csv(x = dom_spp_grp5,
+          file = file.path(output_figure_folder, "Tables", 
+                           paste0(target_ESG, "_5Pinyon-juniperwoodland_species.csv")),
+          row.names = F)
 
 dom_spp_grp5_pub <- filter(
   select(dom_spp_grp5, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
@@ -1548,6 +1574,11 @@ TODO write state description
 dom_spp_grp6 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==6),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+# save the complete table for field crews
+write.csv(x = dom_spp_grp6,
+          file = file.path(output_figure_folder, "Tables", 
+                           paste0(target_ESG, "_6Gambeloakwoodland_species.csv")),
+          row.names = F)
 
 dom_spp_grp6_pub <- filter(
   select(dom_spp_grp6, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
@@ -1584,6 +1615,11 @@ TODO write state description
 dom_spp_grp7 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==7),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+# save the complete table for field crews
+write.csv(x = dom_spp_grp7,
+          file = file.path(output_figure_folder, "Tables", 
+                           paste0(target_ESG, "_7Sagebrushshrublandgrassland_species.csv")),
+          row.names = F)
 
 dom_spp_grp7_pub <- filter(
   select(dom_spp_grp7, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),
@@ -1620,6 +1656,11 @@ TODO write state description
 dom_spp_grp8 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==8),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+# save the complete table for field crews
+write.csv(x = dom_spp_grp8,
+          file = file.path(output_figure_folder, "Tables", 
+                           paste0(target_ESG, "_8Barejunipersavanna_species.csv")),
+          row.names = F)
 
 dom_spp_grp8_pub <- filter(
   select(dom_spp_grp8, Indicator, ScientificName, CommonName, SpeciesCode, MeanCover, pct_plots),

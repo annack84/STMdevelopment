@@ -28,6 +28,10 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
                         aimlmf_splist = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/AIM/Terrestrial AIM Data Spring 2020/PlotNet_style_AIMLMF_calcs/SpeciesList_AIM2020UCRBStates.csv",
                         ai_raster = "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/GlobalAIandPET/global-ai_et0/ai_et0/ai_et0_WesternUSEcoregions.tif",
                         prism_rasters = c("V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_annual_asc/PRISM_ppt_30yr_normal_800mM2_annual_asc.asc",
+                                          "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_06_asc.asc",
+                                          "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_07_asc.asc",
+                                          "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_08_asc.asc",
+                                          "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_09_asc.asc",
                                           "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmean_30yr_normal_800mM2_annual_asc/PRISM_tmean_30yr_normal_800mM2_annual_asc.asc",
                                           "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmax_30yr_normal_800mM2_annual_asc/PRISM_tmax_30yr_normal_800mM2_annual_asc.asc",
                                           "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc"
@@ -35,7 +39,25 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
                         aero = "V:/PROJECTS/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv",
                         rhem = list(aim = "V:/PROJECTS/ANNA_KNIGHT/ESG/STM/RHEM/Final_5_RHEM_AIM_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv",
                                     lmf = "V:/PROJECTS/ANNA_KNIGHT/ESG/STM/RHEM/Final_5_RHEM_LMF_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv",
-                                    nri = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RHEM/contains_NRI_do_not_sync/Final_2_RHEM_NRI_SoilGrids_NEDSlope_32425_09May2022.csv")
+                                    nri = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RHEM/contains_NRI_do_not_sync/Final_2_RHEM_NRI_SoilGrids_NEDSlope_32425_09May2022.csv"),
+                        soil_rasters = list(clay = c("G:/Base Layers/Soils/UCRB_30m/claytotal_r_0_cm_2D_QRF_bt.tif",
+                                                     "G:/Base Layers/Soils/UCRB_30m/claytotal_r_5_cm_2D_QRF_bt.tif",
+                                                     "G:/Base Layers/Soils/UCRB_30m/claytotal_r_15_cm_2D_QRF_bt.tif",
+                                                     "G:/Base Layers/Soils/UCRB_30m/claytotal_r_30_cm_2D_QRF_bt.tif"),
+                                            sand = c("G:/Base Layers/Soils/UCRB_30m/sandtotal_r_0_cm_2D_QRF.tif",
+                                                     "G:/Base Layers/Soils/UCRB_30m/sandtotal_r_5_cm_2D_QRF.tif",
+                                                     "G:/Base Layers/Soils/UCRB_30m/sandtotal_r_15_cm_2D_QRF.tif",
+                                                     "G:/Base Layers/Soils/UCRB_30m/sandtotal_r_30_cm_2D_QRF.tif"),
+                                            fragments = c("G:/Base Layers/Soils/UCRB_30m/fragvol_r_0_cm_2D_QRF_bt_ART_SG100covs_bt.tif",
+                                                          "G:/Base Layers/Soils/UCRB_30m/fragvol_r_5_cm_2D_QRF_bt_ART_SG100covs_bt.tif",
+                                                          "G:/Base Layers/Soils/UCRB_30m/fragvol_r_15_cm_2D_QRF_bt_ART_SG100covs_bt.tif",
+                                                          "G:/Base Layers/Soils/UCRB_30m/fragvol_r_30_cm_2D_QRF_bt_ART_SG100covs_bt.tif"),
+                                            ec = c("G:/Base Layers/Soils/UCRB_30m/ec_r_0_cm_2D_QRF_bt.tif",
+                                                   "G:/Base Layers/Soils/UCRB_30m/ec_r_5_cm_2D_QRF_bt.tif",
+                                                   "G:/Base Layers/Soils/UCRB_30m/ec_r_15_cm_2D_QRF_bt.tif",
+                                                   "G:/Base Layers/Soils/UCRB_30m/ec_r_30_cm_2D_QRF_bt.tif"),
+                                            depthclass = "G:/Base Layers/Soils/UCRB_30m/DepthClass_ensemble.tif"
+                        )
   )
 
   if(user=="Anna"){
@@ -52,6 +74,10 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
     file_list$aero <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv"
     file_list$ai_raster <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/GlobalAIandPET/global-ai_et0/ai_et0/ai_et0_WesternUSEcoregions.tif"
     file_list$prism_rasters <- c("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_annual_asc/PRISM_ppt_30yr_normal_800mM2_annual_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_06_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_07_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_08_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_09_asc.asc",
                       "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmean_30yr_normal_800mM2_annual_asc/PRISM_tmean_30yr_normal_800mM2_annual_asc.asc",
                       "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmax_30yr_normal_800mM2_annual_asc/PRISM_tmax_30yr_normal_800mM2_annual_asc.asc",
                       "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc"
