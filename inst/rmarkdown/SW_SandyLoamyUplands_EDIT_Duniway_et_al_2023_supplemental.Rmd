@@ -771,11 +771,11 @@ fuzzy_cluster_memb_sf <- left_join(fuzzy_cluster_membership, plot_locations_firs
 # create custom diagram of states in PowerPoint. Save as a JPG to load in here.
 # State/community naming conventions need to be determined.
 # Species get listed in the descriptions in decreasing order of mean cover for that community
-knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_SandyLoamyUplands_boxandarrow_workshop1.JPG")
+knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_SandyLoamyUplands_boxandarrow_Duniway_et_al_2023_supplemental.JPG")
 ```
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="Legend"}
-# TODO legend for custom diagram if needed
+```{r custom-stm-legend, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE, fig.cap="STM Legend", fig.height=5, fig.width=6}
+knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/Semiarid_Warm_SandyLoamyUplands_boxandarrowlegend_Duniway_et_al_2023_supplemental.JPG")
 ```
 
 The data used to develop this STM were sourced from large monitoring data sets designed to sample landscapes with a variety of current and historic land use. The model does not describe reference communities because these data do not include targeted sampling of relict plant communities with histories of little alteration to disturbance regimes. All states described here contain some introduced species (e.g. *Bromus tectorum, Alyssum desertorum, Agropyron cristatum*; see Tables \@ref(tab:comm1-1-dominant-spp), \@ref(tab:comm2-1-dominant-spp), \@ref(tab:comm3-1-dominant-spp), and \@ref(tab:comm4-1-dominant-spp) for details).
@@ -783,14 +783,31 @@ The data used to develop this STM were sourced from large monitoring data sets d
 For furthur information on reference states as well as drivers of transitions, see the Ecological Site Descriptions for the sites listed in Table \@ref(tab:assoc-eco-sites).
 
 ### STANDARD DIAGRAM
-
-Click on state and transition labels to scroll to the respective text.
-
-TODO create boxes for each state that link to the state description below
+```{r notes-2, include=FALSE}
+#Click on state and transition labels to scroll to the respective text.
+#TODO create boxes for each state that link to the state description below
+```
 
 ## State descriptive figures
 
 ```{r load-descriptive-indicators, include=FALSE}
+state_labels_base <- c(paste0("Open woodland
+"),
+                        paste0("Shrubland
+"),
+                        paste0("Invaded
+"),
+                        paste0("Grassland
+"))
+
+state_labels_fuzzy <- paste0(state_labels_base,
+                               " (n = ",
+                               c(nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)),
+                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)),
+                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)),
+                                 nrow(filter(plot_data_first, PlantCommunity_fuzzy==4))
+                                  ),
+                               ")")
 # load descriptive data
 plot_data_descriptive <- plot_data_pull(user=user,
                                         target_ESG = target_ESG,
@@ -1012,7 +1029,7 @@ plot_data_descriptive <- left_join(plot_data_descriptive, select(soil_vals,
 
 ```
 
-```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=20, fig.width=12, fig.cap="Plant cover by community"}
+```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=25, fig.width=12, fig.cap="Plant cover by state"}
 # # consider including species present in >10% of plots:
 # names(colSums(sp_pa)[which(colSums(sp_pa)>(nrow(plot_data_first)*0.10))])
 # # also consider including species with high mean cover across all plots:
@@ -1157,7 +1174,7 @@ functypes_cover_states <- ggplot(data = select(plot_data_descriptive,
                                "Tree",
                                "Total foliar cover")
                     ) +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
   xlab(NULL) +
   ylab("Cover (%)") +
   ggtitle("Plant functional groups") +
@@ -1175,7 +1192,7 @@ woody_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in% 
   scale_fill_brewer(type = "qual", palette = "Set3",
                     name = "Species",
                     labels = names(cover_labels[which(cover_labels %in% woody_grps)])) +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
   xlab(NULL) +
   ylab("Cover (%)") +
   ggtitle("Woody plants") +
@@ -1192,7 +1209,7 @@ perenherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %
   scale_fill_brewer(type = "qual", palette = "Set3",
                     name = "Functional group",
                     labels = names(cover_labels[which(cover_labels %in% perenherb_grps)])) +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
   xlab(NULL) +
   ylab("Cover (%)") +
   ggtitle("Perennial herbaceous plants") +
@@ -1208,7 +1225,7 @@ annherb_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in
   scale_fill_brewer(type = "qual", palette = "Set3",
                     name = "Functional group",
                     labels = names(cover_labels[which(cover_labels %in% annherb_grps)])) +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
   xlab(NULL) +
   ylab("Cover (%)") +
   ggtitle("Annual herbaceous plants") +
@@ -1225,8 +1242,8 @@ ground_cover_states <- ggplot(data = filter(plot_data_first_tall, CoverType %in%
   scale_fill_brewer(type = "qual", palette = "Set3",
                     name = "Functional group",
                     labels = names(cover_labels[which(cover_labels %in% ground_grps)])) +
-  scale_x_discrete(labels=group_labels_fuzzy) +
-  xlab("Plant community") +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  xlab("State") +
   ylab("Cover (%)") +
   ggtitle("Ground cover") +
   theme_bw() +
@@ -1252,7 +1269,7 @@ cowplot::plot_grid(cover_states, cover_axes, ncol = 2, rel_widths = c(1, 0.5))
 
 
 
-```{r groups-climate, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Climate gradients by plant community. Larger aridity index values indicate a LESS arid condition."}
+```{r groups-climate, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Climate gradients by state. Larger aridity index values indicate a LESS arid condition. Aridity index data from Trabucco and Zomer (2018); precipitation and temperature data from PRISM Climate Group (2020)"}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(AI))),
@@ -1265,29 +1282,33 @@ cowplot::plot_grid(cover_states, cover_axes, ncol = 2, rel_widths = c(1, 0.5))
 cowplot::plot_grid(
   cowplot::plot_grid(
 ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=AI)) +
+       aes(x=PlantCommunity_fuzzy, y=AI, fill = PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
   xlab(NULL) +
   ylab("Aridity index") +
   ylim(c(0, 0.45)) +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
 ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=Ann_ppt_mm)) +
+       aes(x=PlantCommunity_fuzzy, y=Ann_ppt_mm, fill = PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
   xlab(NULL) +
   ylab("Annual precipitation (mm)") +
   ylim(c(0, 650)) +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
 nrow = 1, labels = c("a", "b")),
 ggplot(data = select(plot_data_descriptive, PlantCommunity_fuzzy, Ann_tmean, Ann_tmax, Ann_tmin) %>%
          tidyr::pivot_longer(c(Ann_tmean, Ann_tmax, Ann_tmin), names_to = "temptype", values_to = "tempdegrees"),
        aes(fill=PlantCommunity_fuzzy, y=tempdegrees, x=temptype)) +
   geom_boxplot() +
-  scale_fill_manual(name="Plant community", labels=group_labels_fuzzy, values = pal_veg2) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
   scale_x_discrete(labels=c("Maximum", "Mean", "Minimum")) +
   xlab(NULL) +
   ylab("Temperature (C)") +
@@ -1299,56 +1320,103 @@ nrow = 2, labels = c(NA, "c"))
 # ggplot(data = plot_data_descriptive,
 #         aes(x=PlantCommunity_fuzzy, y=Summer_ppt_ratio)) +
 #      geom_boxplot() +
-#      scale_x_discrete(labels=group_labels_fuzzy) +
+#      scale_x_discrete(labels=state_labels_fuzzy) +
 #      xlab(NULL) +
 #      ylab("Summer precipitation ratio") +
 #      theme_bw() +
 #      theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-```{r groups-soils, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Soil attributes by plant community"}
-# group_labels_fuzzy <- paste0(group_labels_base,
-#                                " (n = ",
-#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(SoilStab_all))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(SoilStab_all))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(SoilStab_all))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(SoilStab_all)))
-#                                   ),
-#                                ")")
+```{r groups-soils, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Soil texture, rock content, and depth class by state, based on digital soil maps (Nauman and Duniway, 2020; Brungard et al., 2021)."}
+# soil depth figure
+soil_depth_byclass <- plot_data_descriptive %>%
+  # mutate(soil_depth_class = ifelse(test = soil_depth_class =="Bedrock",
+  #                                         yes = "Very shallow",
+  #                                         no = soil_depth_class)) %>%
+  group_by(soil_depth_class) %>%
+  summarise(n_OpenWoodland = length(which(PlantCommunity_fuzzy == "1")),
+            n_Shrubland = length(which(PlantCommunity_fuzzy == "2")),
+            n_Invaded = length(which(PlantCommunity_fuzzy == "3")),
+            n_Grassland = length(which(PlantCommunity_fuzzy == "4"))) %>%
+  tidyr::pivot_longer(data=.,
+               cols = c(n_OpenWoodland,
+                        n_Shrubland,
+                        n_Invaded,
+                        n_Grassland),
+               names_to = "PlantCommunity",
+               values_to = "Percent") %>%
+  mutate(PlantCommunity_fuzzy = factor(PlantCommunity,
+                                                 levels = c("n_OpenWoodland", "n_Shrubland", "n_Invaded",
+                                                            "n_Grassland"),
+         labels = c("Open woodland", "Shrubland",
+                    "Invaded", "Grassland"),
+         ordered = T))
 
+soil_depth_fig <- ggplot(data = soil_depth_byclass,
+                          aes(x=soil_depth_class, y=Percent, fill=PlantCommunity_fuzzy)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = pal_veg2,
+                    name = "State",
+                    labels = c("Open
+woodland",
+                               "Shrubland",
+                               "Invaded",
+                               "Grassland")
+                    ) +
+  scale_x_discrete(labels=c(levels(soil_depth_byclass$soil_depth_class)[-1])) +
+  xlab(NULL) +
+  ylab("# of plots in
+soil depth class") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom"
+        ) +
+  guides(fill=guide_legend(ncol=2))
+
+# boxplot panel
 cowplot::plot_grid(
 ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=clay_pct_mean)) +
+       aes(x=PlantCommunity_fuzzy, y=clay_pct_mean, fill = PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
   ylim(c(0, 100)) +
-  xlab("Plant community") +
-  ylab("Mean clay (%, 0 - 30 cm)") +
+  xlab(NULL) +
+  ylab("Mean clay 
+(%, 0-30 cm)") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
 ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=sand_pct_mean)) +
+       aes(x=PlantCommunity_fuzzy, y=sand_pct_mean, fill = PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
   ylim(c(0, 100)) +
-  xlab("Plant community") +
-  ylab("Mean sand (%, 0 - 30 cm)") +
+  xlab(NULL) +
+  ylab("Mean sand
+(%, 0-30 cm)") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
 ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=fragment_pct_mean)) +
+       aes(x=PlantCommunity_fuzzy, y=fragment_pct_mean, fill = PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
   ylim(c(0, 100)) +
-  xlab("Plant community") +
-  ylab("Mean rock fragments (%, 0 - 30 cm)") +
+  xlab(NULL) +
+  ylab("Mean rock fragments 
+(%, 0-30 cm)") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
+soil_depth_fig,
 labels = "auto"
 )
 ```
 
-```{r groups-soilstab, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Soil stability by plant community"}
+```{r groups-soilstab, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Soil stability by state."}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(SoilStab_all))),
@@ -1359,19 +1427,21 @@ labels = "auto"
 #                                ")")
 
 ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=SoilStab_all)) +
+       aes(x=PlantCommunity_fuzzy, y=SoilStab_all, fill = PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
   ylim(c(0, 6)) +
-  xlab("Plant community") +
+  xlab(NULL) +
   ylab("Mean soil stability rating") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
 ```
 
 
 
-```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="(a) Species diversity (Shannon diversity index) and (b) species richness by plant community. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher diversity values indicate greater diversity (0 indicates a plot that has only one species)."}
+```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="(a) Species diversity (Shannon diversity index) and (b) species richness by state. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher diversity values indicate greater diversity (0 indicates a plot that has only one species)."}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(shannon_diversity))),
@@ -1382,25 +1452,29 @@ ggplot(data = plot_data_descriptive,
 #                                ")")
 
 cowplot::plot_grid(ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=shannon_diversity)) +
+       aes(x=PlantCommunity_fuzzy, y=shannon_diversity, fill=PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
-  xlab("Plant community") +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
+  xlab(NULL) +
   ylab("Shannon diversity index") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
   ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=sp_richness)) +
+       aes(x=PlantCommunity_fuzzy, y=sp_richness, fill = PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
-  xlab("Plant community") +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
+  xlab(NULL) +
   ylab("Number of species") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
   nrow = 1, labels = "auto")
 ```
 
-```{r groups-aero, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Wind erosion potential by plant community, based on AERO models. Data only available for AIM and LMF plots."}
+```{r groups-aero, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Wind erosion potential by state, based on AERO models (Edwardds et al., 2022). Data only available for AIM and LMF plots."}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(horizontal_flux_total_MN))),
@@ -1419,16 +1493,16 @@ cowplot::plot_grid(ggplot(data = plot_data_descriptive,
 ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=horizontal_flux_total_MN)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
+  scale_x_discrete(labels=state_labels_fuzzy) +
   #ylim(c(0, 12)) +
-  xlab("Plant community") +
+  xlab("State") +
   ylab(expression(Sediment~mass~flux~(Q)~g~m^{-1}~day^{-1})) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 # TODO add log transformation to y axis
 ```
 
-```{r groups-rhem, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="Water erosion potential by plant community, based on RHEM models. Data not available for NPS-NCPN plots."}
+```{r groups-rhem, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="Water erosion potential by state, based on RHEM models. Data not available for NPS-NCPN plots."}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(Runoff_Long_Term_MEAN))),
@@ -1441,16 +1515,16 @@ ggplot(data = plot_data_descriptive,
 cowplot::plot_grid(ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=Runoff_Long_Term_MEAN)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
-  xlab("Plant community") +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  xlab("State") +
   ylab("Long-term mean runoff (mm/yr)") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)),
   ggplot(data = plot_data_descriptive,
        aes(x=PlantCommunity_fuzzy, y=Soil_Loss_Long_Term_MEAN)) +
   geom_boxplot() +
-  scale_x_discrete(labels=group_labels_fuzzy) +
-  xlab("Plant community") +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  xlab("State") +
   ylab("Long-term mean soil loss (ton/ha/yr)") +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)),
@@ -1644,15 +1718,27 @@ TODO grazing narrative could go here
 
 ## Other references
 
+Brungard, C., T. Nauman, M. Duniway, K. Veblen, K. Nehring, D. White, S. Salley, and J. Anchang. 2021. Regional ensemble modeling reduces uncertainty for digital soil mapping. Geoderma 397:114998.
+
+Edwards, B. L., N. P. Webb, M. S. Galloza, J. W. Van Zee, E. M. Courtright, B. F. Cooper, L. J. Metz, J. E. Herrick, G. S. Okin, M. C. Duniway, J. Tatarko, N. H. Tedala, D. N. Moriasi, B. A. Newingham, F. B. Pierson, D. Toledo, and R. S. Van Pelt. 2022. Parameterizing an aeolian erosion model for rangelands. Aeolian Research 54:100769.
+
+Hernandez, M., M. A. Nearing, O. Z. Al-Hamdan, F. B. Pierson, G. Armendariz, M. A. Weltz, K. E. Spaeth, C. J. Williams, S. K. Nouwakpo, D. C. Goodrich, C. L. Unkrich, M. H. Nichols, and C. D. Holifield Collins. 2017. The Rangeland Hydrology and Erosion Model: A Dynamic Approach for Predicting Soil Loss on Rangelands. Water Resources Research 53:9368-9391.
+
 Herrick, J. E., Van Zee, J. W., McCord, S. E., Courtright, E. M., Karl, J. W., & Burkett, L. M. (2017). Monitoring Manual for Grassland, Shrubland, and Savanna Ecosystems (Second ed. Vol. 1: Core Methods). Las Cruces, New Mexico: USDA-ARS Jornada Experimental Range.
 
 Maechler, M., Rousseeuw, P., Struyf, A., Hubert, M., Hornik, K.(2021).  cluster: Cluster Analysis Basics and Extensions. R package version 2.1.2.
 
 McCord, S. E., Brehm, J. R., Burnett, S. H., Dietrich, C., Edwards, B., Metz, L. J., Hernandez Narvaez, M., Pierson, F., Ramirez, K. S., Stauffer, N. G., Webb, N. P., and Tweedie, C. E. (2022). A framework and toolset for standardizing agroecosystem indicators. Ecological Indicators, 144. doi:10.1016/j.ecolind.2022.109511
 
+Nauman, T. W., and M. C. Duniway. 2020. A hybrid approach for predictive soil property mapping using conventional soil survey data. Soil Science Society of America Journal 84:1170-1194.
+
 Nauman, T. W., Burch, S. S., Humphries, J. T., Knight, A. C., & Duniway, M. C. (2022). A Quantitative Soil-Geomorphic Framework for Developing and Mapping Ecological Site Groups. Rangeland Ecology & Management, 81, 9-33. doi:10.1016/j.rama.2021.11.003
 
 Oksanen, J., F. Guillaume Blanchet, Michael Friendly, Roeland Kindt, Pierre Legendre, Dan McGlinn, Peter R. Minchin, R. B. O'Hara, Gavin L. Simpson, Peter Solymos, M. Henry H. Stevens, Eduard Szoecs and Helene Wagner (2020). vegan: Community Ecology Package. R package version 2.5-7. https://CRAN.R-project.org/package=vegan
+
+PRISM Climate Group. 2020. PRISM climate data. Oregon State University.
+
+Trabucco, A., and R. J. Zomer. 2018. Global aridity index and potential evapotranspiration (ET0) climate database v2. Available at: the CGIAR-CSI GeoPortal at https://cgiarcsi.community Accessed 9/28/2020 2020.
 
 ## Contributors
 
