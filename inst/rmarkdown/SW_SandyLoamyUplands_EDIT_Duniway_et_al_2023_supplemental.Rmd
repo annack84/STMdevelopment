@@ -599,7 +599,6 @@ set.seed(1)
 ord <- metaMDS(ord.df,
                k=ord_dims, # number of dimensions
                trymax = 30) 
-
 ```
 
 The clustering results were visualized in ordination spaced, using non-metric multidimensional scaling (NMDS) with Bray-Curtis distance ("vegan" package in R). Based on testing ordination stress for 1 to 5 dimensions, ordination stress is acceptable with `r ord_dims` dimensions, and stress reduction is minimal with additional dimensions. The stress for the ordination with `r ord_dims` dimensions is `r round(ord$stress, 3)`.
@@ -689,7 +688,7 @@ par(mfrow=c(1,1))
 
 ```
 
-```{r save-fuzzy-cluster, echo=FALSE, eval=FALSE}
+```{r save-fuzzy-cluster, echo=FALSE, eval=TRUE, error=FALSE, message=FALSE}
 # save clustering results
 fuzzy_cluster_membership <- as.data.frame(clust_fuzz$membership)
 fuzzy_cluster_membership$PlotCode <- row.names(clust_fuzz$membership)
@@ -779,6 +778,8 @@ knitr::include_graphics("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANN
 ```
 
 The data used to develop this STM were sourced from large monitoring data sets designed to sample landscapes with a variety of current and historic land use. The model does not describe reference communities because these data do not include targeted sampling of relict plant communities with histories of little alteration to disturbance regimes. All states described here contain some introduced species (e.g. *Bromus tectorum, Alyssum desertorum, Agropyron cristatum*; see Tables \@ref(tab:comm1-1-dominant-spp), \@ref(tab:comm2-1-dominant-spp), \@ref(tab:comm3-1-dominant-spp), and \@ref(tab:comm4-1-dominant-spp) for details).
+
+Transition and restoration pathways and drivers were derived by tabulating the transitions and drivers for similar states in the Ecological Site Description STMs linked to this Ecological Site Group (Table \@ref(tab:assoc-eco-sites)). They were confirmed by comparing to the field plot locations overlaid on geospatial data representing land protection status, fire history, woody removal treatments, and recent drought conditions. They were also reviewed by a group of land management experts familiar with this ESG.
 
 For furthur information on reference states as well as drivers of transitions, see the Ecological Site Descriptions for the sites listed in Table \@ref(tab:assoc-eco-sites).
 
@@ -1332,7 +1333,7 @@ cowplot::plot_grid(cover_states, cover_axes, ncol = 2, rel_widths = c(1, 0.5))
 
 
 
-```{r groups-climate, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Climate gradients by state. Larger aridity index values indicate a less arid condition. Aridity index data from Trabucco and Zomer (2018); precipitation and temperature data from PRISM Climate Group (2020)"}
+```{r groups-climate, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8, fig.cap="Climate gradients by state. Larger aridity index values indicate a less arid condition. Aridity index data from Trabucco and Zomer (2018); precipitation and temperature data from PRISM Climate Group (2020)"}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(AI))),
@@ -1390,7 +1391,7 @@ nrow = 2, labels = c(NA, "c"))
 #      theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-```{r groups-soils, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Soil texture, rock content, and depth class by state, based on digital soil maps (Nauman and Duniway, 2020; Brungard et al., 2021)."}
+```{r groups-soils, echo=FALSE, message=FALSE, warning=FALSE, fig.height=8, fig.width=8, fig.cap="Soil texture, rock content, and depth class by state, based on digital soil maps (Nauman and Duniway, 2020; Brungard et al., 2021)."}
 # soil depth figure
 soil_depth_byclass <- plot_data_descriptive %>%
   # mutate(soil_depth_class = ifelse(test = soil_depth_class =="Bedrock",
@@ -1479,7 +1480,7 @@ labels = "auto"
 )
 ```
 
-```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="(a) Species diversity (Shannon diversity index), (b) species richness, and (c) percent native plant cover out of total foliar cover by state. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher diversity values indicate greater diversity (0 indicates a plot that has only one species)."}
+```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=12, fig.cap="(a) Species diversity (Shannon diversity index), (b) species richness, and (c) percent native plant cover out of total foliar cover by state. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher diversity values indicate greater diversity (0 indicates a plot that has only one species)."}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(shannon_diversity))),
@@ -1522,7 +1523,7 @@ cowplot::plot_grid(ggplot(data = plot_data_descriptive,
   nrow = 1, labels = "auto")
 ```
 
-```{r groups-erosion, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Erosion potential by state. Modelled wind erosion (a) is based on AERO models and is only available for  (Edwards et al., 2022)."}
+```{r groups-erosion, echo=FALSE, message=FALSE, warning=FALSE, fig.height=12, fig.width=12, fig.cap="Erosion potential by state. Modelled wind erosion (a) is based on AERO models and is only available for  (Edwards et al., 2022)."}
 state_labels_aero <- paste0(state_labels_base,
                                " (n = ",
                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(horizontal_flux_total_MN))),
@@ -1662,6 +1663,9 @@ dom_spp_grp2 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommu
                                    species_cols = colnames(descriptive.df),
                                    user = user)
 
+# fix weird names
+dom_spp_grp2[SpeciesCode=="PSSP6", "ScientificName"] <- "Pseudoroegneria spicata"
+
 # save the complete table for field crews
 # write.csv(x = dom_spp_grp2,
 #           file = file.path(output_figure_folder, "Tables", 
@@ -1717,6 +1721,10 @@ format_tables_EDIT_style(data = dom_spp_grp2_pub,
 dom_spp_grp1 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==1),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+
+# fix weird names
+dom_spp_grp1[SpeciesCode=="PLPA2", "ScientificName"] <- "Plantago patagonica"
+
 # save the complete table for field crews
 # write.csv(x = dom_spp_grp1,
 #           file = file.path(output_figure_folder, "Tables", 
@@ -1754,6 +1762,10 @@ format_tables_EDIT_style(data = dom_spp_grp1_pub,
 dom_spp_grp4 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==4),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+
+# fix weird names
+dom_spp_grp4[SpeciesCode=="OPUNT", "ScientificName"] <- "Opuntia spp."
+
 # save the complete table for field crews
 # write.csv(x = dom_spp_grp4,
 #           file = file.path(output_figure_folder, "Tables", 
@@ -1791,6 +1803,11 @@ format_tables_EDIT_style(data = dom_spp_grp4_pub,
 dom_spp_grp3 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==3),
                                    species_cols = colnames(descriptive.df),
                                    user = user)
+
+# fix weird names
+dom_spp_grp3[SpeciesCode=="PLPA2", "ScientificName"] <- "Plantago patagonica"
+dom_spp_grp3[SpeciesCode=="CETE5", "ScientificName"] <- "Ceratocephala testiculata"
+
 # save the complete table for field crews
 # write.csv(x = dom_spp_grp3,
 #           file = file.path(output_figure_folder, "Tables", 
