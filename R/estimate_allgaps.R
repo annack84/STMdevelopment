@@ -22,6 +22,7 @@
 #'   indicator column name is "AH_ForbCover".
 #' @return Numeric vector of estimated annual and perennial gap values for the
 #'   descriptor indicated in \code{gap_type}
+#' @export
 
 
 estimate_allgaps <- function(gap_type = "25plus",
