@@ -2,7 +2,8 @@
 % Please edit documentation in R/impute_missing_gaps.R
 \name{impute_missing_gaps}
 \alias{impute_missing_gaps}
-\title{Impute missing annual & perennial canopy gaps with a linear model}
+\title{Impute missing annual & perennial canopy gaps with a linear model built by
+Anna based on NRI and LMF data}
 \usage{
 impute_missing_gaps(
   indicator_data_target_wide,
@@ -27,5 +28,6 @@ including estimated annual & perennial canopy gaps for plots missing that
 data type.
 }
 \description{
-Impute missing annual & perennial canopy gaps with a linear model
+Impute missing annual & perennial canopy gaps with a linear model built by
+Anna based on NRI and LMF data
 }

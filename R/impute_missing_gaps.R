@@ -1,4 +1,5 @@
-#' Impute missing annual & perennial canopy gaps with a linear model
+#' Impute missing annual & perennial canopy gaps with a linear model built by
+#' Anna based on NRI and LMF data
 #'
 #' @param indicator_data_target_wide Data frame. Intermediate data product within \link{plot_data_pull}
 #' @param impute_gap_type Character vector. Gap type to predict. Supported options are

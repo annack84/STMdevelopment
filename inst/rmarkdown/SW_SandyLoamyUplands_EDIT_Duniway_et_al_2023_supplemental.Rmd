@@ -1,6 +1,6 @@
 ---
 title: 'Ecological Site Group Description: Semiarid Warm Sandy and Loamy Uplands'
-author: "Anna Knight, Travis Nauman, Tara Bishop, Mike Duniway"
+author: "Anna C. Knight, Travis Nauman, Tara B. B. Bishop, and Michael C. Duniway"
 date: "`r Sys.Date()`"
 output: 
   bookdown::html_document2:
@@ -826,9 +826,13 @@ plot_data_descriptive <- plot_data_pull(user=user,
                                                        "FH_CyanobacteriaCover",
                                                        "CA_percent_200plus",
                                                        "CA_percent_100plus",
+                                                       "CP_percent_200plus",
+                                                       "CP_percent_100plus",
                                                        "AH_NativeCover",
                                                        "AH_PerenGrassCover",
                                                        "AH_GrassCover",
+                                                       "AH_AnnGrassCover",
+                                                       "AH_ForbCover",
                                                        "BareSoilCover"
                                                        ),
                                         ann_grass_by_spp = T,
@@ -854,8 +858,9 @@ descriptive.df <- dplyr::select(plot_data_descriptive, -SourceKey, -PlotID, -Sit
                         -AH_WoodyCover, -AH_ShrubCover, -AH_SubShrubCover, -AH_TreeCover, -AH_ForbGrassCover, 
                         -AH_PerenForbGrassCover, -AH_AnnForbGrassCover,
                         -SoilStab_all, -FH_CyanobacteriaCover, -CA_percent_200plus, -CA_percent_100plus,
+                        -CP_percent_200plus, -CP_percent_100plus,
                         -AH_NativeCover, -AH_PerenGrassCover, -AH_GrassCover,
-                        -BareSoilCover
+                        -AH_AnnGrassCover, -AH_ForbCover, -BareSoilCover
                         ) %>%
   tibble::column_to_rownames("PlotCode") # keep an ID code for the plot as the row name to prevent data scrambling problems
 
@@ -869,10 +874,54 @@ plot_data_descriptive <- select(plot_data_descriptive, SourceKey, PlotID, SiteNa
                         AH_WoodyCover, AH_ShrubCover, AH_SubShrubCover, AH_TreeCover, AH_ForbGrassCover, 
                         AH_PerenForbGrassCover, AH_AnnForbGrassCover,
                         SoilStab_all, FH_CyanobacteriaCover, CA_percent_100plus, CA_percent_200plus,
-                        AH_NativeCover, AH_PerenGrassCover, AH_GrassCover,
-                        BareSoilCover, all_of(sp_keep_desc))
+                        CP_percent_100plus, CP_percent_200plus,
+                        AH_NativeCover, AH_PerenGrassCover, AH_GrassCover, AH_AnnGrassCover, 
+                        AH_ForbCover, BareSoilCover, all_of(sp_keep_desc))
 
 #ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG01", "AF1")))
+
+# estimate annual + perennial gaps for plots with only perennial gaps
+plot_data_descriptive <- mutate(plot_data_descriptive,
+                                CA_percent_100plus_est = estimate_allgaps(gap_type = "100plus",
+                                                                          perennial_gaps = CP_percent_100plus,
+                                                                          AG = AH_AnnGrassCover,
+                                                                          PG = AH_PerenGrassCover,
+                                                                          SH = AH_ShrubCover,
+                                                                          Forb = AH_ForbCover),
+                                CA_percent_200plus_est = estimate_allgaps(gap_type = "200plus",
+                                                                          perennial_gaps = CP_percent_200plus,
+                                                                          AG = AH_AnnGrassCover,
+                                                                          PG = AH_PerenGrassCover,
+                                                                          SH = AH_ShrubCover,
+                                                                          Forb = AH_ForbCover)
+                                ) %>% 
+  mutate(CA_percent_100plus = ifelse(test = is.na(CA_percent_100plus),
+                                     yes = ifelse(test = CA_percent_100plus_est >=0,
+                                                  yes = CA_percent_100plus_est,
+                                                  no = 0), # round negative estimates to 0
+                                     no = CA_percent_100plus
+                                     ),
+         CA_percent_200plus = ifelse(test = is.na(CA_percent_200plus),
+                                     yes = ifelse(test = CA_percent_200plus_est >=0,
+                                                  yes = CA_percent_200plus_est,
+                                                  no = 0), # round negative estimates to 0
+                                     no = CA_percent_200plus
+                                     )
+         )
+
+# report how many plots have estimated canopy gaps (rather than measure)
+plot_data_descriptive %>% 
+  group_by(PlantCommunity_fuzzy) %>% 
+  summarise(n = n(),
+            n_est = length(which(CA_percent_200plus==CA_percent_200plus_est)),
+            n_NPS_est = length(which(CA_percent_200plus==CA_percent_200plus_est & SourceKey=="IM_NCPN")))
+
+# NCPN woodland sampling stratum doesn't do gaps - how many plots are affected?
+plot_data_descriptive %>% 
+  group_by(SourceKey) %>% 
+  summarise(n = n(),
+            n_nogapdata = length(which(is.na(CA_percent_100plus))),
+            pct_nogapdata = length(which(is.na(CA_percent_100plus)))/n())
 
 ## load climate data
 AI_raster <- raster::raster(file_paths$ai_raster)
@@ -964,13 +1013,23 @@ plot_data_descriptive <- left_join(plot_data_descriptive, rhem_aim) %>%
   rows_update(x = ., y = rhem_nri, unmatched = "ignore")
 
 # gridded soil data from Nauman and Duniway (2019) https://doi.org/10.5066/P9YBAKC2
-soil_pct_rasters <- raster::stack(c(file_paths$soil_rasters$clay,
-                                     file_paths$soil_rasters$sand,
-                                     file_paths$soil_rasters$fragments #,
-                                    #file_paths$soil_rasters$ec
-                                     ))
-# this part is slowww - about 10 minutes
-soil_pct_vals <- raster::extract(x=soil_pct_rasters,
+# this part is slowww - about 10 minutes without parallelizing, 6 minutes with parallelizing
+library(parallel)
+library(doParallel)
+
+cl <- makeCluster(spec = 3, # number of cores to use
+                  type = "PSOCK",
+                  methods = FALSE)
+registerDoParallel(cl)
+
+soil_pct_vals <- foreach(soil_attrib = c("clay", "sand",
+                                         "fragments"#, "ec", "depthclass"
+                                         ),
+                              .packages = c("raster", "sf"),
+                              .combine = "cbind") %dopar% {
+      soil_pct_raster <- raster::stack(c(file_paths$soil_rasters[[soil_attrib]]))
+                                
+      soil_pct_vals_temp <- raster::extract(x=soil_pct_raster,
                               y=fuzzy_cluster_memb_sf,
                               buffer = 50, # extract values from within 50 m of plot center
                               fun = mean, # calculate the weighted mean of the extracted values around each plot center
@@ -979,6 +1038,9 @@ soil_pct_vals <- raster::extract(x=soil_pct_rasters,
                               weights = T, # do weighted mean
                               sp = T) %>%
   as(., "sf") 
+}
+registerDoSEQ()
+stopCluster(cl)
 
 soil_pct_vals <- mutate(soil_pct_vals,
                         clay_pct_mean = calc_soil_trapezoidal(value1 = claytotal_r_0_cm_2D_QRF_bt,
@@ -998,7 +1060,6 @@ soil_pct_vals <- mutate(soil_pct_vals,
                         #                                 value3 = ec_r_15_cm_2D_QRF_bt,
                         #                                 value4 = ec_r_30_cm_2D_QRF_bt)
 )
-rm(soil_pct_rasters)
 
 # soil depth from Brungard et al. 2021, https://doi.org/10.1016/j.geoderma.2021.114998
 soil_depth_raster <- raster::raster(file_paths$soil_rasters$depthclass)
@@ -1027,6 +1088,8 @@ plot_data_descriptive <- left_join(plot_data_descriptive, select(soil_vals,
                                                                  soil_depth_class)
                                    )
 
+# calculate proportion native cover
+plot_data_descriptive$NativeRelativeCover <- (plot_data_descriptive$AH_NativeCover/plot_data_descriptive$TotalFoliarCover)*100
 ```
 
 ```{r plant-groups, echo=FALSE, message=FALSE, warning=FALSE, fig.height=25, fig.width=12, fig.cap="Plant cover by state"}
@@ -1269,7 +1332,7 @@ cowplot::plot_grid(cover_states, cover_axes, ncol = 2, rel_widths = c(1, 0.5))
 
 
 
-```{r groups-climate, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Climate gradients by state. Larger aridity index values indicate a LESS arid condition. Aridity index data from Trabucco and Zomer (2018); precipitation and temperature data from PRISM Climate Group (2020)"}
+```{r groups-climate, echo=FALSE, message=FALSE, warning=FALSE, fig.height=10, fig.width=10, fig.cap="Climate gradients by state. Larger aridity index values indicate a less arid condition. Aridity index data from Trabucco and Zomer (2018); precipitation and temperature data from PRISM Climate Group (2020)"}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(AI))),
@@ -1416,32 +1479,7 @@ labels = "auto"
 )
 ```
 
-```{r groups-soilstab, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Soil stability by state."}
-# group_labels_fuzzy <- paste0(group_labels_base,
-#                                " (n = ",
-#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(SoilStab_all))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(SoilStab_all))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(SoilStab_all))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(SoilStab_all)))
-#                                   ),
-#                                ")")
-
-ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=SoilStab_all, fill = PlantCommunity_fuzzy)) +
-  geom_boxplot() +
-  scale_x_discrete(labels=state_labels_fuzzy) +
-  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
-  ylim(c(0, 6)) +
-  xlab(NULL) +
-  ylab("Mean soil stability rating") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        legend.position = "none")
-```
-
-
-
-```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="(a) Species diversity (Shannon diversity index) and (b) species richness by state. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher diversity values indicate greater diversity (0 indicates a plot that has only one species)."}
+```{r groups-diversity, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="(a) Species diversity (Shannon diversity index), (b) species richness, and (c) percent native plant cover out of total foliar cover by state. Values are based on line-point intercept data, so they may underestimate diversity compared to a full species inventory. Higher diversity values indicate greater diversity (0 indicates a plot that has only one species)."}
 # group_labels_fuzzy <- paste0(group_labels_base,
 #                                " (n = ",
 #                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(shannon_diversity))),
@@ -1471,18 +1509,46 @@ cowplot::plot_grid(ggplot(data = plot_data_descriptive,
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none"),
+  ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=NativeRelativeCover, fill = PlantCommunity_fuzzy)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=state_labels_fuzzy) +
+  scale_fill_manual(name="State", labels=state_labels_fuzzy, values = pal_veg2) +
+  xlab(NULL) +
+  ylab("Relative native plant cover (%)") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
   nrow = 1, labels = "auto")
 ```
 
-```{r groups-aero, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Wind erosion potential by state, based on AERO models (Edwardds et al., 2022). Data only available for AIM and LMF plots."}
-# group_labels_fuzzy <- paste0(group_labels_base,
-#                                " (n = ",
-#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(horizontal_flux_total_MN))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(horizontal_flux_total_MN))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(horizontal_flux_total_MN))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(horizontal_flux_total_MN)))
-#                                   ),
-#                                ")")
+```{r groups-erosion, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=6.25, fig.cap="Erosion potential by state. Modelled wind erosion (a) is based on AERO models and is only available for  (Edwards et al., 2022)."}
+state_labels_aero <- paste0(state_labels_base,
+                               " (n = ",
+                               c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(horizontal_flux_total_MN))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(horizontal_flux_total_MN))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(horizontal_flux_total_MN))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(horizontal_flux_total_MN)))
+                                  ),
+                               ")")
+
+state_labels_soilstab <- paste0(state_labels_base,
+                               " (n = ",
+                               c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(SoilStab_all))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(SoilStab_all))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(SoilStab_all))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(SoilStab_all)))
+                                  ),
+                               ")")
+
+state_labels_rhem <- paste0(state_labels_base,
+                               " (n = ",
+                               c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(Runoff_Long_Term_MEAN))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(Runoff_Long_Term_MEAN))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(Runoff_Long_Term_MEAN))),
+                                 nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(Runoff_Long_Term_MEAN)))
+                                  ),
+                               ")")
 
 # dust_tall <- plot_data_descriptive %>%
 #   select(PlotID, PlantCommunity_fuzzy, horizontal_flux_total_MN, horizontal_flux_total_LPI, horizontal_flux_total_UPI) %>%
@@ -1490,56 +1556,106 @@ cowplot::plot_grid(ggplot(data = plot_data_descriptive,
 #                       names_to = "dust_statistic",
 #                       values_to = "dust_flux")
 
-ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=horizontal_flux_total_MN)) +
-  geom_boxplot() +
-  scale_x_discrete(labels=state_labels_fuzzy) +
-  #ylim(c(0, 12)) +
-  xlab("State") +
-  ylab(expression(Sediment~mass~flux~(Q)~g~m^{-1}~day^{-1})) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-# TODO add log transformation to y axis
-```
 
-```{r groups-rhem, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=10, fig.cap="Water erosion potential by state, based on RHEM models. Data not available for NPS-NCPN plots."}
-# group_labels_fuzzy <- paste0(group_labels_base,
-#                                " (n = ",
-#                                c(nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==1 & !is.na(Runoff_Long_Term_MEAN))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==2 & !is.na(Runoff_Long_Term_MEAN))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==3 & !is.na(Runoff_Long_Term_MEAN))),
-#                                  nrow(filter(plot_data_descriptive, PlantCommunity_fuzzy==4 & !is.na(Runoff_Long_Term_MEAN)))
-#                                   ),
-#                                ")")
-
-cowplot::plot_grid(ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=Runoff_Long_Term_MEAN)) +
-  geom_boxplot() +
-  scale_x_discrete(labels=state_labels_fuzzy) +
-  xlab("State") +
-  ylab("Long-term mean runoff (mm/yr)") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
+cowplot::plot_grid(
+  # a
   ggplot(data = plot_data_descriptive,
-       aes(x=PlantCommunity_fuzzy, y=Soil_Loss_Long_Term_MEAN)) +
+       aes(x=PlantCommunity_fuzzy, y=horizontal_flux_total_MN, fill=PlantCommunity_fuzzy)) +
   geom_boxplot() +
-  scale_x_discrete(labels=state_labels_fuzzy) +
-  xlab("State") +
-  ylab("Long-term mean soil loss (ton/ha/yr)") +
+  scale_x_discrete(labels=state_labels_aero) +
+  scale_fill_manual(name="State", labels=state_labels_aero, values = pal_veg2) +
+  xlab(NULL) +
+  ylab("Sediment mass flux (Q)
+g/m/day") +
   theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)),
-  nrow = 1, labels = "auto")
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")+ 
+  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::label_math(10^.x))),
+  # b
+  ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=SoilStab_all, fill = PlantCommunity_fuzzy)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=state_labels_soilstab) +
+  scale_fill_manual(name="State", labels=state_labels_soilstab, values = pal_veg2) +
+  ylim(c(0, 6)) +
+  xlab(NULL) +
+  ylab("Mean soil stability rating") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none"),
+  # c
+  ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=Runoff_Long_Term_MEAN, fill = PlantCommunity_fuzzy)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=state_labels_rhem) +
+  scale_fill_manual(name="State", labels=state_labels_rhem, values = pal_veg2) +
+  xlab(NULL) +
+  ylab("Long-term mean 
+runoff (mm/yr)") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") + 
+  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::label_math(10^.x))),
+  # d
+  ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=Soil_Loss_Long_Term_MEAN, fill = PlantCommunity_fuzzy)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=state_labels_rhem) +
+  scale_fill_manual(name="State", labels=state_labels_rhem, values = pal_veg2) +
+  xlab(NULL) +
+  ylab("Long-term mean 
+soil loss (ton/ha/yr)") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") + 
+  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::label_math(10^.x))),
+  # e
+  ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=Runoff_Yearly_Max_Daily_50_Yr, fill = PlantCommunity_fuzzy)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=state_labels_rhem) +
+  scale_fill_manual(name="State", labels=state_labels_rhem, values = pal_veg2) +
+  xlab(NULL) +
+  ylab("50 yr storm max 
+daily runoff (mm)") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") + 
+  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::label_math(10^.x))),
+  # f
+  ggplot(data = plot_data_descriptive,
+       aes(x=PlantCommunity_fuzzy, y=Soil_Loss_Yearly_Max_Daily_50_Yr, fill = PlantCommunity_fuzzy)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=state_labels_rhem) +
+  scale_fill_manual(name="State", labels=state_labels_rhem, values = pal_veg2) +
+  xlab(NULL) +
+  ylab("50 yr storm max daily
+soil loss (tons/ha)") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none") + 
+  scale_y_log10(breaks = scales::trans_breaks("log10", function(x) 10^x),
+                labels = scales::trans_format("log10", scales::label_math(10^.x))),
+  nrow = 3, labels = "auto")
 ```
 
 ## State 1
 ## Shrubland State
 
-TODO write state description
+```{r notes-3, include=FALSE}
+# TODO write state description
+```
 
 ## Community 1.1
 ## Shrubland State: sagebrush and C3 perennial grass shrubland
 
-TODO write state description
+```{r notes-4, include=FALSE}
+# TODO write state description
+```
 
 ```{r comm1-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 dom_spp_grp2 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==2),
@@ -1593,7 +1709,9 @@ format_tables_EDIT_style(data = dom_spp_grp2_pub,
 ## Community 2.1
 ## Open woodland state: pinyon-juniper and gambel oak woodland
 
-TODO write state description
+```{r notes-5, include=FALSE}
+# TODO write state description
+```
 
 ```{r comm2-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 dom_spp_grp1 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==1),
@@ -1621,12 +1739,16 @@ format_tables_EDIT_style(data = dom_spp_grp1_pub,
 ## State 3
 ## Grassland State
 
-TODO write state description
+```{r notes-6, include=FALSE}
+# TODO write state description
+```
 
 ## Community 3.1
 ## Grassland State: C3 perennial grassland
 
-TODO write state description
+```{r notes-7, include=FALSE}
+# TODO write state description
+```
 
 ```{r comm3-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 dom_spp_grp4 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==4),
@@ -1654,12 +1776,16 @@ format_tables_EDIT_style(data = dom_spp_grp4_pub,
 ## State 4
 ## Invaded State
 
-TODO write state description
+```{r notes-8, include=FALSE}
+# TODO write state description
+```
 
 ## Community 4.1
 ## Invaded State: Non-native annual grass and sagebrush shrubland
 
-TODO write state description
+```{r notes-9, include=FALSE}
+# TODO write state description
+```
 
 ```{r comm4-1-dominant-spp, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 dom_spp_grp3 <- get_dominant_spp(data = filter(plot_data_descriptive, PlantCommunity_fuzzy==3),
@@ -1684,37 +1810,39 @@ format_tables_EDIT_style(data = dom_spp_grp3_pub,
   collapse_rows(columns = 1, valign = "top")
 ```
 
-### Additional community tables
+```{r notes-10, include=FALSE}
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO create table of production (or percent cover) by species, with species linking to their USDA Plants profile
-
-# knitr::kable(x = dom_plant_spp_tab, caption = "Table 8. Community 1.1 plant community composition")
+# ### Additional community tables
+# 
+# # TODO create table of production (or percent cover) by species, with species linking to their USDA Plants profile
+# 
+# # knitr::kable(x = dom_plant_spp_tab, caption = "Table 8. Community 1.1 plant community composition")
+# 
+# 
+# # Interpretations
+# 
+# ## Animal community
+# 
+# TODO write wildlife narrative
+# 
+# ## Hydrological functions
+# 
+# TODO write hydrology narrative
+# 
+# ## Recreational uses
+# 
+# TODO write recreation narrative
+# 
+# ## Wood products
+# 
+# TODO write wood production narrative (probably "None")
+# 
+# ## Other products
+# 
+# TODO grazing narrative could go here
+# 
+# # Supporting information
 ```
-
-# Interpretations
-
-## Animal community
-
-TODO write wildlife narrative
-
-## Hydrological functions
-
-TODO write hydrology narrative
-
-## Recreational uses
-
-TODO write recreation narrative
-
-## Wood products
-
-TODO write wood production narrative (probably "None")
-
-## Other products
-
-TODO grazing narrative could go here
-
-# Supporting information
 
 ## Other references
 
@@ -1742,31 +1870,37 @@ Trabucco, A., and R. J. Zomer. 2018. Global aridity index and potential evapotra
 
 ## Contributors
 
-+ Anna Knight
++ Anna C. Knight
 + Travis Nauman
 + Samuel Burch
-+ Tara Bishop
-+ Mike Duniway
++ Tara B. B. Bishop
++ Sarah E. McCord
++ Nicholas P. Webb
++ C. Jason Williams
++ Joel T. Humphries
++ Michael C. Duniway
 
-# Reference sheet
-
-[Interpreting Indicators of Rangeland Health](https://wiki.landscapetoolbox.org/doku.php/field_methods:rangeland_health_assessment_i.e._indicators_of_rangeland_health) is a qualitative assessment protocol used to determine ecosystem condition based on benchmark characteristics described in the Reference Sheet. A suite of 17 (or more) indicators are typically considered in an assessment. The ecological site(s) representative of an assessment location must be known prior to applying the protocol and must be verified based on soils and climate. Current plant community cannot be used to identify the ecological site.
-
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
-# TODO create table with author, author contact info, date, approver, approved date, and "Composition (Indicators 10 and 12) based on" info for the IIRH reference sheet
-
-# knitr::kable(x = dom_plant_spp_tab)
+```{r notes-11, include=FALSE}
+# # Reference sheet
+# 
+# [Interpreting Indicators of Rangeland Health](https://wiki.landscapetoolbox.org/doku.php/field_methods:rangeland_health_assessment_i.e._indicators_of_rangeland_health) is a qualitative assessment protocol used to determine ecosystem condition based on benchmark characteristics described in the Reference Sheet. A suite of 17 (or more) indicators are typically considered in an assessment. The ecological site(s) representative of an assessment location must be known prior to applying the protocol and must be verified based on soils and climate. Current plant community cannot be used to identify the ecological site.
+# 
+# ```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+# # TODO create table with author, author contact info, date, approver, approved date, and "Composition (Indicators 10 and 12) based on" info for the IIRH reference sheet
+# 
+# # knitr::kable(x = dom_plant_spp_tab)
+# 
+# 
+# ## Indicators
+# 
+# TODO fill in the 17 IIRH indicators for the reference state if available
+# 
+# TODO link to PDF of the reference sheet
+# 
+# # Print options
+# 
+# TODO look into options for printing from the RMarkdown HTML format
 ```
-
-## Indicators
-
-TODO fill in the 17 IIRH indicators for the reference state if available
-
-TODO link to PDF of the reference sheet
-
-# Print options
-
-TODO look into options for printing from the RMarkdown HTML format
 
 ```{r Publicationfigures, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 # 1. plant functional group join plot with ordination
@@ -2210,7 +2344,21 @@ for 1 yr. prior to field samling",
   return(rain_plot)
 }
 
+# some numbers on which plots and states have AERO and RHEM data available - not even across states!
+erosion_data_availability <- plot_data_descriptive %>% 
+  group_by(PlantCommunity_fuzzy_reordered) %>% 
+  summarise(n = n(),
+            n_NCPN = length(which(SourceKey=="IM_NCPN")),
+            prp_NCPN = length(which(SourceKey=="IM_NCPN"))/n(),
+            n_noAERO = length(which(is.na(horizontal_flux_total_MN))),
+            prp_noAERO = length(which(is.na(horizontal_flux_total_MN)))/n(),
+            n_noRHEM = length(which(is.na(Soil_Loss_Long_Term_MEAN))),
+            prp_noRHEM = length(which(is.na(Soil_Loss_Long_Term_MEAN)))/n())
 
+# today <- Sys.Date()
+# write.csv(x = erosion_data_availability,
+#           file = paste0(output_figure_folder, "/SW_SandyLoamyUplands_erosion_data_availability_", today, ".csv"),
+#           row.names = F)
 
 # aero, Duniway et al 2023 figure 7b
 aero_plot <- box_pretty_plot(dat = filter(plot_data_descriptive, !is.na(horizontal_flux_total_MN)),
@@ -2454,7 +2602,7 @@ highrestiff(plot_obj = erosion_all_plots,
 # 3. NPP
 # NPP data is from the RAP 3.0 partitioned NPP data set (Robinson et al., 2019). I downloaded the predicted NPP values within a 35-m radius of the AIM, LMF, NRI, and NCPN plot centers using a Google Earth Engine script. If we continue using NPP for other ESGs, we will probably need to continue downloading point values for RAP products through GEE - the raster file sizes are enormous!
 
-# Robinson, N. P., Allred, B. W., Naugle, D. E., & Jones, M. O. (2019). Patterns of rangeland productivity and land ownership: Implications for conservation and management. Ecologial Applications, 23(3), e01862. 
+# Robinson, N.P., M.O. Jones, A. Moreno, T.A. Erickson, D.E. Naugle, and B.W. Allred. 2019. Rangeland productivity partitioned to sub-pixel plant functional types. Remote Sensing 11:1427. https://dx.doi.org/10.3390/rs11121427 
 
 NPP_files <- list.files(paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RAP_do_not_sync/", target_ESG, "/NPP"),
                         full.names = T)
@@ -2576,7 +2724,6 @@ highrestiff(plot_obj = biodiversity_plots,
             height_in = 3.5,
             resolution_dpi = 300)
 
-plot_data_descriptive$NativeRelativeCover <- (plot_data_descriptive$AH_NativeCover/plot_data_descriptive$TotalFoliarCover)*100
 native_relative_plot <- box_pretty_plot(dat = plot_data_descriptive,
                                         include_plot_count = F,
                                      y_var = "NativeRelativeCover",
@@ -3601,6 +3748,24 @@ write.csv(release_data,
           file = paste0("../../Analyses/", target_ESG, "_DataRelease_", today, ".csv"),
           row.names = F)
 
+# write out complete species tables for each state for Mike to reference while
+# writing the STM paper
+today <- Sys.Date()
+write.csv(dom_spp_grp1,
+          file = paste0("../../Analyses/", target_ESG, "_SpeciesTable_OpenWoodland_", today, ".csv"),
+          row.names = F)
+
+write.csv(dom_spp_grp2,
+          file = paste0("../../Analyses/", target_ESG, "_SpeciesTable_Shrubland_", today, ".csv"),
+          row.names = F)
+
+write.csv(dom_spp_grp3,
+          file = paste0("../../Analyses/", target_ESG, "_SpeciesTable_Invaded_", today, ".csv"),
+          row.names = F)
+
+write.csv(dom_spp_grp4,
+          file = paste0("../../Analyses/", target_ESG, "_SpeciesTable_Grassland_", today, ".csv"),
+          row.names = F)
 
 # ## make a master data frame for Mike to work with - NRI only allowed for Four Corners states (no WY)
 # Mike_data <- filter(plot_data_descriptive, PlotCode %in% fuzzy_cluster_memb_sf_mike$PlotCode) %>%
