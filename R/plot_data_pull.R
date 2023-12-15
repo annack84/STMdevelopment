@@ -1,7 +1,7 @@
 #' Pull indicators from desired data sets for target ESG
 #'
-#' @param user Character. User name to generate input data file paths.
-#'   Options are "Anna", "Travis", and "VPN".
+#' @param user Character. User name to generate input data file paths. See
+#' \code{\link{data_file_paths}} for input options.
 #' @param target_ESG Character. Ecological Site Group to pull plot data for.
 #'   Follow the names used in the ESG raster released with Travis's 2021 manuscript.
 #' @param data_sources Character or vector of characters indicating which projects
@@ -90,15 +90,20 @@ plot_data_pull <- function(user = "Anna",
 
   file_paths <- data_file_paths(user)
   # extract ESG for each plot location
+  plot_location_file <- last(sort(grep(x=list.files(file.path(file_paths$plotnet_processed, "PlotLocations")), pattern = "all_plot-years_", value = T) %>%
+                                    grep(x=., pattern=".shp$", value = T)))
+  plot_location_file <- substr(plot_location_file, 1, nchar(plot_location_file)-4)
   plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "PlotLocations"),
-                                layer = "all_plot-years_2022-11-08",
+                                layer = plot_location_file,
                                 quiet=TRUE) # TODO write code to pull the
   # most recent version so we don't have to change this file name
   # when a new project is added to PlotNet
 
   if("NRI" %in% data_sources){
+    nri_location_file <- last(sort(grep(x=list.files(file_paths$nri), pattern = "NRI_UCRB_plot-years_", value = T)))
+    nri_location_file <- substr(nri_location_file, 1, nchar(nri_location_file)-4)
     nri_locations <- sf::st_read(dsn = file_paths$nri,
-                                 layer = "NRI_UCRB_plot-years_2022-11-03",
+                                 layer = nri_location_file,
                                  quiet = TRUE)
 
     plot_locations <- dplyr::filter(plot_locations, !grepl(pattern = "^NRI_",

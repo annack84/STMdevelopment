@@ -5,8 +5,8 @@
 #' estimated (e.g. to estimate annual gaps > 25 cm, use perennial gaps > 25 cm),
 #' (2) annual grass cover, (3) perennial grass cover, (4) shrub cover, and (5)
 #' forb cover. All cover variables should come from any-hit indicators
-#' calculated from LPI data. Structured to be used AFTER \link{plot_data_pull},
-#' not with WITHIN \link{plot_data_pull}.
+#' calculated from LPI data. Structured to be used AFTER \code{\link{plot_data_pull}},
+#' not with WITHIN \code{\link{plot_data_pull}}.
 #'
 #' @param gap_type Character indicating the gap window to be predicted. One of
 #'   "25plus", "50plus", "100plus", or "200plus". Defaults to "25 plus".

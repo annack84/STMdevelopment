@@ -9,8 +9,8 @@ perennial gap window that matches the annual & perennial gap window to be
 estimated (e.g. to estimate annual gaps > 25 cm, use perennial gaps > 25 cm),
 (2) annual grass cover, (3) perennial grass cover, (4) shrub cover, and (5)
 forb cover. All cover variables should come from any-hit indicators
-calculated from LPI data. Structured to be used AFTER \link{plot_data_pull},
-not with WITHIN \link{plot_data_pull}.}
+calculated from LPI data. Structured to be used AFTER \code{\link{plot_data_pull}},
+not with WITHIN \code{\link{plot_data_pull}}.}
 \usage{
 estimate_allgaps(gap_type = "25plus", perennial_gaps, AG, PG, SH, Forb)
 }
@@ -45,6 +45,6 @@ perennial gap window that matches the annual & perennial gap window to be
 estimated (e.g. to estimate annual gaps > 25 cm, use perennial gaps > 25 cm),
 (2) annual grass cover, (3) perennial grass cover, (4) shrub cover, and (5)
 forb cover. All cover variables should come from any-hit indicators
-calculated from LPI data. Structured to be used AFTER \link{plot_data_pull},
-not with WITHIN \link{plot_data_pull}.
+calculated from LPI data. Structured to be used AFTER \code{\link{plot_data_pull}},
+not with WITHIN \code{\link{plot_data_pull}}.
 }

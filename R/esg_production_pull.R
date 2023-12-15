@@ -1,8 +1,8 @@
 
 #' Ecological site group species production query
 #'
-#' @param user Character. User name to generate input data file paths.
-#'   Options are "Anna", "Travis", and "VPN".
+#' @param user Character. User name to generate input data file paths.See
+#' \code{\link{data_file_paths}} for input options.
 #' @param target_ESG The ecological site group to pull data for.
 #'
 #' @return list of data.frames

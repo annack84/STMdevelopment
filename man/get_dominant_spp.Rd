@@ -19,8 +19,8 @@ community.}
 \item{species_cols}{Character vector of the column names of all the columns
 in data containing species cover.}
 
-\item{user}{Character. User name to generate input data file paths. Options
-are "Anna", "Travis", and "VPN". Passes to \code{\link{data_file_paths}}}
+\item{user}{Character. User name to generate input data file paths. See
+\code{\link{data_file_paths}} for input options.}
 }
 \value{
 Data frame of species recorded for each functional group, arranged

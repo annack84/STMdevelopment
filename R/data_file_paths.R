@@ -6,7 +6,9 @@
 #'
 #' @param user Character. Options are "Anna" and "Travis" for personal hard
 #'  drive and OneDrive folders/files, or VPN if doing everything from the
-#'  network
+#'  network. "Duniway_et_al_2024" accesses the data archive of the data that
+#'  went into the Semiarid Warm Sandy and Loamy Uplands STM for the Duniway et
+#'  al. 2024 manuscript (may only work from Anna's computer).
 #'
 #' @return List. Use this list in other functions to access data from different
 #'  file locations
@@ -57,7 +59,8 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
                                                    "G:/Base Layers/Soils/UCRB_30m/ec_r_15_cm_2D_QRF_bt.tif",
                                                    "G:/Base Layers/Soils/UCRB_30m/ec_r_30_cm_2D_QRF_bt.tif"),
                                             depthclass = "G:/Base Layers/Soils/UCRB_30m/DepthClass_ensemble.tif"
-                        )
+                        ),
+                        sgu_probability_raster = "V:/PROJECTS/ANNA_KNIGHT/ESG/Maps/UCRB_SGUs_ProbMax/UCRB_SGUs_ProbMax.tif"
   )
 
   if(user=="Anna"){
@@ -82,9 +85,44 @@ data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
                       "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmax_30yr_normal_800mM2_annual_asc/PRISM_tmax_30yr_normal_800mM2_annual_asc.asc",
                       "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc"
                       )
-    file_list$aero <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv"
     file_list$rhem$aim <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RHEM/Final_5_RHEM_AIM_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv"
     file_list$rhem$lmf <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/RHEM/Final_5_RHEM_LMF_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv"
+    file_list$soil_rasters$clay <- gsub(x=file_list$soil_rasters$clay, pattern = "G:/Base Layers/Soils/UCRB_30m", replacement = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Soils")
+    file_list$soil_rasters$sand <- gsub(x=file_list$soil_rasters$sand, pattern = "G:/Base Layers/Soils/UCRB_30m", replacement = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Soils")
+    file_list$soil_rasters$fragments <- gsub(x=file_list$soil_rasters$fragments, pattern = "G:/Base Layers/Soils/UCRB_30m", replacement = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Soils")
+    file_list$soil_rasters$depthclass <- gsub(x=file_list$soil_rasters$depthclass, pattern = "G:/Base Layers/Soils/UCRB_30m", replacement = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Soils")
+    file_list$sgu_probability_raster <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/UCRB_SGUs_ProbMax/UCRB_SGUs_ProbMax.tif"
+  }
+
+  if(user=="Duniway_et_al_2024"){
+    # This one is an archive of the data used in the STM paper, Duniway et al. 2024
+    file_list <- network_files
+    file_list$plotnet_processed <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/PlotNet/Indicators"
+    file_list$ESG_map <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/Eco_Site_Group_Data/ESGs_final.tif"
+    file_list$target_ESG_map_folder <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/Eco_Site_Group_Data"
+    file_list$species_list <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/SpeciesLists/SpeciesList_PlotNet_compiled_2021-11-01.csv"
+    file_list$apriori_stms <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/state_STM_summary_by_ESG_SandyLoamyRecombined.csv"
+    file_list$plotnet_splist_location <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/PlotNet"
+    file_list$aimlmf_splist <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/SpeciesLists/SpeciesList_AIM2020UCRBStates.csv"
+    file_list$nri <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/NRI_do_not_sync"
+    file_list$aero <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/AERO_indicators_AIMLMF_20211112.csv"
+    file_list$ai_raster <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/GlobalAIandPET/global-ai_et0/ai_et0/ai_et0_WesternUSEcoregions.tif"
+    file_list$prism_rasters <- c("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_annual_asc/PRISM_ppt_30yr_normal_800mM2_annual_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_06_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_07_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_08_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_09_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmean_30yr_normal_800mM2_annual_asc/PRISM_tmean_30yr_normal_800mM2_annual_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmax_30yr_normal_800mM2_annual_asc/PRISM_tmax_30yr_normal_800mM2_annual_asc.asc",
+                                 "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/PRISM/temp/PRISM_tmin_30yr_normal_800mM2_annual_asc/PRISM_tmin_30yr_normal_800mM2_annual_asc.asc"
+    )
+    file_list$rhem$aim <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/Final_5_RHEM_AIM_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv"
+    file_list$rhem$lmf <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/Final_5_RHEM_LMF_SoilGrids_NEDslope_21926_09May2022_SubsetNVUTAZCONM_2023-01-31.csv"
+    file_list$rhem$nri <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/NRI_do_not_sync/RHEM/Final_2_RHEM_NRI_SoilGrids_NEDSlope_32425_09May2022.csv"
+    file_list$soil_rasters$clay <- gsub(x=file_list$soil_rasters$clay, pattern = "G:/Base Layers/Soils/UCRB_30m", replacement = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Soils")
+    file_list$soil_rasters$sand <- gsub(x=file_list$soil_rasters$sand, pattern = "G:/Base Layers/Soils/UCRB_30m", replacement = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Soils")
+    file_list$soil_rasters$fragments <- gsub(x=file_list$soil_rasters$fragments, pattern = "G:/Base Layers/Soils/UCRB_30m", replacement = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Soils")
+    file_list$soil_rasters$depthclass <- gsub(x=file_list$soil_rasters$depthclass, pattern = "G:/Base Layers/Soils/UCRB_30m", replacement = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Soils")
   }
 
   if(user=="Travis"){

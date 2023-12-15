@@ -9,7 +9,9 @@ data_file_paths(user)
 \arguments{
 \item{user}{Character. Options are "Anna" and "Travis" for personal hard
 drive and OneDrive folders/files, or VPN if doing everything from the
-network}
+network. "Duniway_et_al_2024" accesses the data archive of the data that
+went into the Semiarid Warm Sandy and Loamy Uplands STM for the Duniway et
+al. 2024 manuscript (may only work from Anna's computer).}
 }
 \value{
 List. Use this list in other functions to access data from different

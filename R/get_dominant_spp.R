@@ -10,8 +10,8 @@
 #'   community.
 #' @param species_cols Character vector of the column names of all the columns
 #'   in data containing species cover.
-#' @param user Character. User name to generate input data file paths. Options
-#'   are "Anna", "Travis", and "VPN". Passes to \code{\link{data_file_paths}}
+#' @param user Character. User name to generate input data file paths. See
+#' \code{\link{data_file_paths}} for input options.
 #'
 #' @return Data frame of species recorded for each functional group, arranged
 #'   from highest to lowest mean cover. Functional groups are:

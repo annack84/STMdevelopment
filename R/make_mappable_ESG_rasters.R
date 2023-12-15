@@ -2,8 +2,8 @@
 #'
 #' @param target_ESG Character. Ecological Site Group to be mapped.
 #'   Follow the names used in the ESG raster released with Travis's 2021 manuscript.
-#' @param user Character. User name to generate input data file paths.
-#'   Options are "Anna", "Travis", and "VPN".
+#' @param user Character. User name to generate input data file paths.See
+#' \code{\link{data_file_paths}} for input options.
 #'
 #' @return Raster where 1=target ESG and 0=not target ESG
 #' @export

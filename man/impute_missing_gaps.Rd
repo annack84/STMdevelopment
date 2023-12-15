@@ -12,7 +12,8 @@ impute_missing_gaps(
 )
 }
 \arguments{
-\item{indicator_data_target_wide}{Data frame. Intermediate data product within \link{plot_data_pull}}
+\item{indicator_data_target_wide}{Data frame. Intermediate data product
+within \code{\link{plot_data_pull}}}
 
 \item{impute_gap_type}{Character vector. Gap type to predict. Supported options are
 "CA_percent_100plus" (\% cover annual & perennial gaps >100 cm) and

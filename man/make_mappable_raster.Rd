@@ -13,8 +13,8 @@ make_mappable_raster(
 \item{target_ESG}{Character. Ecological Site Group to be mapped.
 Follow the names used in the ESG raster released with Travis's 2021 manuscript.}
 
-\item{user}{Character. User name to generate input data file paths.
-Options are "Anna", "Travis", and "VPN".}
+\item{user}{Character. User name to generate input data file paths.See
+\code{\link{data_file_paths}} for input options.}
 }
 \value{
 Raster where 1=target ESG and 0=not target ESG

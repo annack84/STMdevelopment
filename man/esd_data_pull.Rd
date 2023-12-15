@@ -10,8 +10,8 @@ esd_data_pull(
 )
 }
 \arguments{
-\item{user}{Character. User name to generate input data file paths. Options
-are "Anna", "Travis", and "VPN".}
+\item{user}{Character. User name to generate input data file paths. See
+\code{\link{data_file_paths}} for input options.}
 
 \item{target_ESG}{The ecological site group to pull data for.}
 }
