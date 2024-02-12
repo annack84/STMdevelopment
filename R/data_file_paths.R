@@ -15,7 +15,7 @@
 #' @export data_file_paths
 #' @rdname data_file_paths
 
-data_file_paths <- function(user){ # "Anna", "Travis", or "VPN"
+data_file_paths <- function(user){ # "Anna", "Travis", "Duniway_et_al_2024" or "VPN"
   network_files <- list(plotnet_processed = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData",
                         nri = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/NRI",
                         ESG_map = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/ESGs_final.tif",

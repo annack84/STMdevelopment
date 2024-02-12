@@ -70,7 +70,7 @@ Areas shown in blue indicate the maximum mapped extent of this ecological site. 
 
 This ecological site group includes a variety of upland ecological sites that have deeper sandy soils without significant rock content. The group was defined by placing ecological sites into groups by separating soils, climate, and geomorphic features to best differentiate reference vegetation production values and documented ecological states as documented by Nauman et al. (2022).
 
-```{r echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+```{r esd-data-pull, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 esds <- esd_data_pull(user=user, target_ESG = target_ESG)
 comps <- comp_data_pull(user=user, target_ESG = target_ESG)
 num_esds <- nrow(esds)
@@ -363,6 +363,7 @@ plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "Plo
                               layer = "all_plot-years_2022-11-08",
                               quiet=TRUE) %>%
   distinct()
+
 if("NRI" %in% data_sources){
   nri_locations <- sf::st_read(dsn = file_paths$nri,
                                layer = "NRI_UCRB_plot-years_2022-11-03",
@@ -381,7 +382,7 @@ plot_SGU_prob <- sf::st_as_sf(raster::extract(x = SGU_prob_raster,
 plot_data_first <- left_join(plot_data_first, select(plot_SGU_prob, PlotCode, UCRB_SGUs_ProbMax)) %>%
   distinct() 
 
-certainty_cutoff <- quantile(plot_data_first$UCRB_SGUs_ProbMax, probs = 0.1)
+certainty_cutoff <- quantile(plot_data_first$UCRB_SGUs_ProbMax, probs = 0.1, na.rm = T)
 
 plot_data_first <- filter(plot_data_first, UCRB_SGUs_ProbMax > certainty_cutoff)
 
@@ -414,7 +415,7 @@ ord.df <- select(ord.df, -any_of(c("UNKS", "UNKPG", "UNKAF", "UNKPF", "PG1", "PG
 # # with the data sharing restrictions
 # ord.df.share <- select(plot_data_first, all_of(c("SourceKey", "PlotCode", "Year", "Month", "Day", "UCRB_SGUs_ProbMax", colnames(ord.df))))
 # write.csv(ord.df.share,
-#           file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Analysis_ready_data",
+#           file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Analysis_ready_data/",
 #                         target_ESG, "_FANNYInputData_", Sys.Date(), ".csv"),
 #           row.names = F)
 

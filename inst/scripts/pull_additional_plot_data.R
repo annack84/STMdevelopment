@@ -10,7 +10,8 @@ library(sf)
 #library(STMdevelopment)
 devtools::load_all()
 
-target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
+#target_ESG <- "Semiarid_Warm_SandyUplands_LoamyUplands"
+target_ESG <- "Semiarid_Warm_Shallow_DeepRocky"
 user <- "Anna"
 
 # pull plot data using the same settings as the target ESG
@@ -85,10 +86,24 @@ plot_data_clean <- na.omit(plot_data) %>%
                                   no = PlotCode))
 
 # Get only the plot-dates NOT included in the original clustering
-swslu_cluster_data <- read.csv("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/Analysis_ready_data/Semiarid_Warm_SandyUplands_LoamyUplands_FANNYInputData_2023-12-11.csv")
+if(target_ESG=="Semiarid_Warm_SandyUplands_LoamyUplands"){
+  cluster_data <- read.csv("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Plot_data_used_Duniway_et_al_2024/Analysis_ready_data/Semiarid_Warm_SandyUplands_LoamyUplands_FANNYInputData_2023-12-11.csv")
 
-plot_data_new <- anti_join(x=plot_data_clean,
-                           y = select(swslu_cluster_data, SourceKey, PlotCode, Year, Month, Day))
+  plot_data_new <- anti_join(x=plot_data_clean,
+                             y = select(cluster_data, SourceKey, PlotCode, Year, #Month, Day
+                                        ))
+}
+
+if(target_ESG=="Semiarid_Warm_Shallow_DeepRocky"){
+  cluster_data <- read.csv("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Analysis_ready_data/Semiarid_Warm_Shallow_DeepRocky_FANNYInputData_2023-11-17.csv")
+
+  plot_data_new <- anti_join(x=plot_data_clean,
+                             y = select(cluster_data, SourceKey, PlotCode, Year)) %>%
+    filter(PlotCode != "AIM_Utah Vernal FO 2019_009") # this one is duplicated in the plot locations with very different coordinates
+}
+
+# check for duplicate plot-years
+plot_data_new %>% group_by(PlotCode) %>% filter(n()>1) %>% ungroup() %>% nrow() # should be 0
 
 # should mostly be recent years, but there might be some older plots that were
 # either repeat samples of the same plot or excluded from clustering due to low
@@ -100,7 +115,7 @@ file_paths <- data_file_paths(user)
 SGU_prob_raster <- raster::raster(file_paths$sgu_probability_raster)
 
 plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "PlotLocations"),
-                              layer = "all_plot-years_2023-12-11",
+                              layer = "all_plot-years_2023-12-14",
                               quiet=TRUE) %>%
   distinct()
 
@@ -131,11 +146,12 @@ plot_data_new <- left_join(plot_data_new, select(plot_SGU_prob, PlotCode, UCRB_S
 # double check whether to include location info!!
 ord.df.share <- select(plot_data_new,
                        any_of(c("Longitude_NAD83", "Latitude_NAD83",
-                                colnames(swslu_cluster_data))))
+                                colnames(cluster_data))))
 
 # don't need OPUNT data because we have AH_OpuntiaCover
-"OPUNT" %in% colnames(ord.df.share)
-ord.df.share <- select(ord.df.share, -OPUNT)
+if("OPUNT" %in% colnames(ord.df.share)){
+  ord.df.share <- select(ord.df.share, -OPUNT)
+}
 
 write.csv(ord.df.share,
           file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Analysis_ready_data/",
