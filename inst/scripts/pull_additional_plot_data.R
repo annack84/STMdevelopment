@@ -48,10 +48,11 @@ opuntia_combined <- T
 
 data_sources <- c(#"BadgerWash",
   #"CRCMonitoring", # drop if not needed for spatial representation
-  #"IM_NCPN", # exclude until other have permission to use NCPN locations
+  "IM_NCPN", # exclude until other have permission to use NCPN locations
   "LMF",
   #"NRI", # exclude until others have permission to use NRI
   #"Parashant", # drop if not needed for spatial representation
+  "JFSP",
   "AIM"#,
   #"VanScoyocThesis" # drop if not needed for spatial representation
 )
@@ -102,6 +103,9 @@ if(target_ESG=="Semiarid_Warm_Shallow_DeepRocky"){
     filter(PlotCode != "AIM_Utah Vernal FO 2019_009") # this one is duplicated in the plot locations with very different coordinates
 }
 
+# filter to just the JFSP plots
+plot_data_new <- filter(plot_data_new, SourceKey=="JFSP")
+
 # check for duplicate plot-years
 plot_data_new %>% group_by(PlotCode) %>% filter(n()>1) %>% ungroup() %>% nrow() # should be 0
 
@@ -115,7 +119,7 @@ file_paths <- data_file_paths(user)
 SGU_prob_raster <- raster::raster(file_paths$sgu_probability_raster)
 
 plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "PlotLocations"),
-                              layer = "all_plot-years_2023-12-14",
+                              layer = "all_plot-years_2024-02-15",
                               quiet=TRUE) %>%
   distinct()
 
@@ -155,5 +159,5 @@ if("OPUNT" %in% colnames(ord.df.share)){
 
 write.csv(ord.df.share,
           file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Analysis_ready_data/",
-                        target_ESG, "_NewPlotData_", Sys.Date(), ".csv"),
+                        target_ESG, "_JFSP2023PlotData_", Sys.Date(), ".csv"),
           row.names = F)

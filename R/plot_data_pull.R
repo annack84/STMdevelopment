@@ -92,7 +92,8 @@ plot_data_pull <- function(user = "Anna",
   # extract ESG for each plot location
   plot_location_file <- last(sort(grep(x=list.files(file.path(file_paths$plotnet_processed, "PlotLocations")), pattern = "all_plot-years_", value = T) %>%
                                     grep(x=., pattern=".shp$", value = T)))
-  plot_location_file <- substr(plot_location_file, 1, nchar(plot_location_file)-4)
+  #plot_location_file <- substr(plot_location_file, 1, nchar(plot_location_file)-4)
+  plot_location_file <- gsub(pattern = ".shp$", replacement = "", x=plot_location_file)
   plot_locations <- sf::st_read(dsn = file.path(file_paths$plotnet_processed, "PlotLocations"),
                                 layer = plot_location_file,
                                 quiet=TRUE) # TODO write code to pull the
@@ -186,8 +187,8 @@ plot_data_pull <- function(user = "Anna",
                                    sep = "_")
 
   # filter indicators to just target ESG plots
-  indicator_data_target <- dplyr::filter(indicator_data, PlotCode %in% plot_target_ESG$PlotCode) %>%
-    dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83)
+  indicator_data_target <- dplyr::filter(indicator_data, PlotCode %in% plot_target_ESG$PlotCode) #%>%
+    #dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83)
 
   # make wide
   indicator_data_target_wide <- indicator_data_target %>%
@@ -360,10 +361,20 @@ plot_data_pull <- function(user = "Anna",
                          names_from = SpeciesCode,
                          values_from = percent,
                          values_fill = 0 # fill missing values with 0 instead of NA because missing species had 0% cover
-      )
+      ) %>%
+      dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83) # these can come from the indicator file
 
     # combine with indicator data
-    indicator_data_target_wide <- dplyr::left_join(indicator_data_target_wide, species_data_wide)
+    indicator_data_target_wide <- dplyr::left_join(indicator_data_target_wide, species_data_wide,
+                                                   by = join_by(SourceKey, PlotID, SiteName, PlotName, Year, PlotCode))
+
+    # if a plot had none of the species groups specified, fill the missing data with 0
+    indicator_data_target_wide <- indicator_data_target_wide %>%
+      mutate(across(.cols = -any_of(c("SourceKey", "PlotID", "SiteName",
+                                      "PlotName", "Longitude_NAD83",
+                                      "Latitude_NAD83", "Year", "Month", "Day",
+                                      "PlotCode")),
+                    .fns = replaceNA))
   }
 
   # If using AH_ArtemisiaTridentataCover, remove Artemisia tridentata individual subspecies to avoid double counting them

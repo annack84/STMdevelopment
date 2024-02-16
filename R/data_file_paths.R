@@ -27,7 +27,9 @@ data_file_paths <- function(user){ # "Anna", "Travis", "Duniway_et_al_2024" or "
                         ssurgo = "V:/PROJECTS/TRAVIS_NAUMAN/GIS_Archive/gSSURGO18/gSSURGO_CONUS.gdb",
                         ssurgo_result_fldr = "V:/PROJECTS/TRAVIS_NAUMAN/ESGs/Analysis/RMD_STMs/ssurgo_results",
                         plotnet_splist_location = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data",
-                        aimlmf_splist = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/AIM/Terrestrial AIM Data Spring 2020/PlotNet_style_AIMLMF_calcs/SpeciesList_AIM2020UCRBStates.csv",
+                        # need to update to this aim and lmf species list, but the SpeciesState handling gets messy
+                        #aimlmf_splist = "V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/AIM/PlotNet_style_calcs_AIMLMF_all/SpeciesList_AIMLMF_20231201.csv",
+                        aimlmf_splist ="V:/PROJECTS/MIKE_DUNIWAY/CURRENT/SWDesertRangelandMonitoring/Data/ProcessedData/AIM/Old_AIM_LMF_databases/Terrestrial AIM Data Spring 2020/PlotNet_style_AIMLMF_calcs/SpeciesList_AIM2020UCRBStates.csv",
                         ai_raster = "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/GlobalAIandPET/global-ai_et0/ai_et0/ai_et0_WesternUSEcoregions.tif",
                         prism_rasters = c("V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_annual_asc/PRISM_ppt_30yr_normal_800mM2_annual_asc.asc",
                                           "V:/PROJECTS/ANNA_KNIGHT/GIS/Climate/PRISM/ppt/PRISM_ppt_30yr_normal_800mM2_monthly_asc/PRISM_ppt_30yr_normal_800mM2_06_asc.asc",
@@ -72,7 +74,8 @@ data_file_paths <- function(user){ # "Anna", "Travis", "Duniway_et_al_2024" or "
     file_list$species_list <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/Eco_Site_Group_Data/SpeciesList_PlotNet_compiled_2021-11-01.csv"
     file_list$apriori_stms <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/ESD_STMs/outputs/state_STM_summary_by_ESG_SandyLoamyRecombined.csv"
     file_list$plotnet_splist_location <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/SWDesertRangelandMonitoring/Data"
-    file_list$aimlmf_splist <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/SWDesertRangelandMonitoring/Data/ProcessedData/AIM/Terrestrial AIM Data Spring 2020/PlotNet_style_AIMLMF_calcs/SpeciesList_AIM2020UCRBStates.csv"
+    #file_list$aimlmf_splist <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/SWDesertRangelandMonitoring/Data/ProcessedData/AIM/PlotNet_style_calcs_AIMLMF_all/SpeciesList_AIMLMF_20231201.csv"
+    file_list$aimlmf_splist <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/SWDesertRangelandMonitoring/Data/ProcessedData/AIM/Old_AIM_LMF_databases/Terrestrial AIM Data Spring 2020/PlotNet_style_AIMLMF_calcs/SpeciesList_AIM2020UCRBStates.csv"
     file_list$nri <- "C:/Users/aknight/Documents/Telework_Backups/U_drive/Projects/NRI_US_limitaccess/NRI/NRI_USGS_formats/NRI_UCRB/Indicators"
     file_list$aero <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/AERO/AERO_indicators_AIMLMF_20211112.csv"
     file_list$ai_raster <- "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/GIS/Climate/GlobalAIandPET/global-ai_et0/ai_et0/ai_et0_WesternUSEcoregions.tif"

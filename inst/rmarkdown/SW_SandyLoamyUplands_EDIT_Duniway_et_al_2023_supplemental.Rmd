@@ -310,6 +310,7 @@ data_sources <- c(#"BadgerWash",
                              "LMF",
                              "NRI",
                              #"Parashant", # drop if not needed for spatial representation
+                             #"JFSP",
                              "AIM"#, 
                              #"VanScoyocThesis" # drop if not needed for spatial representation
                            )
