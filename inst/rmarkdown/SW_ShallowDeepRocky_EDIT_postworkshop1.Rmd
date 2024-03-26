@@ -723,23 +723,42 @@ fuzzy_cluster_membership <- as.data.frame(clust_fuzz$membership)
 fuzzy_cluster_membership$PlotCode <- row.names(clust_fuzz$membership)
 fuzzy_cluster_membership$best_group <- clust_fuzz$clustering
 
+# updated_cluster_names <- cbind(updated_cluster_numbers, 
+#                                Community_names = c("Juniper-pinyon woodland",
+#                                               "Open juniper-pinyon shrubland",
+#                                               "C4 grassland",
+#                                               "Annualized juniper savanna",
+#                                               "Pinyon-juniper woodland",
+#                                               "Gambel oak woodland",
+#                                               "Sagebrush shrubland",
+#                                               "Bare juniper savanna"),
+#                                PlantCommunity_fuzzy = c(9, 4, 5, 2, 9, 7, 3, 8),
+#                                State_names = c("Pinyon-juniper woodland",
+#                                               "Open juniper-pinyon shrubland",
+#                                               "C4 grassland",
+#                                               "Annualized juniper savanna",
+#                                               "Pinyon-juniper woodland",
+#                                               "Gambel oak woodland",
+#                                               "Sagebrush shrubland",
+#                                               "Bare juniper savanna"))
+
 updated_cluster_names <- cbind(updated_cluster_numbers, 
                                Community_names = c("Juniper-pinyon woodland",
-                                              "Open juniper-pinyon shrubland",
-                                              "C4 grassland",
-                                              "Annualized juniper savanna",
-                                              "Pinyon-juniper woodland",
-                                              "Gambel oak woodland",
-                                              "Sagebrush shrubland",
+                                                   "Annualized juniper savanna",
+                                                   "Pinyon-juniper woodland",
+                                                   "Open juniper-pinyon shrubland",
+                                                   "Gambel oak woodland",
+                                                   "Sagebrush shrubland",
+                                                   "C4 grassland",
                                               "Bare juniper savanna"),
-                               PlantCommunity_fuzzy = c(9, 4, 5, 2, 9, 7, 3, 8),
+                               PlantCommunity_fuzzy = c(9, 4, 9, 2, 6, 7, 3, 8),
                                State_names = c("Pinyon-juniper woodland",
-                                              "Open juniper-pinyon shrubland",
-                                              "C4 grassland",
-                                              "Annualized juniper savanna",
-                                              "Pinyon-juniper woodland",
-                                              "Gambel oak woodland",
-                                              "Sagebrush shrubland",
+                                                   "Annualized juniper savanna",
+                                                   "Pinyon-juniper woodland",
+                                                   "Open juniper-pinyon shrubland",
+                                                   "Gambel oak woodland",
+                                                   "Sagebrush shrubland",
+                                                   "C4 grassland",
                                               "Bare juniper savanna"))
 
 # update the cluster numbers to match the original groupings (see note above in the fuzzy-cluster chunk)
@@ -1858,15 +1877,16 @@ TODO look into options for printing from the RMarkdown HTML format
 
 #group_labels_short <- c("Grassland", "Perennial grass loss", "Shrubland", "Mesic shrubland", "Invaded")
 plot_data_descriptive$PlantCommunity_fuzzy_reordered <- factor(plot_data_descriptive$PlantCommunity_fuzzy,
-                                                               levels = c(as.character(1:8)),
-                                                               labels = c("Juniper-pinyon woodland",
+                                                               levels = as.character(c(2:4, 6:9)),
+                                                               labels = c(#"Juniper-pinyon woodland",
                                                                             "Open juniper-pinyon shrubland",
                                                                             "C4 grassland",
                                                                             "Annualized juniper savanna",
-                                                                            "Pinyon-juniper woodland",
+                                                                            #"Pinyon-juniper woodland",
                                                                             "Gambel oak woodland",
                                                                             "Sagebrush shrubland",
-                                                                            "Bare juniper savanna"),
+                                                                            "Bare juniper savanna",
+                                                                            "Pinyon-juniper woodland"),
                                                                ordered = T)
 pal_veg2_reordered <- pal_veg2
 
@@ -2398,13 +2418,13 @@ fuzzy_cluster_memb_sf <- st_as_sf(fuzzy_cluster_memb_sf, crs = st_crs(plot_locat
   st_transform(., crs=st_crs(mtbs))
 
 mtbs_plots <- st_join(x=fuzzy_cluster_memb_sf, y=mtbs) %>%
-  select(PlotCode, Best_group, Best_group_name, DateSampled, Ig_Date, geometry) %>%
+  select(PlotCode, PlantCommunity_fuzzy, State_names, DateSampled, Ig_Date, geometry) %>%
   mutate(Burned_presampling = ifelse(test = Ig_Date < DateSampled,
                               yes = TRUE,
                               no = FALSE)) %>%
   group_by(PlotCode) %>%
-  summarise(Best_group = first(Best_group),
-            Best_group_name = first(Best_group_name),
+  summarise(PlantCommunity_fuzzy = first(PlantCommunity_fuzzy),
+            State_names = first(State_names),
             DateSampled = first(DateSampled),
             Times_burned_presampling = length(which(Burned_presampling)),
             Times_burned_postsampling = length(which(!Burned_presampling)),
@@ -2418,7 +2438,7 @@ mtbs_plots <- st_join(x=fuzzy_cluster_memb_sf, y=mtbs) %>%
 
 rm(mtbs)
 
-mtbs_plots$PlantCommunity_fuzzy_reordered <- factor(mtbs_plots$Best_group,
+mtbs_plots$PlantCommunity_fuzzy_reordered <- factor(mtbs_plots$PlantCommunity_fuzzy,
                                                                levels = c(as.character(1:8)),
                                                                labels = c(c("Juniper-pinyon woodland",
                                                                             "Open juniper-pinyon shrubland",
@@ -2479,6 +2499,130 @@ highrestiff(plot_obj = burn_plot_post,
             width_in = 3,
             height_in = 3.5,
             resolution_dpi = 300)
+
+# Tara's expanded fire data set
+FireFeatureData <- st_read(dsn = "G:/Base Layers/Disturbance/Fire/Fire_Feature_Data_Pro2_8_Geodatabase/USGS_Wildland_Fire_Combined_ShapeFile",
+                           layer = "USGS_Wildland_Fire_Combined_ShapeFile")
+
+fuzzy_cluster_memb_sf <- st_as_sf(fuzzy_cluster_memb_sf, crs = st_crs(plot_locations)) %>%
+  st_transform(., crs=st_crs(FireFeatureData))
+
+FireFeatureData_plots <- st_join(x=fuzzy_cluster_memb_sf, y=FireFeatureData) %>%
+  select(PlotCode, PlantCommunity_fuzzy, State_names, DateSampled, Fire_Year, geometry) %>%
+  mutate(Sample_Year = year(DateSampled)) %>%
+  # I hand-checked all of the fires that happened the same year the plot was sampled.
+  # Only one plot, AIM_Colorado NWDO Little Snake FO 2018_INTS-WyoSage-2023, was
+  # sampled before the fire that burned it in the sampling year, so using <= in
+  # the ifelse functions below works for all the other plots
+  mutate(Burned_presampling = ifelse(test = Fire_Year <= Sample_Year,
+                              yes = TRUE,
+                              no = FALSE),
+         Years_burn_to_sampling = ifelse(test = Fire_Year <= Sample_Year,
+                              yes = Sample_Year - Fire_Year,
+                              no = NA)) %>%
+  arrange(Years_burn_to_sampling) %>% 
+  group_by(PlotCode) %>%
+  summarise(PlantCommunity_fuzzy = first(PlantCommunity_fuzzy),
+            State_names = first(State_names),
+            DateSampled = first(DateSampled),
+            Times_burned_presampling = length(which(Burned_presampling)),
+            Times_burned_postsampling = length(which(!Burned_presampling)),
+            Date_burned_1 = sort(Fire_Year)[1],
+            Date_burned_2 = sort(Fire_Year)[2],
+            Date_burned_3 = sort(Fire_Year)[3],
+            Years_burn_to_sampling = first(Years_burn_to_sampling) # years from most recent burn before sampling to sampling
+            ) %>%
+  st_drop_geometry()
+
+# Edit the years from burn to sampling for the one plot that was sampled before it burned in the same year
+#"AIM_Colorado NWDO White River FO 2018_WyoSage-697"
+
+FireFeatureData_plots[FireFeatureData_plots$PlotCode=="AIM_Colorado NWDO White River FO 2018_WyoSage-697", "Years_burn_to_sampling"] <-
+  year(FireFeatureData_plots[FireFeatureData_plots$PlotCode=="AIM_Colorado NWDO White River FO 2018_WyoSage-697", ]$DateSampled) - 
+  FireFeatureData_plots[FireFeatureData_plots$PlotCode=="AIM_Colorado NWDO White River FO 2018_WyoSage-697", ]$Date_burned_1
+
+FireFeatureData_plots[FireFeatureData_plots$PlotCode=="AIM_Colorado NWDO White River FO 2018_WyoSage-697", "Times_burned_presampling"] <- 0
+FireFeatureData_plots[FireFeatureData_plots$PlotCode=="AIM_Colorado NWDO White River FO 2018_WyoSage-697", "Times_burned_postsampling"] <- 1
+
+# write.csv(FireFeatureData_plots,
+#           "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Analyses/SW_SandyLoamyUplands_burnedplots_allfiresources.csv",
+#           row.names = F)
+
+rm(FireFeatureData)
+
+FireFeatureData_plots$PlantCommunity_fuzzy_reordered <- factor(FireFeatureData_plots$PlantCommunity_fuzzy,
+                                                               levels = as.character(c(2:4, 6:9)),
+                                                               labels = c(#"Juniper-pinyon woodland",
+                                                                            "Open juniper-pinyon shrubland",
+                                                                            "C4 grassland",
+                                                                            "Annualized juniper savanna",
+                                                                            #"Pinyon-juniper woodland",
+                                                                            "Gambel oak woodland",
+                                                                            "Sagebrush shrubland",
+                                                                            "Bare juniper savanna",
+                                                                            "Pinyon-juniper woodland"),
+                                                               ordered = T)
+
+FireFeatureData_plots$PlantCommunity_fuzzy <- factor(FireFeatureData_plots$PlantCommunity_fuzzy,
+                                                     levels = levels(plot_data_descriptive$PlantCommunity_fuzzy))
+
+plot_data_descriptive <- left_join(plot_data_descriptive, FireFeatureData_plots)
+
+FireFeatureData_summary <- FireFeatureData_plots %>%
+  # remove this line if NOT removing the fuzziest plots!
+  filter(PlotCode %in% plot_data_descriptive$PlotCode) %>%
+  group_by(PlantCommunity_fuzzy_reordered) %>%
+  summarise(pct_Burned = (length(which(Times_burned_presampling > 0))/n())*100,
+            pct_Burned_postsampling = (length(which(Times_burned_postsampling > 0))/n())*100)
+
+# Duniway et al 2023 figure 9a
+burn_plot_all <- ggplot(data = FireFeatureData_summary,
+                    aes(x=PlantCommunity_fuzzy_reordered, y=pct_Burned, fill = PlantCommunity_fuzzy_reordered)) +
+  geom_col() +
+  scale_fill_manual(values = pal_veg2_reordered) +
+  xlab(NULL) +
+  ylab("% of plots burned
+pre-sampling") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7, color = "black"),
+        axis.text.y = element_text(size = 7, color = "black"),
+          axis.title = element_text(size = 8),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+        legend.position = "none")
+
+burn_plot_all
+
+burn_plot_post_all <- ggplot(data = FireFeatureData_summary,
+                    aes(x=PlantCommunity_fuzzy_reordered, y=pct_Burned_postsampling, fill = PlantCommunity_fuzzy_reordered)) +
+  geom_col() +
+  scale_fill_manual(values = pal_veg2_reordered) +
+  xlab(NULL) +
+  ylab("% of plots burned post-sampling") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "black"),
+        axis.text.y = element_text(size = 10, color = "black"),
+          axis.title = element_text(size = 12),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+        legend.position = "none")
+
+burn_plot_post_all
+
+today <- Sys.Date()
+highrestiff(plot_obj = burn_plot_all,
+            file = paste0(output_figure_folder, "/Bar/SW_SandyLoamyUplands_FireFeatureDatapctburnedpresample_boxplot_", today, ".tif"),
+            width_in = 3,
+            height_in = 3.5,
+            resolution_dpi = 300)
+
+today <- Sys.Date()
+highrestiff(plot_obj = burn_plot_post_all,
+            file = paste0(output_figure_folder, "/Bar/SW_SandyLoamyUplands_FireFeatureDatapctburnedpostsample_boxplot_", today, ".tif"),
+            width_in = 3,
+            height_in = 3.5,
+            resolution_dpi = 300)
+
 
 # PJ Treatments
 WRI_polygons <- st_read(dsn = "C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/Maps/FickPJ",
@@ -2546,15 +2690,16 @@ n_plots_tx_twice_or_more <- pj_plots_cats %>%
   filter(n_diff_treatments >= 2) %>%
   nrow()
 
-plots_per_group <- data.frame(Best_group = c(1:8),
-                              plots_per_group = c(nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)),
+plots_per_group <- data.frame(PlantCommunity_fuzzy = c(2:4, 6:9),
+                              plots_per_group = c(#nrow(filter(plot_data_first, PlantCommunity_fuzzy==1)),
                                                   nrow(filter(plot_data_first, PlantCommunity_fuzzy==2)),
                                                   nrow(filter(plot_data_first, PlantCommunity_fuzzy==3)),
                                                   nrow(filter(plot_data_first, PlantCommunity_fuzzy==4)),
-                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==5)),
+                                                  #nrow(filter(plot_data_first, PlantCommunity_fuzzy==5)),
                                                   nrow(filter(plot_data_first, PlantCommunity_fuzzy==6)),
                                                   nrow(filter(plot_data_first, PlantCommunity_fuzzy==7)),
-                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==8))
+                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==8)),
+                                                  nrow(filter(plot_data_first, PlantCommunity_fuzzy==9))
                                                   ))
 
 pj_plot_pct <- pj_plots_cats %>%
@@ -2566,7 +2711,7 @@ pj_plot_pct <- pj_plots_cats %>%
   mutate(Tx_flag = row_number()) %>%
   filter(Tx_flag==1) %>%
   ungroup() %>%
-  group_by(Best_group) %>%
+  group_by(PlantCommunity_fuzzy) %>%
   summarise(MechanicalUnseeded = 100*length(which(TreatmentSubType=="Mechanical" & seeded==0))/first(plots_per_group),
             MechanicalSeeded = 100*length(which(TreatmentSubType=="Mechanical" & seeded==1))/first(plots_per_group),
             ChemicalUnseeded = 100*length(which(TreatmentSubType=="Chemical" & seeded==0))/first(plots_per_group),
@@ -2575,9 +2720,27 @@ pj_plot_pct <- pj_plots_cats %>%
   tidyr::pivot_longer(cols = c(MechanicalUnseeded, MechanicalSeeded, ChemicalUnseeded, ChemicalSeeded),
                       names_to = "TreatmentPair",
                       values_to = "pct") %>%
-  mutate(Best_group = as.factor(Best_group))
+  mutate(PlantCommunity_fuzzy = as.factor(PlantCommunity_fuzzy))
 
-treatments_plot_pcts <- ggplot(data = pj_plot_pct, aes(x = Best_group, y = pct, fill = TreatmentPair)) +
+# add in 0s for states that had no treatments
+if(any(!(sort(unique(plot_data_descriptive$PlantCommunity_fuzzy)) %in%
+         sort(unique(pj_plot_pct$PlantCommunity_fuzzy))))){
+    pj_missing_states <- sort(unique(plot_data_descriptive$PlantCommunity_fuzzy))[which(!(sort(unique(plot_data_descriptive$PlantCommunity_fuzzy)) %in% sort(unique(pj_plot_pct$PlantCommunity_fuzzy))))]
+  
+  treatmentpairs <- sort(unique(pj_plot_pct$TreatmentPair))
+  
+  pj_missing_df <- data.frame("PlantCommunity_fuzzy" = c(rep(pj_missing_states[1], length(treatmentpairs)),
+                                                         rep(pj_missing_states[2], length(treatmentpairs))),
+                              "TreatmentPair" = rep(treatmentpairs, length(pj_missing_states)),
+                              "pct" = rep(0, length(treatmentpairs)*length(pj_missing_states))
+                              )
+  
+  pj_plot_pct <- bind_rows(pj_plot_pct, pj_missing_df) %>% 
+    mutate(PlantCommunity_fuzzy = factor(PlantCommunity_fuzzy,
+                                         levels = sort(unique(plot_data_descriptive$PlantCommunity_fuzzy))))
+}
+
+treatments_plot_pcts <- ggplot(data = pj_plot_pct, aes(x = PlantCommunity_fuzzy, y = pct, fill = TreatmentPair)) +
   geom_col() +
   scale_fill_manual(values = c("#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A"),
                     name = "Treatment",
@@ -2586,7 +2749,7 @@ treatments_plot_pcts <- ggplot(data = pj_plot_pct, aes(x = Best_group, y = pct, 
                                "Mechanical woody treatment (seeded)",
                                "Mechanical woody treatment")) +
   scale_x_discrete(name = NULL,
-                   labels = c("Open woodland", "Shrubland", "Invaded", "Grassland")) +
+                   labels = group_labels_base) +
   ylab("% of plots treated in each
 plant community") +
   theme_bw() +

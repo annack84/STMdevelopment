@@ -108,8 +108,9 @@ esg_production_pull <- function(
   Species <- Species[!is.na(Species$ESGs_text),] ## Weed out ESG NAs
   # Summarize each species' production across communities within reference state for each ESD
   esg_species <- Species %>%
-    dplyr::group_by(PLANT_SYMBOL,COMMON_NAME,NEW_FG) %>%
-    dplyr::summarize(SPECIES_MEAN = mean(PRODUCTION_AVG))%>%
+    dplyr::group_by(PLANT_SYMBOL,COMMON_NAME,SCIENTIFIC_NAME,NEW_FG) %>%
+    dplyr::summarize(SPECIES_MEAN = mean(PRODUCTION_AVG)) %>%
+    dplyr::mutate(names_formatted = paste0(COMMON_NAME, " (", SCIENTIFIC_NAME, ")") ) %>%
     dplyr::ungroup() #to make sure groupings don't carry through to other dplyr calls
   ## Now separate by functional group and order by decreasing production
   Tree.df <- esg_species[esg_species$NEW_FG=="Tree"&esg_species$COMMON_NAME!="NULL",]
