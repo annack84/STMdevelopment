@@ -49,11 +49,11 @@ opuntia_combined <- T
 data_sources <- c(#"BadgerWash",
   #"CRCMonitoring", # drop if not needed for spatial representation
   "IM_NCPN", # exclude until other have permission to use NCPN locations
-  "LMF",
-  #"NRI", # exclude until others have permission to use NRI
+  #"LMF",
+  "NRI"#, # exclude until others have permission to use NRI
   #"Parashant", # drop if not needed for spatial representation
-  "JFSP",
-  "AIM"#,
+  #"JFSP",
+  #"AIM"#,
   #"VanScoyocThesis" # drop if not needed for spatial representation
 )
 
@@ -103,8 +103,9 @@ if(target_ESG=="Semiarid_Warm_Shallow_DeepRocky"){
     filter(PlotCode != "AIM_Utah Vernal FO 2019_009") # this one is duplicated in the plot locations with very different coordinates
 }
 
-# filter to just the JFSP plots
-plot_data_new <- filter(plot_data_new, SourceKey=="JFSP")
+# filter to just the needed plots
+#plot_data_new <- filter(plot_data_clean, SourceKey=="NRI_UCRB")
+#plot_data_new <- filter(plot_data_new, SourceKey=="JFSP")
 
 # check for duplicate plot-years
 plot_data_new %>% group_by(PlotCode) %>% filter(n()>1) %>% ungroup() %>% nrow() # should be 0
@@ -112,7 +113,7 @@ plot_data_new %>% group_by(PlotCode) %>% filter(n()>1) %>% ungroup() %>% nrow() 
 # should mostly be recent years, but there might be some older plots that were
 # either repeat samples of the same plot or excluded from clustering due to low
 # SGU probability
-hist(plot_data_new$Year, breaks = 2010:2023)
+hist(plot_data_new$Year, breaks = 2000:2023)
 
 # add in SGU probability (i.e. certainty of prediction)
 file_paths <- data_file_paths(user)
@@ -157,7 +158,14 @@ if("OPUNT" %in% colnames(ord.df.share)){
   ord.df.share <- select(ord.df.share, -OPUNT)
 }
 
+if("NRI" %in% data_sources){
+  output_path <- paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Analysis_ready_data/contains_NRI_do_not_sync/",
+         target_ESG, "_NRI_", Sys.Date(), ".csv")
+}else{
+  output_path <- paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Analysis_ready_data/",
+         target_ESG, "_JFSP2023_", Sys.Date(), ".csv")
+}
+
 write.csv(ord.df.share,
-          file = paste0("C:/Users/aknight/Documents/Telework_Backups/V_drive/ANNA_KNIGHT/ESG/STM/Data/Analysis_ready_data/",
-                        target_ESG, "_JFSP2023PlotData_", Sys.Date(), ".csv"),
+          file = output_path,
           row.names = F)

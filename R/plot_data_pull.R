@@ -119,7 +119,7 @@ plot_data_pull <- function(user = "Anna",
                                             sp = T))
   colnames(plot_ESGs)[which(colnames(plot_ESGs)=="ESG")] <- "ESGid"
 
-  plot_ESGs_join <- dplyr::left_join(plot_ESGs, ESG_table)
+  plot_ESGs_join <- dplyr::left_join(plot_ESGs, ESG_table, by= "ESGid")
 
   # remove "forest" stratified plots from NCPN because they don't record overstory > 2 m
   NCPN_forest_plots <- read.csv(file.path(dirname(file_paths$plotnet_processed),
@@ -180,15 +180,35 @@ plot_data_pull <- function(user = "Anna",
   }
 
 
-  indicator_data <- dplyr::filter(indicator_data_all, variable %in% indicators_expanded)
+  indicator_data <- dplyr::filter(indicator_data_all,
+                                  variable %in% indicators_expanded)
   indicator_data$PlotCode <- paste(indicator_data$SourceKey,
                                    indicator_data$SiteName,
                                    indicator_data$PlotName,
                                    sep = "_")
 
+  # Big CSVs appear to have a problem with data loss - rounding Lat and Lon to
+  # 4 decimal places after ~158,000 rows (at least, that was the threshold in
+  # the NRI_UCRB data set). Let's avoid the issue and  pull lat/lon from the
+  # shapefile instead.
+  plot_target_ESG <- plot_target_ESG %>%
+    st_transform(crs = 4269) %>%
+    cbind(., as.data.frame(st_coordinates(.)))
+
+  colnames(plot_target_ESG)[which(colnames(plot_target_ESG) %in% c("X", "Y"))] <-
+    c("Longitude_NAD83", "Latitude_NAD83")
+
+  plot_target_ESG_coords <- select(plot_target_ESG,
+                                   PlotCode, Longitude_NAD83, Latitude_NAD83) %>%
+    st_drop_geometry(.) %>%
+    distinct()
+
   # filter indicators to just target ESG plots
-  indicator_data_target <- dplyr::filter(indicator_data, PlotCode %in% plot_target_ESG$PlotCode) #%>%
-    #dplyr::select(-Month, -Day, -Longitude_NAD83, -Latitude_NAD83)
+  indicator_data_target <- dplyr::filter(indicator_data,
+                                         PlotCode %in% plot_target_ESG$PlotCode) %>%
+    dplyr::select(#-Month, -Day,
+                  -Longitude_NAD83, -Latitude_NAD83) %>%
+    left_join(., plot_target_ESG_coords, by="PlotCode")
 
   # make wide
   indicator_data_target_wide <- indicator_data_target %>%
